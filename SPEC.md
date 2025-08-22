@@ -23,11 +23,14 @@ nominations. This is not a bug.
 4. The `<meta>` tag should have the attribute `name="webchain-nomination"` and
    the attribute `content` set to the URL of the node it nominates.
 5. A nominated node can be any valid URL that is not itself.
-7. Each node can nominate up to 3 other nodes, with any additional nominations
+6. Each node can nominate up to 2 other nodes, with any additional nominations
    being ignored.
-8. The DAG must not contain cycles, meaning that nodes may not nominate a node
+7. The DAG must not contain cycles, meaning that nodes may not nominate a node
    that is already a part of the graph. If any such relationship is found, it is
    ignored.
+8. If a node does not respond with a 200 status code in a timely manner, the
+   node is considered offline. Offline nodes are still a part of the data
+   representation, but their subtree is not traversable.
 
 ## Example node
 
@@ -37,9 +40,8 @@ nominations. This is not a bug.
 <head>
 	<meta charset="UTF-8">
 
-	<meta name="webchain-nomination" content="www.himawari.fun">
-	<meta name="webchain-nomination" content="eidoli.ca">
-	<meta name="webchain-nomination" content="nekopath.fun">
+	<meta name="webchain-nomination" content="https://www.example.org">
+	<meta name="webchain-nomination" content="https://www.wikipedia.org">
 </head>
 <body>
 	example webchain document with two nominations
@@ -47,5 +49,5 @@ nominations. This is not a bug.
 </html>
 ```
 
-In this example, the node has nominated three other nodes: `www.himawari.fun`,
-`eidoli.ca`. and `nekopath.fun`. They are now part of the webchain.
+In this example, the node has nominated three other nodes: `www.example.org`
+and `www.wikipedia.org`. They are now part of the webchain.
