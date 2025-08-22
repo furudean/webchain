@@ -11,8 +11,8 @@ found to be abusive, they can be removed from the webchain by terminating a
 nomination higher up the chain.
 
 The size of the webchain is not fixed, and is only limited by the half-life of
-the internet (or hardware...). A node may disappear from the webchain, taking
-with it all of its nominations. This is not a bug.
+the internet. A node may disappear from the webchain, taking with it all of its
+nominations. This is not a bug.
 
 ## Rules
 
