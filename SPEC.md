@@ -52,7 +52,7 @@ nominations. This is not a bug.
 </html>
 ```
 
-In this example, the node has nominated three other nodes: `www.example.org` and
+In this example, the node has nominated two other nodes: `www.example.org` and
 `www.wikipedia.org`. They are now part of the webchain.
 
 ## A note on visibility
