@@ -1,8 +1,8 @@
 # webchain Specification (draft)
 
 webchain is a decentralized [webring](https://en.wikipedia.org/wiki/Webring),
-where each website can nominate other websites to create a walkable graph of
-trust.
+where each member website can nominate other websites, creating a walkable graph
+of trust.
 
 Each member can nominate new members, who in turn can invite members. Each node
 has a responsibility to ensure that its nominations are trustworthy and don't
