@@ -47,5 +47,5 @@ nominations. This is not a bug.
 </html>
 ```
 
-In this example, the node has nominated two other nodes: `www.himawari.fun` and
-`eidoli.ca`.
+In this example, the node has nominated three other nodes: `www.himawari.fun`,
+`eidoli.ca`. and `nekopath.fun`. They are now part of the webchain.
