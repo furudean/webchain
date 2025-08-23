@@ -35,7 +35,7 @@ def is_valid_nomination(tag: Tag) -> bool:
 
     return False
 
-async def get_node_nominations(url: str, html: str, root: str) -> list[str] | None:
+async def get_node_nominations(html: str, root: str) -> list[str] | None:
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
 
     if not soup.head:
@@ -54,5 +54,5 @@ async def get_node_nominations(url: str, html: str, root: str) -> list[str] | No
     return [
         str(tag.get('href'))
         for tag in nominations
-        if isinstance(tag, Tag) and tag['href'] != url
+        if isinstance(tag, Tag)
     ]
