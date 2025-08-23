@@ -13,4 +13,4 @@ dependencies = [
 ]
 
 [project.scripts]
-scraper = "scraper.main:main"
+print-tree = "scraper.cli:print_tree"
