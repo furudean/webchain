@@ -11,12 +11,14 @@ def validate_uri(x: str) -> bool:
         return False
 
 
-async def load_page_html(url: str, session: aiohttp.ClientSession) -> str:
-    async with session.get(url) as response:
-        response.raise_for_status()  # TODO: handle errors with retry
-        html = await response.text()
-
-    return html
+async def load_page_html(url: str, session: aiohttp.ClientSession) -> str | None:
+    try:
+        async with session.get(url) as response:
+            response.raise_for_status()
+            html = await response.text()
+        return html
+    except (aiohttp.ClientError, aiohttp.ServerTimeoutError, aiohttp.ClientResponseError):
+        return None
 
 def is_valid_nomination(tag: Tag) -> bool:
     if not isinstance(tag, Tag) or tag.name != 'link':

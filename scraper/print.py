@@ -26,6 +26,11 @@ async def recursively_print_nominations(
         print(f"{current_prefix}{url}")
 
     html = await load_page_html(url, session=session)
+
+    if html is None:
+        # could not load page, stop recursion here
+        return
+
     nominations = await get_node_nominations(html=html, root=root)
 
 
