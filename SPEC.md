@@ -68,9 +68,9 @@ The webchain isn't very fun on its own. Visualization software will have to be
 created to traverse the graph and display it in a meaningful way. This includes
 handling of historical states, offline nodes, and other metadata.
 
-Discoverability may be an issue, as you will have to know the webchain exists to
-browse it. Users should be encouraged to link back to the webchain root node or
-other representations available.
+Discoverability may be an issue, as visitors of any given node will have to know
+the webchain exists to browse it. Users should thus be encouraged to link back
+to the webchain root node or other representations available.
 
 If all parts work well together, a fun and dangerous social experiment will
 emerge.
