@@ -6,7 +6,7 @@ of trust.
 
 In webchain, each member nominates others to the chain, who get their own
 nominations in turn. This creates a tree-like structure, where each node has a
-parent and children.
+parent and potentially children.
 
 The size of the webchain is not fixed, and is only limited by the half-life of
 the internet. A node may disappear from the webchain, taking with it all of its
