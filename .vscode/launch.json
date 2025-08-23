@@ -1,0 +1,13 @@
+{
+	"configurations": [
+		{
+			"type": "debugpy",
+			"request": "launch",
+			"name": "Launch Scraper",
+			"module": "scraper",
+			"console": "integratedTerminal",
+			"justMyCode": true,
+			"python": "${command:python.interpreterPath}"
+		}
+	]
+}

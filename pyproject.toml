@@ -1,8 +1,16 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "webchain-scraper"
-version = "0.1.0"
+dynamic = ["version"]
 requires-python = ">=3.12"
 dependencies = [
-	"aiohttp~=3.12",
+	"aiohttp[speedups]~=3.12",
 	"beautifulsoup4",
+	"lxml~=6.0",
 ]
+
+[project.scripts]
+scraper = "scraper.main:main"
