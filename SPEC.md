@@ -60,7 +60,7 @@ In this example, this node has nominated two others: `www.example.org` and
 `chain.milkmedicine.net`.
 
 Of course, the example itself must first nominated by another node to be part of
-the chain.
+the chain in the first place.
 
 ## A note on visibility
 
