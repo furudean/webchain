@@ -57,7 +57,7 @@ chain.
 
 In this example, this node has nominated two others: `www.example.org` and
 `www.wikipedia.org`. They are now part of the webchain
-`https://chain.milkmedicine.net`.
+`chain.milkmedicine.net`.
 
 Of course, the example itself must first nominated by another node to be part of
 the chain.
