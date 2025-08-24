@@ -1,7 +1,7 @@
 import asyncio
-import aiohttp
 import sys
 
+from scraper.http import get_session
 from scraper.print import recursively_print_nominations
 
 async def _print_tree():
@@ -11,7 +11,7 @@ async def _print_tree():
         print("usage: print-tree <root>")
         sys.exit(1)
 
-    async with aiohttp.ClientSession() as session:
+    async with get_session() as session:
         await recursively_print_nominations(site, session=session)
 
 def print_tree():
