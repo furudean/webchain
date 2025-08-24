@@ -22,8 +22,7 @@ async def recursively_print_nominations(
     if depth == 0:
         print(url)
     else:
-        current_prefix = prefix + ("└─ " if is_last else "├─ ")
-        print(f"{current_prefix}{url}")
+        print(prefix + ("└─ " if is_last else "├─ ") + url)
 
     html = await load_page_html(url, session=session)
 
