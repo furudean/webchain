@@ -35,11 +35,11 @@ async def get_node_nominations(html: str, root: str) -> list[str] | None:
     if not soup.head:
         return None
 
-    webchain_tags = soup.head.find(name='link', attrs={'rel': 'webchain'})
+    webchain_tag = soup.head.find(name='link', attrs={'rel': 'webchain'})
     if (
-        webchain_tags is None
-        or not isinstance(webchain_tags, Tag)
-        or webchain_tags.get('href') != root
+        webchain_tag is None
+        or not isinstance(webchain_tag, Tag)
+        or webchain_tag.get('href') != root
     ):
         return None
 
