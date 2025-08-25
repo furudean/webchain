@@ -29,7 +29,7 @@ def is_valid_nomination(tag: Tag) -> bool:
     return False
 
 
-async def get_node_nominations(html: str, root: str) -> list[str] | None:
+def get_node_nominations(html: str, root: str) -> list[str] | None:
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
 
     if not soup.head:

@@ -10,7 +10,7 @@ async def test_get_node_nominations_single():
     </head>
     </html>
     """
-    result = await get_node_nominations(html, root='https://mychain.net')
+    result = get_node_nominations(html, root='https://mychain.net')
     assert result == ['https://example.org']
 
 
@@ -24,7 +24,7 @@ async def test_get_node_nominations_two():
     </head>
     </html>
     """
-    result = await get_node_nominations(html, root='https://mychain.net')
+    result = get_node_nominations(html, root='https://mychain.net')
     assert result == ['https://example.org', 'https://example.com']
 
 
@@ -39,13 +39,13 @@ async def test_get_node_nominations_three():
     </head>
     </html>
     """
-    result = await get_node_nominations(html, root='https://mychain.net')
+    result = get_node_nominations(html, root='https://mychain.net')
     assert result == ['https://example.org', 'https://example.com']
 
 
 async def test_get_node_nominations_none():
     html = '<html></html>'
-    result = await get_node_nominations(html, root='https://mychain.net')
+    result = get_node_nominations(html, root='https://mychain.net')
     assert result is None
 
 
@@ -58,7 +58,7 @@ async def test_missing_webchain_tag():
     </head>
     </html>
     """
-    result = await get_node_nominations(html, root='https://mychain.net')
+    result = get_node_nominations(html, root='https://mychain.net')
     assert result is None
 
 
@@ -72,7 +72,7 @@ async def test_different_webchain_tag():
     </head>
     </html>
     """
-    result = await get_node_nominations(html, root='https://mychain.net')
+    result = get_node_nominations(html, root='https://mychain.net')
     assert result is None
 
 
@@ -86,5 +86,5 @@ async def test_invalid_nomination_tag():
     </head>
     </html>
     """
-    result = await get_node_nominations(html, root='https://mychain.net')
+    result = get_node_nominations(html, root='https://mychain.net')
     assert result == ['https://example.com']

@@ -32,7 +32,7 @@ async def recursively_print_nominations(
         # could not load page, stop recursion here
         return
 
-    nominations = await get_node_nominations(html=html, root=root)
+    nominations = get_node_nominations(html=html, root=root)
 
     if nominations:
         for i, nomination in enumerate(nominations or []):
