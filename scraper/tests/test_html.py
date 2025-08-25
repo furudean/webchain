@@ -46,7 +46,7 @@ async def test_get_node_nominations_three():
 async def test_get_node_nominations_none():
     html = '<html></html>'
     result = await get_node_nominations(html, root='https://mychain.net')
-    assert result == None
+    assert result is None
 
 
 async def test_missing_webchain_tag():
@@ -59,7 +59,7 @@ async def test_missing_webchain_tag():
     </html>
     """
     result = await get_node_nominations(html, root='https://mychain.net')
-    assert result == None
+    assert result is None
 
 
 async def test_different_webchain_tag():
@@ -73,7 +73,7 @@ async def test_different_webchain_tag():
     </html>
     """
     result = await get_node_nominations(html, root='https://mychain.net')
-    assert result == None
+    assert result is None
 
 
 async def test_invalid_nomination_tag():
