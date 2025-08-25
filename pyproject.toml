@@ -12,5 +12,19 @@ dependencies = [
 	"lxml~=6.0",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+]
+
 [project.scripts]
 print-tree = "scraper.cli:print_tree"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+    "integration",
+]

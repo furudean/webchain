@@ -1,6 +1,7 @@
 import aiohttp
 
-from scraper.html import get_node_nominations, load_page_html
+from scraper.html import get_node_nominations
+from scraper.http import load_page_html
 
 async def recursively_print_nominations(
     url: str,

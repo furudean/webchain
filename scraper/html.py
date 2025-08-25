@@ -1,6 +1,5 @@
 from urllib.parse import urlparse
 
-import aiohttp
 from bs4 import BeautifulSoup, Tag
 
 def validate_uri(x: str) -> bool:
@@ -10,15 +9,6 @@ def validate_uri(x: str) -> bool:
     except AttributeError:
         return False
 
-
-async def load_page_html(url: str, session: aiohttp.ClientSession) -> str | None:
-    try:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            html = await response.text()
-        return html
-    except (aiohttp.ClientError, aiohttp.ServerTimeoutError, aiohttp.ClientResponseError):
-        return None
 
 def is_valid_nomination(tag: Tag) -> bool:
     if not isinstance(tag, Tag) or tag.name != 'link':
@@ -36,6 +26,7 @@ def is_valid_nomination(tag: Tag) -> bool:
         return True
 
     return False
+
 
 async def get_node_nominations(html: str, root: str) -> list[str] | None:
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
