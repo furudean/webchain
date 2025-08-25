@@ -24,10 +24,10 @@ chain.
 2. Each node in the tree represents a website, which is identified by its URL.
 3. Each node can define its child nominations by including appropriate `<link>`
    tags in the `<head>` section of its HTML (see examples below).
-4. A nominated node can be any valid URL that is not itself.
+4. A nominated node can be any valid URL, including subdomains, paths, or even
+	different domains altogether.
 5. Each node can nominate up to 2 other nodes, with any additional nominations
-   being ignored.
-6. Nominations may be freely added or removed by the node owner, at their
+   being ignored. Nominations may be freely added or removed by the node owner, at their
    discretion.
 7. Nodes may not nominate themselves or create cycles in the nomination path. If
    these cases are detected, the offending nominations are ignored.
