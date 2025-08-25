@@ -25,6 +25,6 @@ print-tree = "scraper.cli:print_tree"
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = [
-    "tests",
-    "integration",
+    "scraper/tests"
 ]
+asyncio_mode = "auto"
