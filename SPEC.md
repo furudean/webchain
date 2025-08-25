@@ -20,7 +20,7 @@ chain.
 ## Rules
 
 1. The tree starts with a single node, for example:
-   https://chain.milkmedicine.net.
+   https://mychain.org.
 2. Each node in the tree represents a website, which is identified by its URL.
 3. Each node can define its child nominations by including appropriate `<link>`
    tags in the `<head>` section of its HTML (see examples below).
@@ -45,7 +45,7 @@ chain.
 	<meta charset="UTF-8">
 
 	<!-- The root of the webchain this node is part of -->
-	<link rel="webchain" href="https://chain.milkmedicine.net">
+	<link rel="webchain" href="https://mychain.org">
 	<!-- Nominations made by this node -->
 	<link rel="webchain-nomination" href="https://www.example.org">
 	<link rel="webchain-nomination" href="https://www.wikipedia.org">
@@ -57,19 +57,18 @@ chain.
 ```
 
 In this example, this node has nominated two others: `www.example.org` and
-`www.wikipedia.org`. They are now part of the webchain
-`chain.milkmedicine.net`.
+`www.wikipedia.org`. They are now part of the webchain `mychain.org`.
 
 Note that simply adding webchain markup to your site does not automatically make
 you part of the webchain - the example must first be nominated by an existing
 member.
 
-## Joining the webchain
+## Joining a webchain
 
 Let's say you have a website, `https://www.example.org`, and you want to join
-the webchain rooted at `https://chain.milkmedicine.net`.
+the webchain rooted at `https://mychain.org`.
 
-1. Find the webchain root (e.g., `https://chain.milkmedicine.net`) and
+1. Find the webchain root (e.g., `https://mychain.org`) and
 	visit it to understand the community and its purpose
 2. Request nomination by contacting existing members with open slots, asking
    for a nomination.
