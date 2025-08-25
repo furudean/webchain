@@ -2,7 +2,7 @@ import aiohttp
 
 
 def get_session() -> aiohttp.ClientSession:
-    return aiohttp.ClientSession(headers={"User-Agent": "webchain-scraper/DRAFT"})
+    return aiohttp.ClientSession(headers={'User-Agent': 'webchain-scraper/DRAFT'})
 
 
 async def load_page_html(url: str, session: aiohttp.ClientSession) -> str | None:
@@ -13,4 +13,3 @@ async def load_page_html(url: str, session: aiohttp.ClientSession) -> str | None
         return html
     except (aiohttp.ClientError, aiohttp.ServerTimeoutError, aiohttp.ClientResponseError):
         return None
-

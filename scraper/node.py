@@ -1,7 +1,7 @@
 import itertools
 
 
-'''
+"""
 Still need to do:
 1.  create whatever "shell" these nodes will live in.
     ideally this shell will have methods like (or the ability to do) things like
@@ -10,10 +10,10 @@ Still need to do:
     - be the "memory" from which nodes are added or deleted (i.e. serve as a master record of all active nodes) [see todos in remove function]
 
 2.  make it so i can decrement count according to deletion from memory: see test ex below
-'''
+"""
+
 
 class Node:
-
     count = itertools.count()
 
     def __init__(self, url, parent=None, left=None, right=None):
@@ -25,16 +25,13 @@ class Node:
 
     def __repr__(self):
         if self.left and self.right:
-            return f"{self.id} {self.url} {self.parent} {self.left.url} {self.right.url}"
+            return f'{self.id} {self.url} {self.parent} {self.left.url} {self.right.url}'
         elif self.left:
-            return f"{self.id} {self.url} {self.parent} {self.left.url} {self.right}"
+            return f'{self.id} {self.url} {self.parent} {self.left.url} {self.right}'
         elif self.right:
-            return f"{self.id} {self.url} {self.parent} {self.left} {self.right.url}"
+            return f'{self.id} {self.url} {self.parent} {self.left} {self.right.url}'
         else:
-            return f"{self.id} {self.url} {self.parent} {self.left} {self.right}"
-
-
-
+            return f'{self.id} {self.url} {self.parent} {self.left} {self.right}'
 
     @classmethod
     def root(cls, url, left_url=None, right_url=None):
@@ -50,11 +47,11 @@ class Node:
     # if free slot exists, creates a leaf node from child_url and adds as a child.
     def addChild(self, child_url):
         if self.left is None:
-            self.left=Node.leaf(child_url,self.url)
+            self.left = Node.leaf(child_url, self.url)
             return
         if self.left is not None:
             if self.right is None:
-                self.right = Node.leaf(child_url,self.url)
+                self.right = Node.leaf(child_url, self.url)
                 return
             else:
                 return
@@ -92,7 +89,8 @@ class Node:
     def printSubtree(self):
         printTree(self)
 
-#relies on the root itself being static, prints entire tree
+
+# relies on the root itself being static, prints entire tree
 def printTree(root: Node):
     print(root)
     if root.left:
@@ -106,11 +104,10 @@ def printTree(root: Node):
 #######################################################
 
 # Dummy sites
-a_url = "chain.milkmedicine.net"
-b_url = "nekopath.fun"
-c_url = "himawari.fun"
-d_url = "pixiv.net"
-
+a_url = 'chain.milkmedicine.net'
+b_url = 'nekopath.fun'
+c_url = 'himawari.fun'
+d_url = 'pixiv.net'
 
 
 root = Node.root(a_url, b_url, c_url)
@@ -140,4 +137,3 @@ neko.printSubtree()
 # root.removeChild()
 # root.removeChild()
 # root.printChain()
-

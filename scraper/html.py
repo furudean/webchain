@@ -2,6 +2,7 @@ from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup, Tag
 
+
 def validate_uri(x: str) -> bool:
     try:
         result = urlparse(x)
@@ -15,7 +16,7 @@ def is_valid_nomination(tag: Tag) -> bool:
         return False
 
     rel = tag.get('rel')
-    assert isinstance(rel, str) # is always a string with multi_valued_attributes=None
+    assert isinstance(rel, str)  # is always a string with multi_valued_attributes=None
 
     if rel != 'webchain-nomination':
         return False
@@ -44,8 +45,6 @@ async def get_node_nominations(html: str, root: str) -> list[str] | None:
 
     nominations = soup.head.find_all(is_valid_nomination)
 
-    return [
-        str(tag.get('href'))
-        for tag in nominations
-        if isinstance(tag, Tag)
-    ][:2] # only process the first two nominations
+    return [str(tag.get('href')) for tag in nominations if isinstance(tag, Tag)][
+        :2
+    ]  # only process the first two nominations
