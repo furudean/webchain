@@ -1,5 +1,5 @@
 from urllib.parse import urlparse
-from typing import Awaitable, Protocol
+from typing import Protocol
 
 from bs4 import BeautifulSoup, Tag
 
@@ -54,7 +54,7 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
 
 
 class CrawlCallback(Protocol):
-    def __call__(self, url: str, depth: int, is_last: bool) -> None: ...
+    def __call__(self, url: str, parent: str, depth: int) -> None: ...
 
 
 async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
@@ -65,28 +65,23 @@ async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
     """
     seen: set[str] = set()
 
-    async def process_node(url: str, depth=0, is_last=True) -> None:
+    async def process_node(url: str, depth=0) -> None:
         if url in seen:
             return
 
         seen.add(url)
 
-        # Call callback for this node
-        node_callback(url=url, depth=depth, is_last=is_last)
-
         html = await load_page_html(url, session=session)
 
         if html is None:
-            # could not load page, stop recursion here
             return
 
         nominations = get_node_nominations(html=html, root=root_url)
 
         if nominations:
-            # Process each nomination
-            for i, candidate in enumerate(nominations):
-                is_last_child = i == len(nominations) - 1
-                await process_node(candidate, depth=depth + 1, is_last=is_last_child)
+            for candidate in nominations:
+                node_callback(url=candidate, parent=url, depth=depth)
+                await process_node(candidate, depth=depth + 1)
 
     async with get_session() as session:
         await process_node(root_url)
