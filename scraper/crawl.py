@@ -7,6 +7,7 @@ from scraper.http import get_session, load_page_html
 
 
 def validate_uri(x: str) -> bool:
+    """check if a string is a valid uri with both scheme (http/https) and netloc (domain)."""
     try:
         result = urlparse(x)
         return all([result.scheme, result.netloc])
@@ -33,16 +34,20 @@ def is_valid_nomination(tag: Tag) -> bool:
 
 
 def get_node_nominations(html: str, root: str) -> list[str] | None:
+    """
+    extract webchain nominations from html, but only if it's a valid webchain node.
+    """
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
 
     if not soup.head:
         return None
 
+    # look for the webchain declaration link in the head
     webchain_tag = soup.head.find(name='link', attrs={'rel': 'webchain'})
     if (
         webchain_tag is None
         or not isinstance(webchain_tag, Tag)
-        or webchain_tag.get('href') != root
+        or webchain_tag.get('href') != root  # must point to the root url
     ):
         return None
 
@@ -53,16 +58,19 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
     return hrefs[:2]  # only process the first two nominations
 
 
-class CrawlCallback(Protocol):
+class NodeCallback(Protocol):
     def __call__(self, at: str, children: list[str], parent: str | None, depth: int) -> None: ...
 
 
-async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
+async def crawl(root_url: str, node_callback: NodeCallback) -> None:
     """
-    Crawl the webchain nomination graph starting from `root_url`, calling `node_callback`
-    for each node visited.
+    crawl the webchain nomination graph starting from `root_url`, calling
+    `node_callback` for each node visited.
+
+    this performs a depth-first traversal of the webchain graph, following
+    nomination links from each valid webchain node.
     """
-    seen: set[str] = set()
+    seen: set[str] = set()  # track visited urls to prevent infinite loops
 
     async def process_node(at: str, parent: str | None = None, depth=0) -> None:
         # prevent cycles
@@ -74,6 +82,7 @@ async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
         html = await load_page_html(at, session=session)
 
         if html is None:
+            # failed to load page - call callback with empty nominations
             node_callback(at=at, children=[], parent=parent, depth=depth)
             return
 
