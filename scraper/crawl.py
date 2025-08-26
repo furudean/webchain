@@ -52,7 +52,7 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
 
     return hrefs[:2]  # only process the first two nominations
 
-async def crawl(root: str, callback: Callable, session) -> None:
+async def crawl(root: str, callback: Callable) -> None:
     seen: set[str] = set()
 
     async with get_session() as session:
