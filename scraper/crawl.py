@@ -77,3 +77,5 @@ async def crawl(root: str, callback: Callable) -> None:
                     await callback(nomination=candidate_url, parent=url)
                     # recurse into nomination
                     await process_node(candidate_url)
+
+        await process_node(root)
