@@ -5,6 +5,7 @@ from scraper.print import recursively_print_nominations
 from scraper.read import read_chain
 from scraper.crawl import get_session
 
+
 async def _print_tree():
     site = sys.argv[1] if len(sys.argv) > 1 else None
 
@@ -21,7 +22,8 @@ def print_tree():
 
 async def _read():
     async with get_session() as session:
-        await read_chain("https://chain-staging.milkmedicine.net", session=session)
+        await read_chain('https://chain-staging.milkmedicine.net', session=session)
+
 
 def read():
     asyncio.run(_read())
