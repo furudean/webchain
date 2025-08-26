@@ -54,7 +54,7 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
 
 
 class CrawlCallback(Protocol):
-    def __call__(self, at: str, children: list[str], parent: str, depth: int) -> None: ...
+    def __call__(self, at: str, children: list[str], parent: str | None, depth: int) -> None: ...
 
 
 async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
@@ -65,7 +65,7 @@ async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
     """
     seen: set[str] = set()
 
-    async def process_node(url: str, depth=0) -> None:
+    async def process_node(url: str, parent: str | None = None, depth=0) -> None:
         if url in seen:
             return
 
@@ -74,15 +74,15 @@ async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
         html = await load_page_html(url, session=session)
 
         if html is None:
-            node_callback(at=url, children=[], parent=url, depth=depth)
+            node_callback(at=url, children=[], parent=parent, depth=depth)
             return
 
         nominations = get_node_nominations(html=html, root=root_url)
-        node_callback(at=url, children=nominations, parent=url, depth=depth)
+        node_callback(at=url, children=nominations or [], parent=url, depth=depth)
 
         if nominations:
             for candidate in nominations:
-                await process_node(candidate, depth=depth + 1)
+                await process_node(candidate, parent=url, depth=depth + 1)
 
     async with get_session() as session:
         await process_node(root_url)
