@@ -14,5 +14,6 @@ async def _print_tree():
 
     await recursively_print_nominations(site)
 
+
 def print_tree():
     asyncio.run(_print_tree())

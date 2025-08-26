@@ -33,7 +33,7 @@ def is_valid_nomination(tag: Tag) -> bool:
     return False
 
 
-def get_node_nominations(html: str, root: str) -> list[str] | None:
+def get_node_nominations(html: str, root: str, seen: set[str]) -> list[str] | None:
     """
     extract webchain nominations from html, but only if it's a valid webchain node.
     """
@@ -53,7 +53,12 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
 
     nominations = soup.head.find_all(is_valid_nomination)
 
-    hrefs = [str(tag.get('href')) for tag in nominations if isinstance(tag, Tag)]
+    hrefs = [
+        str(tag.get('href'))
+        for tag in nominations
+        if isinstance(tag, Tag)
+        and tag.get('href') not in seen  # any previously seen urls are already a part of the graph
+    ]
 
     return hrefs[:2]  # only process the first two nominations
 
@@ -86,7 +91,7 @@ async def crawl(root_url: str, node_callback: NodeCallback) -> None:
             node_callback(at=at, children=[], parent=parent, depth=depth)
             return
 
-        nominations = get_node_nominations(html=html, root=root_url)
+        nominations = get_node_nominations(html=html, root=root_url, seen=seen)
         node_callback(at=at, children=nominations or [], parent=parent, depth=depth)
 
         if nominations:
