@@ -1,5 +1,6 @@
+from __future__ import annotations
 import itertools
-
+import sys
 
 """
 Still need to do:
@@ -8,92 +9,57 @@ Still need to do:
     - find_by_id
     - find_by_url
     - be the "memory" from which nodes are added or deleted (i.e. serve as a master record of all active nodes) [see todos in remove function]
-
-2.  make it so i can decrement count according to deletion from memory: see test ex below
 """
 
-
 class Node:
+    # count assigns each node an id, strictly ascending.
+    # childlimit acts as a cap on the length of children[]
     count = itertools.count()
+    childlimit = 2
 
-    def __init__(self, url, parent=None, left=None, right=None):
+    def __init__(self, url, parent: Node | None, children: list[Node] | None):
         self.id = next(self.count)
         self.url = url
         self.parent = parent
-        self.left = left
-        self.right = right
+        self.children = children
 
     def __repr__(self):
-        if self.left and self.right:
-            return f'{self.id} {self.url} {self.parent} {self.left.url} {self.right.url}'
-        elif self.left:
-            return f'{self.id} {self.url} {self.parent} {self.left.url} {self.right}'
-        elif self.right:
-            return f'{self.id} {self.url} {self.parent} {self.left} {self.right.url}'
-        else:
-            return f'{self.id} {self.url} {self.parent} {self.left} {self.right}'
-
-    @classmethod
-    def root(cls, url, left_url=None, right_url=None):
-        root = Node(url)
-        root.addChild(left_url)
-        root.addChild(right_url)
-        return root
-
-    @classmethod
-    def leaf(cls, url, parent):
-        return Node(url, parent, None, None)
+        return f'{self.id} {self.url} {self.parent} {self.children}'
 
     # if free slot exists, creates a leaf node from child_url and adds as a child.
-    def addChild(self, child_url):
-        if self.left is None:
-            self.left = Node.leaf(child_url, self.url)
-            return
-        if self.left is not None:
-            if self.right is None:
-                self.right = Node.leaf(child_url, self.url)
-                return
-            else:
-                return
+    # this might never get used. for one, since an added child with children itself would have to have the children linked in a separate function call.
+    # For now i'll leave this here since replaceChild depends on it
+    def addChild(self, child_url: str | None):
+        if len(self.children) < self.childlimit:
+            self.children.append(Node(child_url, self.url))
+        return
 
-    # passing 0 deletes left child, passing 1 removes right child, passing neither treats it as a stack
-    def removeChild(self, to_remove=-1):
-        if not to_remove:
-            # to do : Delete left Node in memory
-            self.left = None
-            return
-        elif to_remove == 1:
-            # to do : Delete right node in memory
-            self.right = None
-            return
+    # def nodeFromList(cls, url, parent, children: list[str] | None):
+    #     if size(chol)
+    #     return
+
+    # to_remove is index of child to be removed, passing nothing removes latest node
+    def removeChild(self, to_remove=None):
+        if to_remove is None:
+            self.children.pop(len(self.children)-1)
+        elif to_remove in range(0, len(self.children)):
+            self.children.pop(to_remove)
         else:
-            # default behavior : "pops" the most recent child. if both slots filled, pops right. else pops left.
-            if self.right is None:
-                if self.left is None:
-                    return
-                else:
-                    # to do : Delete left Node in memory
-                    self.left = None
-                    return
-            else:
-                # to do : Delete right node in memory
-                self.right = None
-                return
+            print('error: index out of bounds (self.children)')
+            sys.exit(1)
 
-    # pass 1 to replace right slot, pass 0 to replace left slot.
-    def replaceChild(self, child_url, to_replace):
+    # to_replace is index of child to be replaced, passing nothing replaces latest node
+    def replaceChild(self, child_url: str | None, to_replace=None):
         self.removeChild(to_replace)
         self.addChild(child_url)
 
     # prints subtree
-    def printSubtree(self):
-        printTree(self)
+    # def printSubtree(self):
+    #     printTree(self)
 
 
 # relies on the root itself being static, prints entire tree
-def printTree(root: Node):
-    print(root)
-    if root.left:
-        printTree(root.left)
-    if root.right:
-        printTree(root.right)
+# def printTree(root: Node):
+#     print(root)
+#     for i in root.children:
+#         printTree(i)
