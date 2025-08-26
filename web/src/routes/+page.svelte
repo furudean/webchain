@@ -1,2 +1,7 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<svelte:head>
+	<link rel="webchain" href="https://chain.milkmedicine.net">
+	<link rel="webchain-nomination" href="https://www.himawari.fun/">
+	<link rel="webchain-nomination" href="https://nekopath.fun/">
+</svelte:head>
+
+<h1>milkmedicine webchain</h1>
