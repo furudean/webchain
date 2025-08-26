@@ -54,10 +54,10 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
 
 
 class CrawlCallback(Protocol):
-    def __call__(self, nomination: str, parent: str) -> Awaitable: ...
+    def __call__(self, url: str, depth: int, is_last: bool) -> None: ...
 
 
-async def crawl(root_url: str, callback: CrawlCallback) -> None:
+async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
     """
     Crawl the webchain nomination graph starting from `root`, calling `callback`
     for each valid nomination found, passing the nomination URL and its parent
@@ -65,28 +65,28 @@ async def crawl(root_url: str, callback: CrawlCallback) -> None:
     """
     seen: set[str] = set()
 
+    async def process_node(url: str, depth=0, is_last=True) -> None:
+        if url in seen:
+            return
+
+        seen.add(url)
+
+        # Call callback for this node
+        node_callback(url=url, depth=depth, is_last=is_last)
+
+        html = await load_page_html(url, session=session)
+
+        if html is None:
+            # could not load page, stop recursion here
+            return
+
+        nominations = get_node_nominations(html=html, root=root_url)
+
+        if nominations:
+            # Process each nomination
+            for i, candidate in enumerate(nominations):
+                is_last_child = i == len(nominations) - 1
+                await process_node(candidate, depth=depth + 1, is_last=is_last_child)
+
     async with get_session() as session:
-
-        async def process_node(url: str) -> None:
-            if url in seen:
-                return
-
-            seen.add(url)
-
-            html = await load_page_html(url, session=session)
-
-            if html is None:
-                # could not load page, stop recursion here
-                return
-
-            nominations = get_node_nominations(html=html, root=root_url)
-
-            if nominations:
-                for candidate_url in nominations:
-                    seen.add(candidate_url)
-                    # callback with nomination and its parent
-                    await callback(nomination=candidate_url, parent=url)
-                    # recurse into nomination
-                    await process_node(candidate_url)
-
         await process_node(root_url)
