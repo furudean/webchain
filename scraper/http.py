@@ -13,7 +13,7 @@ class InvalidContentType(Exception):
 
 
 @retry(
-    wait=wait_exponential(max=10),
+    wait=wait_exponential(),
     stop=stop_after_attempt(5),
     retry_error_callback=lambda state: None,  # return None if retries fail
 )
