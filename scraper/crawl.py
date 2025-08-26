@@ -71,6 +71,7 @@ class Node:
     children: list[str]
     parent: str | None
     depth: int
+    indexed: bool
 
 
 async def crawl(root_url: str) -> list[Node]:
@@ -97,7 +98,13 @@ async def crawl(root_url: str) -> list[Node]:
                 f'starting url {root_url} has no nominations or is not a valid webchain node'
             )
 
-        node = Node(at=at, children=nominations or [], parent=parent, depth=depth)
+        node = Node(
+            at=at,
+            children=nominations or [],
+            parent=parent,
+            depth=depth,
+            indexed=html is not None,
+        )
         nodes = [node]
 
         if nominations:

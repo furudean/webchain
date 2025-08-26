@@ -12,7 +12,7 @@ async def _print_tree():
         sys.exit(1)
 
     for node in await crawl(url):
-        print('    ' * node.depth + node.at)
+        print('    ' * node.depth + node.at + (' (offline)' if not node.indexed else ''))
 
 
 def print_tree():
