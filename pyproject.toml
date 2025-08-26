@@ -21,7 +21,6 @@ dev = [
 
 [project.scripts]
 print-tree = "scraper.cli:print_tree"
-read-tree = "scraper.cli:read"
 
 [tool.uv]
 default-groups = ["dev"]

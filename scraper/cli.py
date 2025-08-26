@@ -2,7 +2,6 @@ import asyncio
 import sys
 
 from scraper.print import recursively_print_nominations
-from scraper.read import read_chain
 from scraper.crawl import get_session
 
 
