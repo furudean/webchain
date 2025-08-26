@@ -45,6 +45,6 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
 
     nominations = soup.head.find_all(is_valid_nomination)
 
-    return [str(tag.get('href')) for tag in nominations if isinstance(tag, Tag)][
-        :2
-    ]  # only process the first two nominations
+    hrefs = [str(tag.get('href')) for tag in nominations if isinstance(tag, Tag)]
+
+    return hrefs[:2]  # only process the first two nominations
