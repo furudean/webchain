@@ -66,7 +66,7 @@ def get_node_nominations(html: str, root: str, seen: set[str]) -> list[str] | No
 
 
 @dataclass
-class Node:
+class CrawledNode:
     at: str
     children: list[str]
     parent: str | None
@@ -74,7 +74,7 @@ class Node:
     indexed: bool
 
 
-async def crawl(root_url: str) -> list[Node]:
+async def crawl(root_url: str) -> list[CrawledNode]:
     """
     crawl the webchain nomination graph starting from `root_url`.
 
@@ -85,7 +85,7 @@ async def crawl(root_url: str) -> list[Node]:
     """
     seen: set[str] = set()
 
-    async def process_node(at: str, parent: str | None = None, depth=0) -> list[Node]:
+    async def process_node(at: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
         if at in seen:
             return []
 
@@ -98,7 +98,7 @@ async def crawl(root_url: str) -> list[Node]:
                 f'starting url {root_url} has no nominations or is not a valid webchain node'
             )
 
-        node = Node(
+        node = CrawledNode(
             at=at,
             children=nominations or [],
             parent=parent,
