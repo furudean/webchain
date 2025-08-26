@@ -1,18 +1,18 @@
 import asyncio
 import sys
 
-from scraper.print import recursively_print_nominations
-from scraper.crawl import get_session
+from scraper.crawl import crawl
 
 
 async def _print_tree():
-    site = sys.argv[1] if len(sys.argv) > 1 else None
+    url = sys.argv[1] if len(sys.argv) > 1 else None
 
-    if not site:
+    if not url:
         print('usage: print-tree <root>')
         sys.exit(1)
 
-    await recursively_print_nominations(site)
+    for node in await crawl(url):
+        print('    ' * node.depth + node.at)
 
 
 def print_tree():

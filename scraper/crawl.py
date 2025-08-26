@@ -1,5 +1,7 @@
+import itertools
 from urllib.parse import urlparse
-from typing import Protocol
+from dataclasses import dataclass
+import asyncio
 
 from bs4 import BeautifulSoup, Tag
 
@@ -63,40 +65,48 @@ def get_node_nominations(html: str, root: str, seen: set[str]) -> list[str] | No
     return hrefs[:2]  # only process the first two nominations
 
 
-class NodeCallback(Protocol):
-    def __call__(self, at: str, children: list[str], parent: str | None, depth: int) -> None: ...
+@dataclass
+class Node:
+    at: str
+    children: list[str]
+    parent: str | None
+    depth: int
 
 
-async def crawl(root_url: str, node_callback: NodeCallback) -> None:
+async def crawl(root_url: str) -> list[Node]:
     """
-    crawl the webchain nomination graph starting from `root_url`, calling
-    `node_callback` for each node visited.
+    crawl the webchain nomination graph starting from `root_url`.
 
     this performs a depth-first traversal of the webchain graph, following
     nomination links from each valid webchain node.
-    """
-    seen: set[str] = set()  # track visited urls to prevent infinite loops
 
-    async def process_node(at: str, parent: str | None = None, depth=0) -> None:
-        # prevent cycles
+    returns a list of all nodes visited.
+    """
+    seen: set[str] = set()
+
+    async def process_node(at: str, parent: str | None = None, depth=0) -> list[Node]:
         if at in seen:
-            return
+            return []
 
         seen.add(at)
-
         html = await load_page_html(at, session=session)
+        nominations = get_node_nominations(html, root_url, seen) if html else None
 
-        if html is None:
-            # failed to load page - call callback with empty nominations
-            node_callback(at=at, children=[], parent=parent, depth=depth)
-            return
+        if depth == 0 and nominations is None:
+            raise ValueError(
+                f'starting url {root_url} has no nominations or is not a valid webchain node'
+            )
 
-        nominations = get_node_nominations(html=html, root=root_url, seen=seen)
-        node_callback(at=at, children=nominations or [], parent=parent, depth=depth)
+        node = Node(at=at, children=nominations or [], parent=parent, depth=depth)
+        nodes = [node]
 
         if nominations:
-            for candidate in nominations:
-                await process_node(candidate, parent=at, depth=depth + 1)
+            tasks = [process_node(url, at, depth + 1) for url in nominations]
+            results = await asyncio.gather(*tasks)
+
+            nodes.extend(itertools.chain(*results))
+
+        return nodes
 
     async with get_session() as session:
-        await process_node(root_url)
+        return await process_node(root_url)
