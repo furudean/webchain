@@ -1,5 +1,5 @@
-from typing import Callable
 from urllib.parse import urlparse
+from typing import Awaitable, Protocol
 
 from bs4 import BeautifulSoup, Tag
 
@@ -52,10 +52,21 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
 
     return hrefs[:2]  # only process the first two nominations
 
-async def crawl(root: str, callback: Callable) -> None:
+
+class CrawlCallback(Protocol):
+    def __call__(self, nomination: str, parent: str) -> Awaitable: ...
+
+
+async def crawl(root_url: str, callback: CrawlCallback) -> None:
+    """
+    Crawl the webchain nomination graph starting from `root`, calling `callback`
+    for each valid nomination found, passing the nomination URL and its parent
+    URL.
+    """
     seen: set[str] = set()
 
     async with get_session() as session:
+
         async def process_node(url: str) -> None:
             if url in seen:
                 return
@@ -68,7 +79,7 @@ async def crawl(root: str, callback: Callable) -> None:
                 # could not load page, stop recursion here
                 return
 
-            nominations = get_node_nominations(html=html, root=root)
+            nominations = get_node_nominations(html=html, root=root_url)
 
             if nominations:
                 for candidate_url in nominations:
@@ -78,4 +89,4 @@ async def crawl(root: str, callback: Callable) -> None:
                     # recurse into nomination
                     await process_node(candidate_url)
 
-        await process_node(root)
+        await process_node(root_url)
