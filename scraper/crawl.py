@@ -59,13 +59,13 @@ class CrawlCallback(Protocol):
 
 async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
     """
-    Crawl the webchain nomination graph starting from `root`, calling `callback`
-    for each valid nomination found, passing the nomination URL and its parent
-    URL.
+    Crawl the webchain nomination graph starting from `root_url`, calling `node_callback`
+    for each node visited.
     """
     seen: set[str] = set()
 
     async def process_node(at: str, parent: str | None = None, depth=0) -> None:
+        # prevent cycles
         if at in seen:
             return
 
