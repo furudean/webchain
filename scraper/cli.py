@@ -11,8 +11,12 @@ async def _print_tree():
         print('usage: print-tree <root>')
         sys.exit(1)
 
-    for node in await crawl(url):
-        print('    ' * node.depth + node.at + (' (offline)' if not node.indexed else ''))
+    try:
+        for node in await crawl(url):
+            print('    ' * node.depth + node.at + (' (offline)' if not node.indexed else ''))
+    except ValueError as e:
+        print(f'error: {e}')
+        sys.exit(1)
 
 
 def print_tree():

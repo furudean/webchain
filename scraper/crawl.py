@@ -93,10 +93,8 @@ async def crawl(root_url: str) -> list[CrawledNode]:
         html = await load_page_html(at, session=session)
         nominations = get_node_nominations(html, root_url, seen) if html else None
 
-        if depth == 0 and nominations is None:
-            raise ValueError(
-                f'starting url {root_url} has no nominations or is not a valid webchain node'
-            )
+        if depth == 0 and html is None:
+            raise ValueError(f'starting url {root_url} is unreachable')
 
         node = CrawledNode(
             at=at,
