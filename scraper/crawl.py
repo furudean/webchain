@@ -65,24 +65,24 @@ async def crawl(root_url: str, node_callback: CrawlCallback) -> None:
     """
     seen: set[str] = set()
 
-    async def process_node(url: str, parent: str | None = None, depth=0) -> None:
-        if url in seen:
+    async def process_node(at: str, parent: str | None = None, depth=0) -> None:
+        if at in seen:
             return
 
-        seen.add(url)
+        seen.add(at)
 
-        html = await load_page_html(url, session=session)
+        html = await load_page_html(at, session=session)
 
         if html is None:
-            node_callback(at=url, children=[], parent=parent, depth=depth)
+            node_callback(at=at, children=[], parent=parent, depth=depth)
             return
 
         nominations = get_node_nominations(html=html, root=root_url)
-        node_callback(at=url, children=nominations or [], parent=url, depth=depth)
+        node_callback(at=at, children=nominations or [], parent=parent, depth=depth)
 
         if nominations:
             for candidate in nominations:
-                await process_node(candidate, parent=url, depth=depth + 1)
+                await process_node(candidate, parent=at, depth=depth + 1)
 
     async with get_session() as session:
         await process_node(root_url)
