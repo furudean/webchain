@@ -3,6 +3,7 @@ import sys
 import json
 
 from scraper.crawl import crawl
+from scraper.read import recursively_read_nodes
 
 
 async def _get_tree():
@@ -36,3 +37,17 @@ async def _get_json():
 
 def get_json():
     asyncio.run(_get_json())
+
+
+async def _read_tree():
+    site = sys.argv[1] if len(sys.argv) > 1 else None
+
+    if not site:
+        print('usage: read-tree <root>')
+        sys.exit(1)
+
+    await recursively_read_nodes(site)
+
+
+def read_tree():
+    asyncio.run(_read_tree())

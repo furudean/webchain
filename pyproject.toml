@@ -23,6 +23,7 @@ dev = [
 [project.scripts]
 tree = "scraper.cli:get_tree"
 json = "scraper.cli:get_json"
+read-tree = "scraper.cli:read_tree"
 
 [tool.uv]
 default-groups = ["dev"]
