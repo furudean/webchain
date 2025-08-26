@@ -1,6 +1,9 @@
+from typing import Callable
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup, Tag
+
+from scraper.http import get_session, load_page_html
 
 
 def validate_uri(x: str) -> bool:
@@ -48,3 +51,29 @@ def get_node_nominations(html: str, root: str) -> list[str] | None:
     hrefs = [str(tag.get('href')) for tag in nominations if isinstance(tag, Tag)]
 
     return hrefs[:2]  # only process the first two nominations
+
+async def crawl(root: str, callback: Callable, session) -> None:
+    seen: set[str] = set()
+
+    async with get_session() as session:
+        async def process_node(url: str) -> None:
+            if url in seen:
+                return
+
+            seen.add(url)
+
+            html = await load_page_html(url, session=session)
+
+            if html is None:
+                # could not load page, stop recursion here
+                return
+
+            nominations = get_node_nominations(html=html, root=root)
+
+            if nominations:
+                for candidate_url in nominations:
+                    seen.add(candidate_url)
+                    # callback with nomination and its parent
+                    await callback(nomination=candidate_url, parent=url)
+                    # recurse into nomination
+                    await process_node(candidate_url)

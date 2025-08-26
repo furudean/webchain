@@ -1,4 +1,4 @@
-from scraper.html import get_node_nominations
+from scraper.crawl import get_node_nominations
 
 
 async def test_get_node_nominations_single():

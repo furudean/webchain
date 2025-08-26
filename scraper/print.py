@@ -1,6 +1,6 @@
 import aiohttp
 
-from scraper.html import get_node_nominations
+from scraper.crawl import get_node_nominations
 from scraper.http import load_page_html
 
 
