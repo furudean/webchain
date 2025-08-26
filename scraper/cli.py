@@ -20,7 +20,8 @@ def print_tree():
 
 
 async def _read():
-    await read_chain("https://chain-staging.milkmedicine.net")
+    async with get_session() as session:
+        await read_chain("https://chain-staging.milkmedicine.net", session=session)
 
 def read():
     asyncio.run(_read())

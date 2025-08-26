@@ -39,7 +39,7 @@ async def read_chain(
         # could not load page, stop recursion here
         return
 
-    nominations = await get_node_nominations(html=html, root=root)
+    nominations = get_node_nominations(html=html, root=root)
 
 
     if nominations:
