@@ -1,10 +1,14 @@
 import asyncio
 import sys
 import json
+import logging
+import os
 
 from scraper.crawl import crawl
 from scraper.read import recursively_read_nodes
 
+def setup_logging(level='INFO'):
+    logging.basicConfig(level=os.environ.get('LOGLEVEL', level).upper())
 
 async def _get_tree():
     url = sys.argv[1] if len(sys.argv) > 1 else None
@@ -22,6 +26,7 @@ async def _get_tree():
 
 
 def get_tree():
+    setup_logging()
     asyncio.run(_get_tree())
 
 
@@ -37,6 +42,7 @@ async def _get_json():
 
 
 def get_json():
+    setup_logging(level='ERROR')
     asyncio.run(_get_json())
 
 

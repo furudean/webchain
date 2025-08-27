@@ -84,10 +84,10 @@ class CrawledNode:
 
 
 async def crawl(
-        root_url: str,
-        limit_nominations: int = 3,
-        recursion_limit: int = 1000,
-    ) -> list[CrawledNode]:
+    root_url: str,
+    limit_nominations: int = 3,
+    recursion_limit: int = 1000,
+) -> list[CrawledNode]:
     """
     crawl the webchain nomination graph starting from `root_url`.
 
