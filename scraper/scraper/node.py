@@ -15,23 +15,24 @@ class Node:
     # count assigns each node an id, strictly ascending.
     # childlimit acts as a cap on the length of children[]
     count = itertools.count()
-    childlimit = 2
+    childlimit = 3
 
-    def __init__(self, url, parent: Node | None, children: list[Node] | None):
+    def __init__(self, url, parent: Node | None, children: list[str] | None, index = -1):
         self.id = next(self.count)
         self.url = url
         self.parent = parent
         self.children = children
+        self.index = index
 
     def __repr__(self):
-        return f'{self.id} {self.url} {self.parent} {self.children}'
+        return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children}'
 
     # if free slot exists, creates a leaf node from child_url and adds as a child.
     # this might never get used. for one, since an added child with children itself would have to have the children linked in a separate function call.
     # For now i'll leave this here since replaceChild depends on it
     def addChild(self, child_url: str | None):
         if len(self.children) < self.childlimit:
-            self.children.append(Node(child_url, self.url))
+            self.children.append(child_url)
         return
 
     # def nodeFromList(cls, url, parent, children: list[str] | None):
