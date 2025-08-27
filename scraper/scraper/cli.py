@@ -14,7 +14,7 @@ async def _get_tree():
     url = sys.argv[1] if len(sys.argv) > 1 else None
 
     if not url:
-        print('usage: tree <root>')
+        print('usage: tree <url>')
         sys.exit(1)
 
     try:
@@ -34,7 +34,7 @@ async def _get_json():
     url = sys.argv[1] if len(sys.argv) > 1 else None
 
     if not url:
-        print('usage: tree <root>')
+        print('usage: json <url>')
         sys.exit(1)
 
     nodes = await crawl(url)
