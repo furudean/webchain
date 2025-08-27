@@ -1,9 +1,20 @@
-from scraper.crawl import crawl
+from scraper.crawl import crawl, CrawledNode
 from scraper.node import Node
+from scraper.hash import HashTable
 
-async def recursively_read_nodes(url: str) -> None:
-    def callback_wrapper(at: str, children: list[str], parent: str | None, depth: int) -> None:
-        current_node = Node(at, parent, children)
-        print(current_node.parent)
+async def read_chain_into_table(root: str) -> HashTable:
+    T = HashTable()
 
-    await crawl(url, node_callback=callback_wrapper)
+    crawled_nodes = await crawl(root)
+    saved_nodes = []
+    for i in crawled_nodes:
+        saved_nodes.append(CrawledNodeToNode(i))
+
+    for i in saved_nodes:
+        T.insert(i)
+    return T
+
+def CrawledNodeToNode(to_convert: CrawledNode) -> Node:
+    # print(f"url: {to_convert.at} parent: {to_convert.parent} children: {to_convert.children}")
+    # TO DO : use Node.addChild instead of direct assignment
+    return Node(to_convert.at, to_convert.parent, to_convert.children)
