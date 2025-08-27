@@ -6,8 +6,8 @@ export interface Node {
 	indexed: boolean
 }
 
-export function calculateTreeLayout(hashmap: Map<string, Node>) {
-	const positions = new Map<string, { x: number; y: number} >()
+export const calculateTreeLayout = (hashmap: Map<string, Node>) => {
+	const positions = new Map<string, { x: number; y: number }>()
 
 	// Find root node (node with no parent)
 	const rootNode = Array.from(hashmap.entries()).find(([, node]) => !node.parent)
@@ -44,8 +44,8 @@ export function calculateTreeLayout(hashmap: Map<string, Node>) {
 		const children = childrenMap.get(nodeId) || []
 		if (children.length === 0) return
 
-		// Calculate next level parameters with dramatic inverse depth-based spacing
-		const depthMultiplier = Math.max(0, 1 - (depth))
+		// Calculate next level parameters with inverse depth-based spacing
+		const depthMultiplier = Math.max(0, 1 - depth)
 		const nextRadius = radius + depthMultiplier
 		const anglePerChild = angleSpan / children.length
 

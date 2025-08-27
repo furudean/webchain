@@ -15,8 +15,8 @@ export function buildGraph(
 
 
 		// Calculate size based on depth - root is bigger, then gradually shrink
-		const baseSize = 25 // Moderate base size for root
-		const sizeReduction = Math.max(0.5, 1 - (node.depth * 0.06)) // Shrink by 6% per level, minimum 50%
+		const baseSize = 25
+		const sizeReduction = Math.max(0.5, 1 - (node.depth * 0.05))
 		const nodeSize = baseSize * sizeReduction
 
 		graph.addNode(id, {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte"
-	import raw_data from "./binary-tree-data.json?raw"
+	import raw_data from "./example-data-2.json?raw"
 	import type { Sigma } from "sigma"
 	import { calculateTreeLayout, buildGraph, type Node } from "$lib/graph"
 
@@ -26,21 +26,16 @@
 			// Create Sigma instance
 			sigma_instance = new Sigma(graph, graph_element, {
 				nodeProgramClasses: {
-					image: NodeImageProgram,
+					image: NodeImageProgram
 				},
-				// edgeProgramClasses: {
-				// 	curved: EdgeCurveProgram
-				// },
-				// defaultEdgeType: "curved",
 				labelRenderedSizeThreshold: 10, // Only show labels when significantly zoomed in
-				labelSize: 10,
+				labelSize: 10
 			})
 
 			// Set default zoom to be more zoomed out
 			sigma_instance.getCamera().setState({
 				ratio: 1.2
 			})
-
 		}
 
 		init_graph().catch(console.error)
@@ -62,5 +57,12 @@
 		position: fixed;
 		top: 0;
 		left: 0;
+	}
+
+	:global(body) {
+		background-size: 100px 100px;
+		background-image:
+			linear-gradient(to right, hsl(0, 0%, 95%) 1px, transparent 1px),
+			linear-gradient(to bottom, hsl(0, 0%, 95%) 1px, transparent 1px);
 	}
 </style>
