@@ -1,0 +1,3 @@
+[console_scripts]
+print-tree = scraper.cli:print_tree
+read-tree = scraper.cli:read_tree

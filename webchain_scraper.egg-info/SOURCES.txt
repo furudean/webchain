@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+scraper/cli.py
+scraper/crawl.py
+scraper/http.py
+scraper/node.py
+scraper/print.py
+scraper/read.py
+scraper/tests/test_crawl.py
+webchain_scraper.egg-info/PKG-INFO
+webchain_scraper.egg-info/SOURCES.txt
+webchain_scraper.egg-info/dependency_links.txt
+webchain_scraper.egg-info/entry_points.txt
+webchain_scraper.egg-info/requires.txt
+webchain_scraper.egg-info/top_level.txt
