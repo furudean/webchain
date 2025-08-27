@@ -38,7 +38,7 @@ async def _get_json():
         sys.exit(1)
 
     nodes = await crawl(url)
-    print(json.dumps([node.__dict__ for node in nodes], indent=2))
+    print(json.dumps([node.__dict__ for node in nodes], indent='\t'))
 
 
 def get_json():
