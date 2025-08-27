@@ -14,21 +14,7 @@ async def test_get_node_nominations_single():
     assert result == ['https://example.org']
 
 
-async def test_get_node_nominations_two():
-    html = """
-    <html>
-    <head>
-        <link rel="webchain" href="https://mychain.net">
-        <link rel="webchain-nomination" href="https://example.org">
-        <link rel="webchain-nomination" href="https://example.com">
-    </head>
-    </html>
-    """
-    result = get_node_nominations(html, root='https://mychain.net')
-    assert result == ['https://example.org', 'https://example.com']
-
-
-async def test_get_node_nominations_three():
+async def test_get_node_nominations_multiple():
     html = """
     <html>
     <head>
@@ -40,10 +26,10 @@ async def test_get_node_nominations_three():
     </html>
     """
     result = get_node_nominations(html, root='https://mychain.net')
-    assert result == ['https://example.org', 'https://example.com']
+    assert result == ['https://example.org', 'https://example.com', 'https://mysite.com']
 
 
-async def test_get_node_nominations_none():
+async def test_get_node_nominations_missing():
     html = '<html></html>'
     result = get_node_nominations(html, root='https://mychain.net')
     assert result is None
