@@ -5,3 +5,6 @@
 </svelte:head>
 
 <h1>milkmedicine webchain</h1>
+<p>
+	there will be a thing to visualize the webchain here soon
+</p>
