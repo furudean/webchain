@@ -1,5 +1,5 @@
 <svelte:head>
-	<link rel="webchain" href="https://chain.milkmedicine.net">
+	<link rel="webchain" href="https://webchain.milkmedicine.net">
 	<link rel="webchain-nomination" href="https://www.himawari.fun/">
 	<link rel="webchain-nomination" href="https://nekopath.fun/">
 </svelte:head>
