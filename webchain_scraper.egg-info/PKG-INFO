@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: webchain-scraper
-Version: 0.0.0
-Requires-Python: >=3.12
-Requires-Dist: aiohttp[speedups]~=3.12
-Requires-Dist: beautifulsoup4
-Requires-Dist: lxml~=6.0
