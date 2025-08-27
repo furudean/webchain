@@ -35,11 +35,14 @@ def is_valid_nomination(tag: Tag) -> bool:
     return False
 
 
-def get_node_nominations(html: str, root: str, seen: set[str]) -> list[str] | None:
+def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> list[str] | None:
     """
     extract webchain nominations from html, but only if it's a valid webchain node.
     """
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
+
+    if seen is None:
+        seen = set()
 
     if not soup.head:
         return None

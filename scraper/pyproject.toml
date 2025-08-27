@@ -31,9 +31,7 @@ default-groups = ["dev"]
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-testpaths = [
-    "scraper/tests"
-]
+testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [tool.ruff]

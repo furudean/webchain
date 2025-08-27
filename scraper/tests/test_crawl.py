@@ -88,3 +88,19 @@ async def test_invalid_nomination_tag():
     """
     result = get_node_nominations(html, root='https://mychain.net')
     assert result == ['https://example.com']
+
+
+async def test_ignore_seen():
+    html = """
+    <html>
+    <head>
+        <link rel="webchain" href="https://mychain.net">
+        <link rel="webchain-nomination" href="https://example.com">
+        <link rel="webchain-nomination" href="https://example.org">
+    </head>
+    </html>
+    """
+
+    seen = {'https://example.com'}
+    result = get_node_nominations(html, root='https://mychain.net', seen=seen)
+    assert result == ['https://example.org']
