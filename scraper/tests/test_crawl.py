@@ -104,3 +104,22 @@ async def test_ignore_seen():
     seen = {'https://example.com'}
     result = get_node_nominations(html, root='https://mychain.net', seen=seen)
     assert result == ['https://example.org']
+
+
+async def test_mismatched_trailing_slash_on_root():
+    html = """
+    <html>
+    <head>
+        <link rel="webchain" href="https://mychain.net/">
+        <link rel="webchain-nomination" href="https://example.org">
+    </head>
+    </html>
+    """
+
+    seen = {'https://example.com'}
+    result = get_node_nominations(
+        html,
+        root='https://mychain.net',  # note: no trailing slash
+        seen=seen,
+    )
+    assert result == ['https://example.org']

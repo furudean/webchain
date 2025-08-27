@@ -49,10 +49,16 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
 
     # look for the webchain declaration link in the head
     webchain_tag = soup.head.find(name='link', attrs={'rel': 'webchain'})
+    webchain_href = str(webchain_tag.get('href')) if isinstance(webchain_tag, Tag) else None
+
+    def normalize_url(url: str) -> str:
+        return url.rstrip('/')
+
     if (
         webchain_tag is None
         or not isinstance(webchain_tag, Tag)
-        or webchain_tag.get('href') != root  # must point to the root url
+        or webchain_href is None
+        or normalize_url(webchain_href) != normalize_url(root)
     ):
         return None
 
