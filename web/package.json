@@ -32,6 +32,8 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@sigma/edge-curve": "^3.1.0",
+		"@sigma/node-image": "^3.0.0",
 		"graphology": "^0.26.0",
 		"sigma": "^3.0.2"
 	}

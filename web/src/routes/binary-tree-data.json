@@ -1,0 +1,451 @@
+[
+  {
+    "at": "https://github.com",
+    "children": [
+      "https://docs.github.com",
+      "https://github.blog"
+    ],
+    "parent": null,
+    "depth": 0,
+    "indexed": true
+  },
+  {
+    "at": "https://docs.github.com",
+    "children": [
+      "https://docs.github.com/en/actions",
+      "https://docs.github.com/en/rest"
+    ],
+    "parent": "https://github.com",
+    "depth": 1,
+    "indexed": true
+  },
+  {
+    "at": "https://docs.github.com/en/actions",
+    "children": [
+      "https://github.com/actions/checkout",
+      "https://github.com/actions/setup-node"
+    ],
+    "parent": "https://docs.github.com",
+    "depth": 2,
+    "indexed": true
+  },
+  {
+    "at": "https://github.com/actions/checkout",
+    "children": [],
+    "parent": "https://docs.github.com/en/actions",
+    "depth": 3,
+    "indexed": true
+  },
+  {
+    "at": "https://github.com/actions/setup-node",
+    "children": [
+      "https://nodejs.org",
+      "https://npmjs.com"
+    ],
+    "parent": "https://docs.github.com/en/actions",
+    "depth": 3,
+    "indexed": true
+  },
+  {
+    "at": "https://nodejs.org",
+    "children": [
+      "https://nodejs.org/en/docs",
+      "https://nodejs.org/en/download"
+    ],
+    "parent": "https://github.com/actions/setup-node",
+    "depth": 4,
+    "indexed": true
+  },
+  {
+    "at": "https://nodejs.org/en/docs",
+    "children": [
+      "https://expressjs.com",
+      "https://fastify.io"
+    ],
+    "parent": "https://nodejs.org",
+    "depth": 5,
+    "indexed": true
+  },
+  {
+    "at": "https://expressjs.com",
+    "children": [
+      "https://koajs.com",
+      "https://hapi.dev"
+    ],
+    "parent": "https://nodejs.org/en/docs",
+    "depth": 6,
+    "indexed": true
+  },
+  {
+    "at": "https://koajs.com",
+    "children": [],
+    "parent": "https://expressjs.com",
+    "depth": 7,
+    "indexed": false
+  },
+  {
+    "at": "https://hapi.dev",
+    "children": [],
+    "parent": "https://expressjs.com",
+    "depth": 7,
+    "indexed": true
+  },
+  {
+    "at": "https://fastify.io",
+    "children": [
+      "https://mercurius.dev",
+      "https://platformatic.dev"
+    ],
+    "parent": "https://nodejs.org/en/docs",
+    "depth": 6,
+    "indexed": true
+  },
+  {
+    "at": "https://mercurius.dev",
+    "children": [],
+    "parent": "https://fastify.io",
+    "depth": 7,
+    "indexed": false
+  },
+  {
+    "at": "https://platformatic.dev",
+    "children": [],
+    "parent": "https://fastify.io",
+    "depth": 7,
+    "indexed": true
+  },
+  {
+    "at": "https://nodejs.org/en/download",
+    "children": [
+      "https://volta.sh",
+      "https://fnm.vercel.app"
+    ],
+    "parent": "https://nodejs.org",
+    "depth": 5,
+    "indexed": true
+  },
+  {
+    "at": "https://volta.sh",
+    "children": [],
+    "parent": "https://nodejs.org/en/download",
+    "depth": 6,
+    "indexed": true
+  },
+  {
+    "at": "https://fnm.vercel.app",
+    "children": [],
+    "parent": "https://nodejs.org/en/download",
+    "depth": 6,
+    "indexed": false
+  },
+  {
+    "at": "https://npmjs.com",
+    "children": [
+      "https://yarnpkg.com",
+      "https://pnpm.io"
+    ],
+    "parent": "https://github.com/actions/setup-node",
+    "depth": 4,
+    "indexed": true
+  },
+  {
+    "at": "https://yarnpkg.com",
+    "children": [
+      "https://classic.yarnpkg.com",
+      "https://yarnpkg.com/features/workspaces"
+    ],
+    "parent": "https://npmjs.com",
+    "depth": 5,
+    "indexed": true
+  },
+  {
+    "at": "https://classic.yarnpkg.com",
+    "children": [],
+    "parent": "https://yarnpkg.com",
+    "depth": 6,
+    "indexed": false
+  },
+  {
+    "at": "https://yarnpkg.com/features/workspaces",
+    "children": [
+      "https://lerna.js.org",
+      "https://nx.dev"
+    ],
+    "parent": "https://yarnpkg.com",
+    "depth": 6,
+    "indexed": true
+  },
+  {
+    "at": "https://lerna.js.org",
+    "children": [],
+    "parent": "https://yarnpkg.com/features/workspaces",
+    "depth": 7,
+    "indexed": true
+  },
+  {
+    "at": "https://nx.dev",
+    "children": [
+      "https://storybook.js.org",
+      "https://jestjs.io"
+    ],
+    "parent": "https://yarnpkg.com/features/workspaces",
+    "depth": 7,
+    "indexed": true
+  },
+  {
+    "at": "https://storybook.js.org",
+    "children": [
+      "https://chromatic.com",
+      "https://testing-library.com"
+    ],
+    "parent": "https://nx.dev",
+    "depth": 8,
+    "indexed": true
+  },
+  {
+    "at": "https://chromatic.com",
+    "children": [],
+    "parent": "https://storybook.js.org",
+    "depth": 9,
+    "indexed": true
+  },
+  {
+    "at": "https://testing-library.com",
+    "children": [
+      "https://playwright.dev",
+      "https://cypress.io"
+    ],
+    "parent": "https://storybook.js.org",
+    "depth": 9,
+    "indexed": true
+  },
+  {
+    "at": "https://playwright.dev",
+    "children": [],
+    "parent": "https://testing-library.com",
+    "depth": 10,
+    "indexed": true
+  },
+  {
+    "at": "https://cypress.io",
+    "children": [],
+    "parent": "https://testing-library.com",
+    "depth": 10,
+    "indexed": false
+  },
+  {
+    "at": "https://jestjs.io",
+    "children": [
+      "https://vitest.dev",
+      "https://facebook.github.io/jest"
+    ],
+    "parent": "https://nx.dev",
+    "depth": 8,
+    "indexed": true
+  },
+  {
+    "at": "https://vitest.dev",
+    "children": [
+      "https://vitejs.dev",
+      "https://vite-pwa.netlify.app"
+    ],
+    "parent": "https://jestjs.io",
+    "depth": 9,
+    "indexed": true
+  },
+  {
+    "at": "https://vitejs.dev",
+    "children": [
+      "https://rollupjs.org",
+      "https://esbuild.github.io"
+    ],
+    "parent": "https://vitest.dev",
+    "depth": 10,
+    "indexed": true
+  },
+  {
+    "at": "https://rollupjs.org",
+    "children": [],
+    "parent": "https://vitejs.dev",
+    "depth": 11,
+    "indexed": true
+  },
+  {
+    "at": "https://esbuild.github.io",
+    "children": [
+      "https://swc.rs",
+      "https://rome.tools"
+    ],
+    "parent": "https://vitejs.dev",
+    "depth": 11,
+    "indexed": true
+  },
+  {
+    "at": "https://swc.rs",
+    "children": [],
+    "parent": "https://esbuild.github.io",
+    "depth": 12,
+    "indexed": true
+  },
+  {
+    "at": "https://rome.tools",
+    "children": [],
+    "parent": "https://esbuild.github.io",
+    "depth": 12,
+    "indexed": false
+  },
+  {
+    "at": "https://vite-pwa.netlify.app",
+    "children": [
+      "https://workbox-config.netlify.app",
+      "https://web.dev/progressive-web-apps"
+    ],
+    "parent": "https://vitest.dev",
+    "depth": 10,
+    "indexed": true
+  },
+  {
+    "at": "https://workbox-config.netlify.app",
+    "children": [],
+    "parent": "https://vite-pwa.netlify.app",
+    "depth": 11,
+    "indexed": false
+  },
+  {
+    "at": "https://web.dev/progressive-web-apps",
+    "children": [
+      "https://developer.mozilla.org",
+      "https://caniuse.com"
+    ],
+    "parent": "https://vite-pwa.netlify.app",
+    "depth": 11,
+    "indexed": true
+  },
+  {
+    "at": "https://developer.mozilla.org",
+    "children": [],
+    "parent": "https://web.dev/progressive-web-apps",
+    "depth": 12,
+    "indexed": true
+  },
+  {
+    "at": "https://caniuse.com",
+    "children": [],
+    "parent": "https://web.dev/progressive-web-apps",
+    "depth": 12,
+    "indexed": true
+  },
+  {
+    "at": "https://facebook.github.io/jest",
+    "children": [],
+    "parent": "https://jestjs.io",
+    "depth": 9,
+    "indexed": false
+  },
+  {
+    "at": "https://pnpm.io",
+    "children": [
+      "https://pnpm.io/workspaces",
+      "https://pnpm.io/motivation"
+    ],
+    "parent": "https://npmjs.com",
+    "depth": 5,
+    "indexed": true
+  },
+  {
+    "at": "https://pnpm.io/workspaces",
+    "children": [],
+    "parent": "https://pnpm.io",
+    "depth": 6,
+    "indexed": true
+  },
+  {
+    "at": "https://pnpm.io/motivation",
+    "children": [],
+    "parent": "https://pnpm.io",
+    "depth": 6,
+    "indexed": false
+  },
+  {
+    "at": "https://docs.github.com/en/rest",
+    "children": [
+      "https://octokit.github.io",
+      "https://cli.github.com"
+    ],
+    "parent": "https://docs.github.com",
+    "depth": 2,
+    "indexed": true
+  },
+  {
+    "at": "https://octokit.github.io",
+    "children": [],
+    "parent": "https://docs.github.com/en/rest",
+    "depth": 3,
+    "indexed": true
+  },
+  {
+    "at": "https://cli.github.com",
+    "children": [
+      "https://github.com/cli/cli",
+      "https://github.com/github/hub"
+    ],
+    "parent": "https://docs.github.com/en/rest",
+    "depth": 3,
+    "indexed": true
+  },
+  {
+    "at": "https://github.com/cli/cli",
+    "children": [],
+    "parent": "https://cli.github.com",
+    "depth": 4,
+    "indexed": true
+  },
+  {
+    "at": "https://github.com/github/hub",
+    "children": [],
+    "parent": "https://cli.github.com",
+    "depth": 4,
+    "indexed": false
+  },
+  {
+    "at": "https://github.blog",
+    "children": [
+      "https://github.blog/category/engineering",
+      "https://github.blog/category/open-source"
+    ],
+    "parent": "https://github.com",
+    "depth": 1,
+    "indexed": true
+  },
+  {
+    "at": "https://github.blog/category/engineering",
+    "children": [],
+    "parent": "https://github.blog",
+    "depth": 2,
+    "indexed": true
+  },
+  {
+    "at": "https://github.blog/category/open-source",
+    "children": [
+      "https://opensource.guide",
+      "https://choosealicense.com"
+    ],
+    "parent": "https://github.blog",
+    "depth": 2,
+    "indexed": true
+  },
+  {
+    "at": "https://opensource.guide",
+    "children": [],
+    "parent": "https://github.blog/category/open-source",
+    "depth": 3,
+    "indexed": true
+  },
+  {
+    "at": "https://choosealicense.com",
+    "children": [],
+    "parent": "https://github.blog/category/open-source",
+    "depth": 3,
+    "indexed": false
+  }
+]
