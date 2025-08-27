@@ -90,7 +90,7 @@ async def crawl(root_url: str) -> list[CrawledNode]:
             return []
 
         seen.add(at)
-        html = await load_page_html(at, session=session)
+        html = await load_page_html(at, referrer=parent, session=session)
         nominations = get_node_nominations(html, root_url, seen) if html else None
 
         if depth == 0 and html is None:

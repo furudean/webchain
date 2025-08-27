@@ -35,6 +35,7 @@ async def _get_json():
     nodes = await crawl(url)
     print(json.dumps([node.__dict__ for node in nodes], indent=2))
 
+
 def get_json():
     asyncio.run(_get_json())
 

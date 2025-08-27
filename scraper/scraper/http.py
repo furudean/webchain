@@ -17,9 +17,17 @@ class InvalidContentType(Exception):
     stop=stop_after_attempt(5),
     retry_error_callback=lambda state: None,  # return None if retries fail
 )
-async def load_page_html(url: str, session: aiohttp.ClientSession) -> str | None:
+async def load_page_html(
+    url: str, session: aiohttp.ClientSession, referrer: str | None
+) -> str | None:
     try:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as response:
+        headers = {}
+        if referrer is not None:
+            headers['Referer'] = referrer
+
+        async with session.get(
+            url, timeout=aiohttp.ClientTimeout(total=5), headers=headers
+        ) as response:
             content_type = response.headers.get('Content-Type', '')
             if not content_type.startswith('text/html'):
                 raise InvalidContentType
