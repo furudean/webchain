@@ -1,76 +1,126 @@
-import { json } from "@sveltejs/kit"
+import { text } from "@sveltejs/kit"
 import type { RequestHandler } from "./$types"
+import { parse } from "node-html-parser"
+import type { HTMLElement } from "node-html-parser"
+import { CACHE_DURATION, FAVICON_CACHE, get_cached_file, write_cache_file, type CachedItem } from "$lib/cache"
 
-const CACHE_DURATION = 60 * 60 * 1000
-const FAVICON_CACHE = new Map<string, { data: ArrayBuffer | undefined; timestamp: number }>()
+async function get_icon_url(
+	base: URL | string,
+	head: HTMLElement
+): Promise<URL | undefined> {
+	const selectors = [
+		'link[rel="icon"]',
+		'link[rel="shortcut icon"]'
+	]
+
+	for (const selector of selectors) {
+		const element = head.querySelector(selector)
+		if (element?.hasAttribute("href")) {
+			const href = element.getAttribute("href")!
+			try {
+				return new URL(href, base)
+			} catch {
+				continue
+			}
+		}
+	}
+
+	const url = new URL("/favicon.ico", base)
+	const result = await fetch(url, {
+		method: "HEAD",
+		redirect: "follow"
+	})
+
+	if (result.ok) {
+		return url
+	}
+
+	return undefined
+}
+
+function response_headers(item: CachedItem): Record<string, string> {
+	return {
+		"Content-Type": item.content_type!,
+		"Cache-Control": `public, max-age=${Math.floor((item.expires - Date.now()) / 1000)}`,
+		"X-Original-URL": item.original_url!
+	}
+}
+
+function empty_response(url: string): Response {
+	FAVICON_CACHE.set(url, {
+		timestamp: Date.now(),
+		expires: Date.now() + CACHE_DURATION,
+	})
+	return new Response(null, { status: 204, headers: {
+		"Cache-Control": `public, max-age=${CACHE_DURATION / 1000}`
+	} })
+}
 
 export const GET: RequestHandler = async ({ url }) => {
 	const url_param = url.searchParams.get("url")
 
 	if (!url_param) {
-		return json({ error: "url parameter required" }, { status: 400 })
+		return text("url parameter required", { status: 400 })
 	}
 
+	// handle disk cache
+	const cache_item = await get_cached_file(url_param)
+	if (cache_item) {
+		return new Response(cache_item.data, {
+			status: 200,
+			headers: {
+				...response_headers(cache_item.item),
+				'x-disk-cache': 'HIT'
+			}
+		})
+	} else if (cache_item === null) {
+		const response = empty_response(url_param)
+		response.headers.set('x-disk-cache', 'HIT')
+		return response
+	}
+
+	// not in cache, fetch it
 	try {
-		// First, follow the URL to get the final domain after redirects
-		const url_response = await fetch(url_param, {
-			method: 'HEAD',
-			redirect: 'follow'
+		const page_response = await fetch(url_param, {
+			redirect: "follow"
 		})
 
-		const followed_url = url_response.url
-		const domain = new URL(followed_url).hostname
-
-		// Check if favicon is already cached and not expired
-		const now = Date.now()
-
-		if (FAVICON_CACHE.has(domain)) {
-			const cached = FAVICON_CACHE.get(domain)!
-
-			// Check if cache entry is expired
-			if (now - cached.timestamp > CACHE_DURATION) {
-				FAVICON_CACHE.delete(domain)
-			} else {
-				// Cache hit and not expired
-				if (cached.data === undefined) {
-					// Favicon was previously not found, return no content
-					return new Response(null, { status: 204 })
-				}
-				return new Response(cached.data, {
-					status: 200,
-					headers: {
-						"Content-Type": "image/x-icon",
-						"Cache-Control": "public, max-age=3600",
-						"Content-Length": cached.data.byteLength.toString()
-					}
-				})
-			}
-		}
-
-		const faviconUrl = `https://icons.duckduckgo.com/ip3/${domain}.ico`
-		const response = await fetch(faviconUrl)
-
-		if (!response.ok) {
-			// Cache the fact that favicon wasn't found
-			FAVICON_CACHE.set(domain, { data: undefined, timestamp: now })
+		if (!page_response.ok) {
 			return new Response(null, { status: 204 })
 		}
 
-		const arrayBuffer = await response.arrayBuffer()
+		const page_url = page_response.url
+		const html = parse(await page_response.text())
+		const head = html.querySelector("head")
 
-		// Cache the favicon
-		FAVICON_CACHE.set(domain, { data: arrayBuffer, timestamp: now })
+		if (head === null) return empty_response(url_param)
 
-		return new Response(arrayBuffer, {
+		const icon_url = await get_icon_url(page_url, head)
+		if (!icon_url) return empty_response(url_param)
+
+		const icon_response = await fetch(icon_url)
+		if (!icon_response.ok) return new Response(null, { status: 204 })
+
+		const buffer = await icon_response.arrayBuffer()
+		const content_type =
+			icon_response.headers.get("Content-Type") || "image/x-icon"
+
+		const cache_item = await write_cache_file({
+			key: url_param,
+			data: buffer,
+			content_type,
+			file_url: icon_url.toString()
+		})
+
+		return new Response(buffer, {
 			status: 200,
 			headers: {
-				"Content-Type": response.headers.get("content-type") || "image/x-icon",
-				"Cache-Control": "public, max-age=3600",
-				"Content-Length": arrayBuffer.byteLength.toString()
+				...response_headers(cache_item),
+				'x-disk-cache': 'MISS'
 			}
 		})
 	} catch (error) {
 		console.error("error fetching favicon:", error)
-		return json({ error: "failed to fetch favicon" }, { status: 500 })
+		return text("failed to fetch favicon", { status: 500 })
 	}
 }
