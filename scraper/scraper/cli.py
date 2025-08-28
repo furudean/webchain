@@ -2,6 +2,7 @@ import asyncio
 import sys
 import json as jjson
 from functools import wraps
+from datetime import datetime, timezone
 
 import click
 
@@ -39,7 +40,13 @@ async def tree(url: str):
 @asyncio_click
 async def json(url: str):
     nodes = await crawl(url, print_error=False)
-    print(jjson.dumps([node.__dict__ for node in nodes], indent='\t'))
+
+    data = {
+        "nodes": [node.__dict__ for node in nodes],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    print(jjson.dumps(data, indent='\t'))
 
 
 @webchain.command
