@@ -56,8 +56,6 @@ export const GET: RequestHandler = async ({ url }) => {
 			return new Response(null, { status: 204 })
 		}
 
-		console.log(response.headers)
-
 		const arrayBuffer = await response.arrayBuffer()
 
 		// Cache the favicon

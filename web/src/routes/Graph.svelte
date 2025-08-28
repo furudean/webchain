@@ -14,7 +14,7 @@
 		const init_graph = async () => {
 			const { default: Sigma } = await import("sigma")
 			const { NodeImageProgram } = await import("@sigma/node-image")
-			const { default: EdgeCurveProgram } = await import("@sigma/edge-curve")
+			const { default: Graph } = await import("graphology")
 
 			const hashmap = new Map(
 				Object.values(data).map((node, i) => [i.toString(), node])
@@ -22,7 +22,7 @@
 
 			// Calculate layout and build graph
 			const positions = calculateTreeLayout(hashmap)
-			const graph = buildGraph(hashmap, positions)
+			const graph = buildGraph(hashmap, positions, Graph)
 			// Create Sigma instance
 			sigma_instance = new Sigma(graph, graph_element, {
 				nodeProgramClasses: {

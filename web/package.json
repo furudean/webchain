@@ -16,7 +16,7 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
 		"@eslint/js": "^9.18.0",
-		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/adapter-node": "^5.3.1",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"eslint": "^9.18.0",
@@ -32,7 +32,6 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
-		"@sigma/edge-curve": "^3.1.0",
 		"@sigma/node-image": "^3.0.0",
 		"graphology": "^0.26.0",
 		"sigma": "^3.0.2"

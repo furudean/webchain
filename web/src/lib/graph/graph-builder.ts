@@ -1,10 +1,11 @@
-import Graph from "graphology"
+import type GraphType from "graphology"
 import type { Node } from "./tree-layout.js"
 
 export function buildGraph(
 	hashmap: Map<string, Node>,
-	positions: Map<string, { x: number; y: number }>
-): Graph {
+	positions: Map<string, { x: number; y: number }>,
+	Graph: typeof GraphType,
+): GraphType {
 	const graph = new Graph()
 
 	// Add nodes
