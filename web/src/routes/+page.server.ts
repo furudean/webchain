@@ -1,5 +1,6 @@
 import type { PageServerLoad } from "./$types"
 import type { Node } from "$lib/node"
+import { string_to_color } from "$lib/color"
 
 export const load: PageServerLoad = async (): Promise<{
 	nodes: Node[]
@@ -15,19 +16,30 @@ export const load: PageServerLoad = async (): Promise<{
 	}
 
 	try {
-		const { nodes, start, end } = await request.json()
-
-		return {
+		const {
 			nodes,
 			start,
-			end,
+			end
+		}: {
+			nodes: Omit<Node, "color">[]
+			start: string | null
+			end: string | null
+		} = await request.json()
+
+		return {
+			nodes: nodes.map((node) => ({
+				...node,
+				color: string_to_color(node.at)
+			})),
+			start,
+			end
 		}
 	} catch (error) {
 		console.error("Error parsing JSON:", error)
 		return {
 			nodes: [],
 			start: null,
-			end: null,
+			end: null
 		}
 	}
 }

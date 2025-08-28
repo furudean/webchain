@@ -1,6 +1,5 @@
 import type GraphType from "graphology"
 import type { Node } from "$lib/node"
-import { string_to_color } from "$lib/color"
 
 export function buildGraph(
 	hashmap: Map<string, Node>,
@@ -16,13 +15,12 @@ export function buildGraph(
 		const label = url.hostname + (url.pathname === "/" ? "" : url.pathname)
 
 		// Calculate size based on depth - root is bigger, then gradually shrink
-		const baseSize = 24
-		const sizeReduction = Math.max(0.5, 1 - node.depth * 0.05)
-		const nodeSize = baseSize * sizeReduction
+		const base_size = 24
+		const scale = Math.max(0.5, 1 - node.depth * 0.05)
 
 		graph.addNode(id, {
 			label: label,
-			size: nodeSize,
+			size: base_size * scale,
 			x: pos.x,
 			y: pos.y,
 			type: node.depth === 0 ? 'square' : 'image',
@@ -30,20 +28,20 @@ export function buildGraph(
 				? `/api/favicon?url=${encodeURIComponent(node.at)}`
 				: undefined,
 			url: node.at,
-			color: string_to_color(node.at)
+			color: node.color,
 		})
 	}
 
 	// Add edges
 	for (const [id, node] of hashmap.entries()) {
 		if (node.parent) {
-			const parentId = Array.from(hashmap.entries()).find(
+			const parent_id = Array.from(hashmap.entries()).find(
 				([, n]) => n.at === node.parent
 			)?.[0]
-			if (parentId) {
-				graph.addEdge(parentId, id, {
+			if (parent_id) {
+				graph.addEdge(parent_id, id, {
 					size: 3,
-					color: "#e5e5e5",
+					color: "#efefefff",
 					type: "arrow",
 				})
 			}

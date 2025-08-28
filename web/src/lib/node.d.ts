@@ -3,6 +3,7 @@ export interface Node {
 	children: string[]
 	parent: string | null
 	depth: number
-	indexed: boolean
+	indexed: boolean,
+	color: string,
 }
 

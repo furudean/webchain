@@ -32,7 +32,6 @@ export function string_to_color(
 	const { r, g, b } = oklab_to_rgb(ok)
 
 	const hex = `#${to_hex(r)}${to_hex(g)}${to_hex(b)}`
-	console.log(hex)
 
 	return hex
 }
