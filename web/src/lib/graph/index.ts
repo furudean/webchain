@@ -1,2 +1,2 @@
-export { calculateTreeLayout, type Node } from './tree-layout.js'
-export { buildGraph } from './graph-builder.js'
+export { calculateTreeLayout } from './tree-layout'
+export { buildGraph } from './graph-builder'

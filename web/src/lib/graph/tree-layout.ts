@@ -1,10 +1,4 @@
-export interface Node {
-	at: string
-	children: string[]
-	parent: string | null
-	depth: number
-	indexed: boolean
-}
+import type { Node } from "$lib/node";
 
 export const calculateTreeLayout = (hashmap: Map<string, Node>) => {
 	const positions = new Map<string, { x: number; y: number }>()

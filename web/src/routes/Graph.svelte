@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from "svelte"
-	import raw_data from "./example-data-2.json?raw"
 	import type { Sigma } from "sigma"
-	import { calculateTreeLayout, buildGraph, type Node } from "$lib/graph"
-
-	const data: Node[] = JSON.parse(raw_data)
+	import { calculateTreeLayout, buildGraph } from "$lib/graph"
+	import type { PageProps } from "./$types"
+	import type { Node } from "$lib/node"
 
 	let graph_element: HTMLElement
+
+	let { nodes }: { nodes: Node[] } = $props()
 
 	onMount(() => {
 		let sigma_instance: Sigma | undefined
@@ -17,7 +18,7 @@
 			const { default: Graph } = await import("graphology")
 
 			const hashmap = new Map(
-				Object.values(data).map((node, i) => [i.toString(), node])
+				Object.values(nodes).map((node, i) => [i.toString(), node])
 			)
 
 			// Calculate layout and build graph
