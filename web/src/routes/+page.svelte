@@ -10,6 +10,7 @@
 	<link rel="webchain-nomination" href="https://www.himawari.fun/" />
 	<link rel="webchain-nomination" href="https://nekopath.fun/" />
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
+	<title>milkmedicine webchain</title>
 </svelte:head>
 
 <Graph nodes={data.nodes}></Graph>
@@ -18,12 +19,12 @@
 <main>
 	<h1>milkmedicine webchain</h1>
 	<p>
-		<a href="https://github.com/furudean/webchain/blob/main/SPEC.md" rel="external">webchain</a> is a distributed webring, where each member website can nominate
+		a <a href="https://github.com/furudean/webchain/blob/main/SPEC.md" rel="external">webchain</a> is a distributed webring, where each member can nominate
 		other websites, creating a walkable graph of trust.
 	</p>
 	<ol>
 		<li>
-			This page is the starting point of the <em>webchain</em>, nominating three other websites
+			This page is the starting point of the <em>milkmedicine webchain</em>, which nominates three other websites
 		</li>
 		<li>
 			Nominated websites can add their own nominations by adding markup to their HTML
@@ -34,8 +35,8 @@
 		</li>
 
 	</ol>
-	{#if !data.nodes}
-		<p>something is broken</p>
+	{#if data.nodes.length === 0}
+		<p>however, something is wrong, as no nodes were found :(</p>
 	{:else if data.timestamp}
 		last crawl was {new Date(data.timestamp).toLocaleString('en-US').toLowerCase()}
 	{/if}
