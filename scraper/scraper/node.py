@@ -17,7 +17,7 @@ class Node:
     count = itertools.count()
     childlimit = 3
 
-    def __init__(self, url, parent: Node | None, children: list[str] | None, index = -1):
+    def __init__(self, url: str, parent: str | None, children: list[str] | None, index = -1):
         self.id = next(self.count)
         self.url = url
         self.parent = parent
@@ -26,6 +26,37 @@ class Node:
 
     def __repr__(self):
         return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children}'
+
+    def toDict(self):
+        r = {}
+        r.update({'id' : self.id})
+        r.update({'url' : self.url})
+        r.update({'parent' : self.parent})
+        child_list = []
+        for i in self.children:
+            child_list.append(i)
+        r.update({'children' : child_list})
+        r.update({'index': self.index})
+        return r
+
+    def fromDict(self, d: dict):
+        self.id = -1
+        self.url = ''
+        self.parent = ''
+        self.children = []
+        self.index = -1
+        for (k,v) in d.items():
+            if k == 'id':
+                self.id = v
+            elif k == 'url':
+                self.url = v
+            elif k == 'parent':
+                self.parent = v
+            elif k == 'children':
+                for i in v:
+                    self.children.append(i)
+            elif k == 'index':
+                self.index = v
 
     # if free slot exists, creates a leaf node from child_url and adds as a child.
     # this might never get used. for one, since an added child with children itself would have to have the children linked in a separate function call.
