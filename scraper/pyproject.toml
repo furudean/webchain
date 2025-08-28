@@ -6,9 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "webchain-scraper"
 dynamic = ["version"]
 requires-python = ">=3.12"
+classifiers = ["Private :: Do Not Upload"]
 dependencies = [
 	"aiohttp[speedups]~=3.12",
 	"beautifulsoup4",
+	"click~=8.2.1",
 	"lxml~=6.0",
 	"tenacity~=9.1.2",
 ]
@@ -21,10 +23,11 @@ dev = [
 ]
 
 [project.scripts]
-tree = "scraper.cli:get_tree"
-json = "scraper.cli:get_json"
-read-tree = "scraper.cli:read_tree"
-hash-test = "scraper.cli:hash_test"
+webchain = "scraper.cli:webchain"
+# tree = "scraper.cli:get_tree"
+# json = "scraper.cli:get_json"
+# read-tree = "scraper.cli:read_tree"
+# hash-test = "scraper.cli:hash_test"
 
 [tool.uv]
 default-groups = ["dev"]

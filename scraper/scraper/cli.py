@@ -1,18 +1,34 @@
 import asyncio
 import sys
-import json
+import json as jjson
 import logging
 import os
+from functools import wraps
+
+import click
 
 from scraper.crawl import crawl
 from scraper.read import read_chain_into_table
 from scraper.hash import HashTable
 
-def setup_logging(level='INFO'):
-    logging.basicConfig(level=os.environ.get('LOGLEVEL', level).upper())
+def asyncio_click(func):
+    '''Decorator that wraps coroutine with asyncio.run.'''
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(func(*args, **kwargs))
+    return wrapper
 
-async def _get_tree():
-    url = sys.argv[1] if len(sys.argv) > 1 else None
+
+@click.group
+def webchain():
+    logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
+    pass
+
+
+@webchain.command
+@click.argument('url', required=True)
+@asyncio_click
+async def tree(url: str):
 
     if not url:
         print('usage: tree <url>')
@@ -26,28 +42,22 @@ async def _get_tree():
         sys.exit(1)
 
 
-def get_tree():
-    setup_logging()
-    asyncio.run(_get_tree())
-
-
-async def _get_json():
-    url = sys.argv[1] if len(sys.argv) > 1 else None
-
+@webchain.command
+@click.argument('url', required=True)
+@asyncio_click
+async def json(url: str):
     if not url:
         print('usage: json <url>')
         sys.exit(1)
 
     nodes = await crawl(url)
-    print(json.dumps([node.__dict__ for node in nodes], indent='\t'))
+    print(jjson.dumps([node.__dict__ for node in nodes], indent='\t'))
 
 
-def get_json():
-    setup_logging(level='ERROR')
-    asyncio.run(_get_json())
-
-
-async def _read_tree(insite=None) -> HashTable:
+@webchain.command
+@click.argument('insite', required=True)
+@asyncio_click
+async def read_tree(insite=None) -> HashTable:
     if not insite:
         site = sys.argv[1] if len(sys.argv) > 1 else None
 
@@ -59,9 +69,9 @@ async def _read_tree(insite=None) -> HashTable:
     else:
         return await read_chain_into_table(insite)
 
-def read_tree(root) -> HashTable:
-    return asyncio.run(_read_tree(root))
 
+@webchain.command
+@asyncio_click
 def hash_test():
     root = "https://chain-staging.milkmedicine.net"
     T = read_tree(root)
