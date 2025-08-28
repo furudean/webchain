@@ -1,40 +1,24 @@
 from __future__ import annotations
-import math, random, string
+import math, json, random, string
 from scraper.node import Node
-
-class Link:
-    def __init__(self, value: Node | None, next=None):
-        self.value = value
-        self.next = next
-
-    def __repr__(self):
-        return f"val: ({self.value}) next: ({self.next})"
-
-    def setValue(self, value: Node):
-        self.value = value
-
-    def getValue(self):
-        return self.value
-
-    def setNext(self, next: Link):
-        self.next = next
-
-    def getNext(self):
-        return self.next
-
 
 class HashTable:
 
-    tablesize = 256
+    tablesize = 16
+
 
     def __init__(self, tablesize=None):
         if tablesize:
             self.tablesize = tablesize
+        l = []
+        for i in range(0, self.tablesize):
+            l.append([])
+        self.table = l
 
-        self.table = [None]*self.tablesize
 
     def __repr__(self):
         return f"{self.table}"
+
 
     def hash(self, key: str, mode=1):
         if mode:
@@ -51,41 +35,29 @@ class HashTable:
             # print(math.modf(key_num*A))
             return math.floor(self.tablesize * math.modf(key_num*A)[0])
 
+
     def insert(self, node_to_insert: Node):
         index = self.hash(node_to_insert.url)
-        if self.table[index] is None:
-            self.table[index] = Link(node_to_insert)
-            return index
-        else:
-            current = self.table[index]
-            while current.next is not None:
-                current = current.next
-            current.setNext(Link(node_to_insert))
-            # print(f"collided link: [{self.table[index]}] ")
-            # print(f"to link: [{current.next}]")
-            return index
+        self.table[index].append(node_to_insert)
+        return index
 
 
     # Returns Node object with url matching search_key if found, else returns -1
     def findValue(self, search_key):
         index = self.hash(search_key)
-        if self.table[index] is None:
+        if self.table[index] == []:
             print("Not found")
             return -1
         else:
-            if self.table[index].value.url == search_key:
-                print(f"found: {search_key} at {index} ")
-                return self.table[index].value
-            else:
-                current = self.table[index]
-                while current is not None and not (current.value.url == search_key):
-                    current = current.next
-                    if current.value.url == search_key:
-                        print(f"found: {search_key} at {index} (collided)")
-                        print(f"linked list at {index}: {self.table[index]}")
-                        return current.value
-                print("Not found in linked list")
-                return -1
+            c = 0
+            for i in self.table[index]:
+                if i.url == search_key:
+                    print(f"found it at {index} at position {c}")
+                    return i
+                c+=1
+            print("Not found (collided)")
+            return -1
+
 
     def evaluate(self):
         rval = 0
@@ -94,34 +66,56 @@ class HashTable:
                 rval +=1
         return rval
 
-def random_url():
-    letters = string.ascii_lowercase
-    middle = ''.join(random.choice(letters) for i in range(20))
-    return ''.join(['https://',middle,'.com'])
 
-# T = HashTable()
+    def toDict(self):
+        r = {}
+        r.update({"tablesize" : self.tablesize})
+        t = {}
+        for i in range(0, self.tablesize):
+            if not (self.table[i] == []):
+                l = []
+                for x in self.table[i]:
+                    d = x.toDict()
+                    l.append(d)
+                t.update({i : l})
+            else:
+                t.update({i : self.table[i]})
+                # print("--------------------------")
+        r.update({'table' : t})
+        return r
 
-# url_list = []
-# for i in range(0,100):
-#     url_list.append(random_url())
 
-# collision_list = []
+    def fromDict(self, d: dict):
+        self.tablesize = -1
+        self.table = []
+        for (k,v) in d.items():
+            if k == 'tablesize':
+                self.tablesize = v
+            elif k == 'table':
+                # print(v)
+                l = len(v)
+                for i in range(0,l):
+                    x = v.pop(f'{i}')
+                    # print(x)
+                    if not (x == []):
+                        o = []
+                        for y in x:
+                            n = Node('', None, None)
+                            n.fromDict(y)
+                            o.append(n)
+                        self.table.append(o)
+                    else:
+                        self.table.append(x)
 
-# for i in range(0,100):
-#     collision_list.append(T.insert(url_list[i]))
+    def serialize(self):
+        with open(f'table.json','w') as f:
+            json.dump(self.toDict(),f)
 
-# collision_list = list(filter((0).__ne__, collision_list))
+    def deserialize(self):
+        with open(f'table.json','r') as f:
+            self.fromDict(json.load(f))
 
-# for i in url_list:
-#     T.findValue(i)
-
-# for i in collision_list:
-#     collided_urls.append(url_list[i])
-# print(collision_list)
-
-# for i in collision_list:
-#     print(T.table[i])
-# print(T.evaluate())
-
-# print(T.hash("https://chain-staging.milkmedicine.net"))
-
+# def random_url():
+#     letters = string.ascii_lowercase
+#     middle = ''.join(random.choice(letters) for i in range(20))
+#     return ''.join(['https://',middle,'.com'])
