@@ -8,6 +8,7 @@ async function get_icon_url(
 	base: URL | string,
 	head: HTMLElement
 ): Promise<URL | undefined> {
+	// try common favicon link rels
 	const selectors = [
 		'link[rel="icon"]',
 		'link[rel="shortcut icon"]'
@@ -25,6 +26,7 @@ async function get_icon_url(
 		}
 	}
 
+	// try favicon.ico
 	const url = new URL("/favicon.ico", base)
 	const result = await fetch(url, {
 		method: "HEAD",
@@ -65,7 +67,8 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	// handle disk cache
 	const cache_item = await get_cached_file(url_param)
-	if (cache_item) {
+	console.log(url_param, cache_item)
+	if (cache_item?.item) {
 		return new Response(cache_item.data, {
 			status: 200,
 			headers: {
@@ -73,10 +76,11 @@ export const GET: RequestHandler = async ({ url }) => {
 				'x-disk-cache': 'HIT'
 			}
 		})
-	} else if (cache_item === null) {
-		const response = empty_response(url_param)
-		response.headers.set('x-disk-cache', 'HIT')
-		return response
+	} else if (cache_item) {
+		return new Response(null, { status: 204, headers: {
+			"Cache-Control": `public, max-age=${CACHE_DURATION / 1000}`,
+			'x-disk-cache': 'HIT'
+		} })
 	}
 
 	// not in cache, fetch it
@@ -85,9 +89,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			redirect: "follow"
 		})
 
-		if (!page_response.ok) {
-			return new Response(null, { status: 204 })
-		}
+		if (!page_response.ok) empty_response(url_param)
 
 		const page_url = page_response.url
 		const html = parse(await page_response.text())
@@ -99,7 +101,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		if (!icon_url) return empty_response(url_param)
 
 		const icon_response = await fetch(icon_url)
-		if (!icon_response.ok) return new Response(null, { status: 204 })
+		if (!icon_response.ok) return empty_response(url_param)
 
 		const buffer = await icon_response.arrayBuffer()
 		const content_type =

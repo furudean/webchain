@@ -11,7 +11,7 @@ export interface CachedItem {
 
 export const CACHE_DIR = path.resolve(".favicon_cache")
 export const CACHE_DURATION = 24 * 60 * 60 * 1000
-export const FAVICON_CACHE = new Map<string, CachedItem | null>()
+export const FAVICON_CACHE = new Map<string, CachedItem>()
 
 function to_array_buffer(buffer: Buffer): ArrayBuffer {
 	const array_buffer = new ArrayBuffer(buffer.length)
@@ -34,7 +34,6 @@ export async function write_cache_file({
 	file_url: string
 }): Promise<CachedItem> {
 	const filename = encodeURIComponent(key)
-	await fs.mkdir(CACHE_DIR, { recursive: true })
 
 	const fullpath = path.join(CACHE_DIR, filename)
 
@@ -63,27 +62,29 @@ export async function get_cached_file(key: string): Promise<
 			data: ArrayBuffer
 			item: CachedItem
 	  }
-	| null
 	| undefined
 > {
 	const cached = FAVICON_CACHE.get(key)
-	console.log("checking favicon cache:", key, cached)
-	if (cached && Date.now() < cached.expires) {
-		if (cached.path) {
+
+	if (cached) {
+		if (cached.expires < Date.now()) {
+			FAVICON_CACHE.delete(key)
+			return undefined
+		}
+
+		if (cached?.path) {
 			try {
-				const data = await fs.readFile(cached.path)
 				return {
-					data: to_array_buffer(data),
+					data: to_array_buffer(await fs.readFile(cached.path)),
 					item: cached
 				}
 			} catch {
 				FAVICON_CACHE.delete(key)
 			}
+		} else {
+			// cached as empty
+			return cached
 		}
-	}
-
-	if (cached === null) {
-		return null
 	}
 
 	return undefined
