@@ -3,7 +3,8 @@ import type { Node } from "$lib/node"
 
 export const load: PageServerLoad = async (): Promise<{
 	nodes: Node[]
-	timestamp: string | null
+	start: string | null
+	end: string | null
 }> => {
 	const request = await fetch(
 		"https://webchain.milkmedicine.net/crawler/data.json"
@@ -14,17 +15,19 @@ export const load: PageServerLoad = async (): Promise<{
 	}
 
 	try {
-		const { nodes, timestamp } = await request.json()
+		const { nodes, start, end } = await request.json()
 
 		return {
 			nodes,
-			timestamp
+			start,
+			end,
 		}
 	} catch (error) {
 		console.error("Error parsing JSON:", error)
 		return {
 			nodes: [],
-			timestamp: null
+			start: null,
+			end: null,
 		}
 	}
 }

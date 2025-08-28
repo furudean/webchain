@@ -15,35 +15,36 @@
 
 <Graph nodes={data.nodes}></Graph>
 
-
 <main>
 	<h1>milkmedicine webchain</h1>
 	<p>
-		a <a href="https://github.com/furudean/webchain/blob/main/SPEC.md" rel="external">webchain</a> is a distributed webring, where each member can nominate
-		other websites, creating a walkable graph of trust.
+		a <a
+			href="https://github.com/furudean/webchain/blob/main/SPEC.md"
+			rel="external">webchain</a
+		> is a distributed webring, where each member can nominate other websites, creating
+		a walkable graph of trust.
 	</p>
 	<ol>
 		<li>
-			This page is the starting point of the <em>milkmedicine webchain</em>, which nominates three other websites
+			This page is the starting point of the <em>milkmedicine webchain</em>,
+			which nominates three other websites
 		</li>
 		<li>
-			Nominated websites can add their own nominations by adding markup to their HTML
+			Nominated websites can add their own nominations by adding markup to their
+			HTML
 		</li>
 		<li>Each nominated node may nominate three others</li>
-		<li>
-			And so on, and so forth,
-		</li>
-
+		<li>And so on, and so forth,</li>
 	</ol>
 	{#if data.nodes.length === 0}
 		<p>however, something is wrong, as no nodes were found :(</p>
-	{:else if data.timestamp}
-		last crawl was {new Date(data.timestamp).toLocaleString('en-US').toLowerCase()}
+	{:else if data.start && data.end}
+		last crawl was {new Date(data.end).toLocaleString("en-US").toLowerCase()},
+		which took {(new Date(data.end).getTime() -
+			new Date(data.start).getTime()) /
+			1000} seconds
 	{/if}
 </main>
-
-
-
 
 <style>
 	main {

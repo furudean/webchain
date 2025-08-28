@@ -3,6 +3,7 @@ import sys
 import json as jjson
 from functools import wraps
 from datetime import datetime, timezone
+import time
 
 import click
 
@@ -39,11 +40,14 @@ async def tree(url: str):
 @click.argument('url', required=True)
 @asyncio_click
 async def json(url: str):
+    start = time.time()
     nodes = await crawl(url, print_error=False)
+    end = time.time()
 
     data = {
         "nodes": [node.__dict__ for node in nodes],
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "start": datetime.fromtimestamp(start, tz=timezone.utc).isoformat(),
+        "end": datetime.fromtimestamp(end, tz=timezone.utc).isoformat(),
     }
 
     print(jjson.dumps(data, indent='\t'))
