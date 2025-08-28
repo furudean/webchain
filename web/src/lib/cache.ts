@@ -59,7 +59,7 @@ export async function write_cache_file({
  */
 export async function get_cached_file(key: string): Promise<
 	| {
-			data: ArrayBuffer
+			data: ArrayBuffer | undefined
 			item: CachedItem
 	  }
 	| undefined
@@ -83,7 +83,10 @@ export async function get_cached_file(key: string): Promise<
 			}
 		} else {
 			// cached as empty
-			return cached
+			return {
+				data: undefined,
+				item: cached
+			}
 		}
 	}
 

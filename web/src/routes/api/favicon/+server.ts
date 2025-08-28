@@ -41,17 +41,24 @@ async function get_icon_url(
 }
 
 function response_headers(item: CachedItem): Record<string, string> {
-	return {
-		"Content-Type": item.content_type!,
-		"Cache-Control": `public, max-age=${Math.floor((item.expires - Date.now()) / 1000)}`,
-		"X-Original-URL": item.original_url!
+	const headers: Record<string, string> = {}
+
+	if (item.content_type) {
+		headers["Content-Type"] = item.content_type
 	}
+	if (item.original_url) {
+		headers["X-Original-URL"] = item.original_url
+	}
+	headers["Cache-Control"] = `public, max-age=${Math.floor((item.expires - Date.now()) / 1000)}`
+
+	return headers
 }
 
 function empty_response(url: string): Response {
 	FAVICON_CACHE.set(url, {
 		timestamp: Date.now(),
 		expires: Date.now() + CACHE_DURATION,
+		original_url: url
 	})
 	return new Response(null, { status: 204, headers: {
 		"Cache-Control": `public, max-age=${CACHE_DURATION / 1000}`
@@ -66,19 +73,18 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 
 	// handle disk cache
-	const cache_item = await get_cached_file(url_param)
-	console.log(url_param, cache_item)
-	if (cache_item?.item) {
-		return new Response(cache_item.data, {
+	const cache_hit = await get_cached_file(url_param)
+	if (cache_hit?.data) {
+		return new Response(cache_hit.data, {
 			status: 200,
 			headers: {
-				...response_headers(cache_item.item),
+				...response_headers(cache_hit.item),
 				'x-disk-cache': 'HIT'
 			}
 		})
-	} else if (cache_item) {
+	} else if (cache_hit) {
 		return new Response(null, { status: 204, headers: {
-			"Cache-Control": `public, max-age=${CACHE_DURATION / 1000}`,
+			...response_headers(cache_hit.item),
 			'x-disk-cache': 'HIT'
 		} })
 	}
