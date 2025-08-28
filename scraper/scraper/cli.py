@@ -1,8 +1,6 @@
 import asyncio
 import sys
 import json as jjson
-import logging
-import os
 from functools import wraps
 
 import click
@@ -21,7 +19,6 @@ def asyncio_click(func):
 
 @click.group
 def webchain():
-    logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO').upper())
     pass
 
 
@@ -41,7 +38,7 @@ async def tree(url: str):
 @click.argument('url', required=True)
 @asyncio_click
 async def json(url: str):
-    nodes = await crawl(url)
+    nodes = await crawl(url, print_error=False)
     print(jjson.dumps([node.__dict__ for node in nodes], indent='\t'))
 
 

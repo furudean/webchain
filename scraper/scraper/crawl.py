@@ -87,6 +87,7 @@ async def crawl(
     root_url: str,
     limit_nominations: int = 3,
     recursion_limit: int = 1000,
+    print_error = True,
 ) -> list[CrawledNode]:
     """
     crawl the webchain nomination graph starting from `root_url`.
@@ -108,7 +109,7 @@ async def crawl(
             return []
 
         seen.add(at)
-        html = await load_page_html(at, referrer=parent, session=session)
+        html = await load_page_html(at, referrer=parent, session=session, print_error=print_error)
         nominations = None
         if html:
             nominations = get_node_nominations(html, root_url, seen)
