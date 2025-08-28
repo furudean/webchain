@@ -13,5 +13,11 @@
 </svelte:head>
 
 <h1>milkmedicine webchain</h1>
-<p>there will be a thing to visualize the webchain here soon</p>
+{#if !data.nodes}
+	<p>something is broken</p>
+{:else if data.timestamp}
+	last updated: {new Date(data.timestamp).toLocaleString()}
+{/if}
+<p>
+</p>
 <Graph nodes={data.nodes}></Graph>
