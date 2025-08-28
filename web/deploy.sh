@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euxo pipefail
 cd "$(dirname "$0")"
 
 npm run build
