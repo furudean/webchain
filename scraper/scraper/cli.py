@@ -50,29 +50,20 @@ async def json(url: str):
 
 
 @webchain.command
-@click.argument('insite', required=True)
 @asyncio_click
-async def read_tree(insite=None) -> HashTable:
-    if not insite:
-        site = sys.argv[1] if len(sys.argv) > 1 else None
-
-        if not site:
-            print('usage: read-tree <root>')
-            sys.exit(1)
-
-        return await read_chain_into_table(site)
-    else:
-        return await read_chain_into_table(insite)
-
-
-@webchain.command
-@asyncio_click
-def hash_test():
-    root = "https://chain-staging.milkmedicine.net"
-    T = read_tree(root)
-
+async def hash_test():
+    T = await read_chain_into_table("https://chain-staging.milkmedicine.net")
+    print("========TEST START========")
     found_node = T.findValue("https://chain-staging.milkmedicine.net/b/1")
     print(found_node)
     found_child = T.findValue(found_node.children[1])
+    print(found_child)
+    T.serialize()
+    print("--------------------")
+    N = HashTable()
+    N.deserialize()
+    found_node = N.findValue("https://chain-staging.milkmedicine.net/b/1")
+    print(found_node)
+    found_child = N.findValue(found_node.children[1])
     print(found_child)
     return
