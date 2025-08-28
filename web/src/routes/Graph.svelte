@@ -2,7 +2,6 @@
 	import { onMount } from "svelte"
 	import type { Sigma } from "sigma"
 	import { calculateTreeLayout, buildGraph } from "$lib/graph"
-	import type { PageProps } from "./$types"
 	import type { Node } from "$lib/node"
 
 	let graph_element: HTMLElement
@@ -62,8 +61,8 @@
 
 	:global(body) {
 		background-size: 100px 100px;
-		background-image:
+		/* background-image:
 			linear-gradient(to right, hsl(0, 0%, 95%) 1px, transparent 1px),
-			linear-gradient(to bottom, hsl(0, 0%, 95%) 1px, transparent 1px);
+			linear-gradient(to bottom, hsl(0, 0%, 95%) 1px, transparent 1px); */
 	}
 </style>

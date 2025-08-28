@@ -1,5 +1,6 @@
 import type GraphType from "graphology"
-import type { Node } from "./tree-layout.js"
+import type { Node } from "$lib/node"
+import { string_to_color } from "$lib/color"
 
 export function buildGraph(
 	hashmap: Map<string, Node>,
@@ -28,6 +29,7 @@ export function buildGraph(
 			type: "image",
 			image: node.indexed ? `/api/favicon?url=${encodeURIComponent(node.at)}` : undefined,
 			url: node.at,
+			color: string_to_color(node.at),
 		})
 	}
 
@@ -38,7 +40,14 @@ export function buildGraph(
 				([, n]) => n.at === node.parent
 			)?.[0]
 			if (parentId) {
-				graph.addEdge(parentId, id)
+				graph.addEdge(parentId, id,
+					{
+						size: 1,
+						color: "#ccc",
+						type: "arrow",
+						hidden: false,
+					}
+				)
 			}
 		}
 	}
