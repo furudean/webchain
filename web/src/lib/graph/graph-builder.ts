@@ -5,7 +5,7 @@ import { string_to_color } from "$lib/color"
 export function buildGraph(
 	hashmap: Map<string, Node>,
 	positions: Map<string, { x: number; y: number }>,
-	Graph: typeof GraphType,
+	Graph: typeof GraphType
 ): GraphType {
 	const graph = new Graph()
 
@@ -15,10 +15,9 @@ export function buildGraph(
 		const url = new URL(node.at)
 		const label = url.hostname + (url.pathname === "/" ? "" : url.pathname)
 
-
 		// Calculate size based on depth - root is bigger, then gradually shrink
-		const baseSize = 25
-		const sizeReduction = Math.max(0.5, 1 - (node.depth * 0.05))
+		const baseSize = 24
+		const sizeReduction = Math.max(0.5, 1 - node.depth * 0.05)
 		const nodeSize = baseSize * sizeReduction
 
 		graph.addNode(id, {
@@ -26,10 +25,12 @@ export function buildGraph(
 			size: nodeSize,
 			x: pos.x,
 			y: pos.y,
-			type: "image",
-			image: node.indexed ? `/api/favicon?url=${encodeURIComponent(node.at)}` : undefined,
+			type: node.depth === 0 ? 'square' : 'image',
+			image: node.indexed && node.depth !== 0
+				? `/api/favicon?url=${encodeURIComponent(node.at)}`
+				: undefined,
 			url: node.at,
-			color: string_to_color(node.at),
+			color: string_to_color(node.at)
 		})
 	}
 
@@ -40,14 +41,11 @@ export function buildGraph(
 				([, n]) => n.at === node.parent
 			)?.[0]
 			if (parentId) {
-				graph.addEdge(parentId, id,
-					{
-						size: 1,
-						color: "#ccc",
-						type: "arrow",
-						hidden: false,
-					}
-				)
+				graph.addEdge(parentId, id, {
+					size: 3,
+					color: "#e5e5e5",
+					type: "arrow",
+				})
 			}
 		}
 	}

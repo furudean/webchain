@@ -28,12 +28,8 @@ export function string_to_color(
 		b: Math.sin(angle) * saturation
 	}
 
-	console.log(ok)
-
-	// Convert oklab to rgb
+	// convert oklab to rgb
 	const { r, g, b } = oklab_to_rgb(ok)
-
-	console.log({r, g, b})
 
 	const hex = `#${to_hex(r)}${to_hex(g)}${to_hex(b)}`
 	console.log(hex)

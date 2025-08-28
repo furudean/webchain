@@ -1,4 +1,4 @@
-import { CACHE_DIR } from "$lib/cache"
+import { CACHE_DIR } from "$lib/image-cache"
 import fs from "node:fs/promises"
 
 async function init() {

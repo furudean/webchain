@@ -15,6 +15,7 @@
 			const { default: Sigma } = await import("sigma")
 			const { NodeImageProgram } = await import("@sigma/node-image")
 			const { default: Graph } = await import("graphology")
+			const { NodeSquareProgram } = await import("@sigma/node-square")
 
 			const hashmap = new Map(
 				Object.values(nodes).map((node, i) => [i.toString(), node])
@@ -26,7 +27,8 @@
 			// Create Sigma instance
 			sigma_instance = new Sigma(graph, graph_element, {
 				nodeProgramClasses: {
-					image: NodeImageProgram
+					image: NodeImageProgram,
+					square: NodeSquareProgram
 				},
 				labelRenderedSizeThreshold: 10, // Only show labels when significantly zoomed in
 				labelSize: 10

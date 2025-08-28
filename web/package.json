@@ -33,6 +33,7 @@
 	},
 	"dependencies": {
 		"@sigma/node-image": "^3.0.0",
+		"@sigma/node-square": "^3.0.0",
 		"graphology": "^0.26.0",
 		"node-html-parser": "^7.0.1",
 		"oklab.ts": "^2.2.7",

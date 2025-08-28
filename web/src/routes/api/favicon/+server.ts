@@ -2,17 +2,20 @@ import { text } from "@sveltejs/kit"
 import type { RequestHandler } from "./$types"
 import { parse } from "node-html-parser"
 import type { HTMLElement } from "node-html-parser"
-import { CACHE_DURATION, FAVICON_CACHE, get_cached_file, write_cache_file, type CachedItem } from "$lib/cache"
+import {
+	CACHE_DURATION,
+	FAVICON_CACHE,
+	get_cached_file,
+	write_cache_file,
+	type CachedItem
+} from "$lib/image-cache"
 
 async function get_icon_url(
 	base: URL | string,
 	head: HTMLElement
 ): Promise<URL | undefined> {
 	// try common favicon link rels
-	const selectors = [
-		'link[rel="icon"]',
-		'link[rel="shortcut icon"]'
-	]
+	const selectors = ['link[rel="icon"]', 'link[rel="shortcut icon"]']
 
 	for (const selector of selectors) {
 		const element = head.querySelector(selector)
@@ -49,7 +52,8 @@ function response_headers(item: CachedItem): Record<string, string> {
 	if (item.original_url) {
 		headers["X-Original-URL"] = item.original_url
 	}
-	headers["Cache-Control"] = `public, max-age=${Math.floor((item.expires - Date.now()) / 1000)}`
+	headers["Cache-Control"] =
+		`public, max-age=${Math.floor((item.expires - Date.now()) / 1000)}`
 
 	return headers
 }
@@ -60,9 +64,12 @@ function empty_response(url: string): Response {
 		expires: Date.now() + CACHE_DURATION,
 		original_url: url
 	})
-	return new Response(null, { status: 204, headers: {
-		"Cache-Control": `public, max-age=${CACHE_DURATION / 1000}`
-	} })
+	return new Response(null, {
+		status: 204,
+		headers: {
+			"Cache-Control": `public, max-age=${CACHE_DURATION / 1000}`
+		}
+	})
 }
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -79,14 +86,17 @@ export const GET: RequestHandler = async ({ url }) => {
 			status: 200,
 			headers: {
 				...response_headers(cache_hit.item),
-				'x-disk-cache': 'HIT'
+				"x-disk-cache": "HIT"
 			}
 		})
 	} else if (cache_hit) {
-		return new Response(null, { status: 204, headers: {
-			...response_headers(cache_hit.item),
-			'x-disk-cache': 'HIT'
-		} })
+		return new Response(null, {
+			status: 204,
+			headers: {
+				...response_headers(cache_hit.item),
+				"x-disk-cache": "HIT"
+			}
+		})
 	}
 
 	// not in cache, fetch it
@@ -124,7 +134,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			status: 200,
 			headers: {
 				...response_headers(cache_item),
-				'x-disk-cache': 'MISS'
+				"x-disk-cache": "MISS"
 			}
 		})
 	} catch (error) {
