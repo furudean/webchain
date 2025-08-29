@@ -61,7 +61,7 @@ function response_headers(item: CachedItem): Record<string, string> {
 function empty_response(url: string): Response {
 	FAVICON_CACHE.set(url, {
 		timestamp: Date.now(),
-		expires: Date.now() + CACHE_DURATION,
+		expires: Date.now() + CACHE_DURATION
 	})
 	return new Response(null, {
 		status: 204,

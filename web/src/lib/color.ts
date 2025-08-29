@@ -7,7 +7,7 @@ function to_hex(x: number) {
 function hash_string(str: string): number {
 	let hash = 5381
 	for (let i = 0; i < str.length; i++) {
-		hash = ((hash << 5) + hash) + str.charCodeAt(i) // hash * 33 + c
+		hash = (hash << 5) + hash + str.charCodeAt(i) // hash * 33 + c
 	}
 	return Math.abs(hash)
 }
@@ -20,7 +20,7 @@ export function string_to_color(
 	const hash = hash_string(string)
 
 	// use hue to rotate around the color wheel
-	const hue = ((hash % 360) / 360) // 0..1
+	const hue = (hash % 360) / 360 // 0..1
 	const angle = hue * 2 * Math.PI
 	const ok = {
 		L: lightness,

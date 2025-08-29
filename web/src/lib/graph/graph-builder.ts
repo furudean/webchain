@@ -23,12 +23,13 @@ export function buildGraph(
 			size: base_size * scale,
 			x: pos.x,
 			y: pos.y,
-			type: node.depth === 0 ? 'square' : 'image',
-			image: node.indexed && node.depth !== 0
-				? `/api/favicon?url=${encodeURIComponent(node.at)}`
-				: undefined,
+			type: node.depth === 0 ? "square" : "image",
+			image:
+				node.indexed && node.depth !== 0
+					? `/api/favicon?url=${encodeURIComponent(node.at)}`
+					: undefined,
 			url: node.at,
-			color: node.color,
+			color: node.color
 		})
 	}
 
@@ -42,7 +43,7 @@ export function buildGraph(
 				graph.addEdge(parent_id, id, {
 					size: 3,
 					color: "#efefefff",
-					type: "arrow",
+					type: "arrow"
 				})
 			}
 		}
