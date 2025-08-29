@@ -53,7 +53,7 @@ function response_headers(item: CachedItem): Record<string, string> {
 		headers["X-Original-URL"] = item.original_url
 	}
 	headers["Cache-Control"] =
-		`public, max-age=${Math.floor((item.expires - Date.now()) / 1000)}`
+		`public, max-age=${Math.min(0, Math.floor((item.expires - Date.now()) / 1000))}`
 
 	return headers
 }
