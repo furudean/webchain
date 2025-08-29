@@ -21,8 +21,15 @@
 		a <a
 			href="https://github.com/furudean/webchain/blob/main/SPEC.md"
 			rel="external">webchain</a
-		> is a distributed webring, where each member can nominate other websites, creating
-		a walkable graph of trust.
+		>
+		is a distributed
+		<a href="https://en.wikipedia.org/wiki/Webring" rel="external">webring</a>,
+		where each member can nominate other websites, creating a walkable graph of
+		trust.
+	</p>
+	<p>
+		The current state of the <em>milkmedicine webchain</em> is visualized on this
+		page.
 	</p>
 	<ol>
 		<li>
@@ -30,17 +37,17 @@
 			which nominates three other websites
 		</li>
 		<li>
-			Nominated websites can add their own nominations by adding markup to their
-			HTML
+			Nominated websites may add their own nominations by adding markup to their
+			HTML, up to a limit of three.
 		</li>
-		<li>Each nominated node may nominate three others</li>
-		<li>And so on, and so forth,</li>
+		<li>Those websites may nominate three others, and so on, and so forth.</li>
 	</ol>
 	{#if data.nodes.length === 0}
-		<p>however, something is wrong, as no nodes were found :(</p>
+		<p>However, something went wrong, as no nodes were found :(</p>
 	{:else if data.start && data.end}
-		last crawl was {new Date(data.end).toLocaleString("en-US").toLowerCase()},
-		which took {(new Date(data.end).getTime() -
+		The last crawl was {new Date(data.end)
+			.toLocaleString("en-US")
+			.toLowerCase()}, which took {(new Date(data.end).getTime() -
 			new Date(data.start).getTime()) /
 			1000} seconds
 	{/if}
