@@ -1,8 +1,8 @@
 # webchain Specification (draft)
 
 webchain is a distributed [webring](https://en.wikipedia.org/wiki/Webring),
-where each member website can nominate other websites, creating a walkable graph
-of trust.
+where each member can nominate other websites, creating a walkable graph of
+trust.
 
 In webchain, each member nominates others to the chain, who get their own
 nominations in turn. This creates a tree-like structure, where each node has a
@@ -14,26 +14,25 @@ nominations. This is not a bug.
 
 Each node has a responsibility to ensure that its children are trustworthy and
 don't abuse the system. If a member or its dependents are found to be abusive,
-they can be removed from the webchain by terminating a nomination higher up the
-chain.
+they can be removed from the webchain by members terminating their nomination
+higher up the chain.
 
 ## Rules
 
-1. The tree starts with a single node, for example:
-   https://mychain.org.
+1. The tree starts with a single node, for example: https://mychain.org.
 2. Each node in the tree represents a website, which is identified by its URL.
-3. Each node can define its child nominations by including appropriate `<link>`
-   tags in the `<head>` section of its HTML (see examples below).
-4. A nominated node can be any valid URL, including subdomains, paths, or even
-	different domains altogether.
-5. Each node can nominate up to 2 other nodes, with any additional nominations
-   being ignored. Nominations may be freely added or removed by the node owner, at their
-   discretion.
-7. Nodes may not nominate themselves or create cycles in the nomination path. If
+3. Each node may define child nominations by including appropriate `<link>` tags
+   in the `<head>` section of its HTML (see examples below).
+4. Each node can nominate up to 3 other nodes, with any additional nominations
+   being ignored. Nominations may be freely added or removed by the node owner,
+   at their discretion.
+5. A nominated node can be any valid URL, including subdomains, paths, or even
+   different domains altogether.
+6. Nodes may not nominate themselves or create cycles in the nomination path. If
    these cases are detected, the offending nominations are ignored.
-8. If a node does not respond with a 200 status-code in a timely manner, the
+7. If a node does not respond with a 200 status-code in a timely manner, the
    node is considered offline. Offline nodes are still a part of the data
-   representation, but their subtree is not traversable until they come online
+   representation, but its subtree is not traversable until it comes online
    again.
 
 ## Example node
