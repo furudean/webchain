@@ -62,7 +62,6 @@ function empty_response(url: string): Response {
 	FAVICON_CACHE.set(url, {
 		timestamp: Date.now(),
 		expires: Date.now() + CACHE_DURATION,
-		original_url: url
 	})
 	return new Response(null, {
 		status: 204,
