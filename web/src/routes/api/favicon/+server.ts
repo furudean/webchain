@@ -137,7 +137,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			}
 		})
 	} catch (error) {
-		console.error("error fetching favicon:", error)
+		console.error(`error fetching favicon for ${url_param}`, error)
 		return text("failed to fetch favicon", { status: 500 })
 	}
 }

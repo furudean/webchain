@@ -1,0 +1,98 @@
+{
+	"nodes": [
+		{
+			"at": "https://webchain.milkmedicine.net",
+			"children": [
+				"https://www.himawari.fun/",
+				"https://nekopath.fun/",
+				"https://eidoli.ca"
+			],
+			"parent": null,
+			"depth": 0,
+			"indexed": true
+		},
+		{
+			"at": "https://www.himawari.fun/",
+			"children": [
+				"https://natu.moe/"
+			],
+			"parent": "https://webchain.milkmedicine.net",
+			"depth": 1,
+			"indexed": true
+		},
+		{
+			"at": "https://natu.moe/",
+			"children": [
+				"https://meows.zip"
+			],
+			"parent": "https://www.himawari.fun/",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://meows.zip",
+			"children": [],
+			"parent": "https://natu.moe/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://nekopath.fun/",
+			"children": [],
+			"parent": "https://webchain.milkmedicine.net",
+			"depth": 1,
+			"indexed": true
+		},
+		{
+			"at": "https://eidoli.ca",
+			"children": [
+				"https://prayerlocket.net/",
+				"http://iruyz.fr.eu.org/",
+				"https://paralogue.org/"
+			],
+			"parent": "https://webchain.milkmedicine.net",
+			"depth": 1,
+			"indexed": true
+		},
+		{
+			"at": "https://prayerlocket.net/",
+			"children": [],
+			"parent": "https://eidoli.ca",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "http://iruyz.fr.eu.org/",
+			"children": [
+				"https://willow.phantoma.online/",
+				"https://twilightsparkle.space/"
+			],
+			"parent": "https://eidoli.ca",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://willow.phantoma.online/",
+			"children": [],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://twilightsparkle.space/",
+			"children": [],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://paralogue.org/",
+			"children": [],
+			"parent": "https://eidoli.ca",
+			"depth": 2,
+			"indexed": true
+		}
+	],
+	"start": "2025-08-29T12:35:01.702910+00:00",
+	"end": "2025-08-29T12:35:02.706351+00:00"
+}
