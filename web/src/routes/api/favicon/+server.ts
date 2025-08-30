@@ -3,7 +3,6 @@ import type { RequestHandler } from "./$types"
 import { parse } from "node-html-parser"
 import type { HTMLElement } from "node-html-parser"
 import {
-	CACHE_DURATION,
 	FAVICON_CACHE,
 	get_cached_file,
 	write_cache_file,
@@ -59,14 +58,15 @@ function response_headers(item: CachedItem): Record<string, string> {
 }
 
 function empty_response(url: string): Response {
+	const cache_duration = 10 * 60 * 1000 // 10 minutes in ms
 	FAVICON_CACHE.set(url, {
 		timestamp: Date.now(),
-		expires: Date.now() + CACHE_DURATION
+		expires: Date.now() + cache_duration
 	})
 	return new Response(null, {
 		status: 204,
 		headers: {
-			"Cache-Control": `public, max-age=${CACHE_DURATION / 1000}`
+			"Cache-Control": `public, max-age=${cache_duration / 1000}`
 		}
 	})
 }
