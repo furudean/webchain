@@ -56,18 +56,12 @@ async def json(url: str):
 @webchain.command
 @asyncio_click
 async def hash_test():
-    T = await read_chain_into_table("https://chain-staging.milkmedicine.net")
-    print("========TEST START========")
-    found_node = T.findValue("https://chain-staging.milkmedicine.net/b/1")
-    print(found_node)
-    found_child = T.findValue(found_node.children[1])
-    print(found_child)
+    T = await read_chain_into_table("https://webchain.milkmedicine.net")
     T.serialize()
-    print("--------------------")
     N = HashTable()
     N.deserialize()
-    found_node = N.findValue("https://chain-staging.milkmedicine.net/b/1")
-    print(found_node)
-    found_child = N.findValue(found_node.children[1])
-    print(found_child)
+    N.view(1)
     return
+
+
+
