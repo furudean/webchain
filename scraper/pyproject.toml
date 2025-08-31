@@ -26,7 +26,6 @@ dev = [
 webchain = "scraper.cli:webchain"
 # tree = "scraper.cli:get_tree"
 # json = "scraper.cli:get_json"
-# read-tree = "scraper.cli:read_tree"
 # hash-test = "scraper.cli:hash_test"
 
 [tool.uv]
