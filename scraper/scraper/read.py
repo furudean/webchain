@@ -1,6 +1,8 @@
 from scraper.crawl import crawl, CrawledNode
 from scraper.node import Node
 from scraper.hash import HashTable
+from datetime import datetime, timezone
+import time
 
 async def read_chain_into_table(root: str) -> HashTable:
     T = HashTable()
@@ -12,6 +14,9 @@ async def read_chain_into_table(root: str) -> HashTable:
 
     for i in saved_nodes:
         T.insert(i)
+
+    T.setTimestamp(datetime.fromtimestamp(time.time(), tz=timezone.utc).isoformat())
+
     return T
 
 def CrawledNodeToNode(to_convert: CrawledNode) -> Node:

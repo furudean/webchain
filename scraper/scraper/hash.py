@@ -1,11 +1,11 @@
 from __future__ import annotations
-import math, json, random, string
+import math, json, random, string, datetime
 from scraper.node import Node
 
 class HashTable:
 
-    tablesize = 16
-
+    tablesize = 256
+    timestamp = datetime.MINYEAR
 
     def __init__(self, tablesize=None):
         if tablesize:
@@ -16,11 +16,38 @@ class HashTable:
         self.table = l
 
 
-    def __repr__(self):
-        return f"{self.table}"
+    def __repr__(self, mode: 0):
+        r = ''
+        for i in range(0, self.tablesize):
+            s = f'{i} : {self.table[i]}\n'
+            r += s
+
+        return f"[ {self.timestamp} ]\n{r}"
+
+    # pass mode = 1 for condensed output, mode = 0 for default behavior (view all table entries)
+    def view(self, mode = 0):
+        if not mode:
+            r = ''
+            for i in range(0, self.tablesize):
+                s = f'{i} : {self.table[i]}\n'
+                r += s
+
+            print(f"[ {self.timestamp} ]\n{r}")
+        else:
+            r = ''
+            for i in range(0, self.tablesize):
+                if not self.table[i] == []:
+                    s = f'{i} : {self.table[i]}\n'
+                    r += s
+
+            print(f"[ {self.timestamp} ]\n{r}")
 
 
-    def hash(self, key: str, mode=1):
+    def setTimestamp(self, ts : datetime):
+        self.timestamp = ts
+
+
+    def hash(self, key: str, mode=0):
         if mode:
             return hash(key) % self.tablesize
         else:
@@ -43,10 +70,10 @@ class HashTable:
 
 
     # Returns Node object with url matching search_key if found, else returns -1
-    def findValue(self, search_key):
+    def findValueByURL(self, search_key):
         index = self.hash(search_key)
         if self.table[index] == []:
-            print("Not found")
+            print(f"Not found at {index}")
             return -1
         else:
             c = 0
@@ -55,7 +82,7 @@ class HashTable:
                     print(f"found it at {index} at position {c}")
                     return i
                 c+=1
-            print("Not found (collided)")
+            print(f"Not found (collided) at {index}")
             return -1
 
 
@@ -70,6 +97,7 @@ class HashTable:
     def toDict(self):
         r = {}
         r.update({"tablesize" : self.tablesize})
+        r.update({"timestamp" : self.timestamp})
         t = {}
         for i in range(0, self.tablesize):
             if not (self.table[i] == []):
@@ -80,7 +108,6 @@ class HashTable:
                 t.update({i : l})
             else:
                 t.update({i : self.table[i]})
-                # print("--------------------------")
         r.update({'table' : t})
         return r
 
@@ -91,12 +118,12 @@ class HashTable:
         for (k,v) in d.items():
             if k == 'tablesize':
                 self.tablesize = v
+            elif k == 'timestamp':
+                self.timestamp = v
             elif k == 'table':
-                # print(v)
                 l = len(v)
                 for i in range(0,l):
                     x = v.pop(f'{i}')
-                    # print(x)
                     if not (x == []):
                         o = []
                         for y in x:
