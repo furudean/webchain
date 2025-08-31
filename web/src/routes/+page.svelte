@@ -29,7 +29,7 @@
 	</p>
 	<p>
 		The current state of the <em>milkmedicine webchain</em> is visualized on this
-		page.
+		page. It's still in development... so please be nice.
 	</p>
 	<ol>
 		<li>
