@@ -1,11 +1,17 @@
 import type GraphType from "graphology"
 import type { Node } from "$lib/node"
+import type FA2LayoutSupervisor from "graphology-layout-forceatlas2/worker"
 
-export function buildGraph(
+export async function buildGraph(
 	hashmap: Map<string, Node>,
 	positions: Map<string, { x: number; y: number }>,
 	Graph: typeof GraphType
-): GraphType {
+): Promise<{ graph: GraphType; layout_supervisor: FA2LayoutSupervisor }> {
+	const { default: forceAtlas2 } = await import("graphology-layout-forceatlas2")
+	const { default: FA2LayoutSupervisor } = await import(
+		"graphology-layout-forceatlas2/worker"
+	)
+
 	const graph = new Graph()
 
 	// Add nodes
@@ -16,11 +22,11 @@ export function buildGraph(
 
 		// Calculate size based on depth - root is bigger, then gradually shrink
 		const base_size = 24
-		const scale = Math.max(0.5, 1 - node.depth * 0.05)
+		// const scale = Math.max(0.5, 1 - node.depth * 0.05)
 
 		graph.addNode(id, {
 			label: label,
-			size: base_size * scale,
+			size: base_size,
 			x: pos.x,
 			y: pos.y,
 			type: node.depth === 0 ? "square" : "image",
@@ -49,5 +55,14 @@ export function buildGraph(
 		}
 	}
 
-	return graph
+	const layout_supervisor = new FA2LayoutSupervisor(graph, {
+		settings: {
+			...forceAtlas2.inferSettings(graph),
+			scalingRatio: 1000,
+			gravity: 0.3,
+			slowDown: 1000,
+		}
+	})
+
+	return { graph, layout_supervisor }
 }

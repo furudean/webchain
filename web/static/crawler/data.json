@@ -31,16 +31,69 @@
 		},
 		{
 			"at": "https://meows.zip",
-			"children": [],
+			"children": [
+				"https://catverse.org/",
+				"https://purrfect.site/"
+			],
 			"parent": "https://natu.moe/",
 			"depth": 3,
 			"indexed": true
 		},
 		{
-			"at": "https://nekopath.fun/",
+			"at": "https://catverse.org/",
+			"children": [
+				"https://catcafe.io/"
+			],
+			"parent": "https://meows.zip",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://purrfect.site/",
 			"children": [],
+			"parent": "https://meows.zip",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://catcafe.io/",
+			"children": [
+				"https://meowhub.net/"
+			],
+			"parent": "https://catverse.org/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://meowhub.net/",
+			"children": [],
+			"parent": "https://catcafe.io/",
+			"depth": 6,
+			"indexed": true
+		},
+		{
+			"at": "https://nekopath.fun/",
+			"children": [
+				"https://kittylane.com/"
+			],
 			"parent": "https://webchain.milkmedicine.net",
 			"depth": 1,
+			"indexed": true
+		},
+		{
+			"at": "https://kittylane.com/",
+			"children": [
+				"https://felineworld.net/"
+			],
+			"parent": "https://nekopath.fun/",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://felineworld.net/",
+			"children": [],
+			"parent": "https://kittylane.com/",
+			"depth": 3,
 			"indexed": true
 		},
 		{
@@ -56,16 +109,26 @@
 		},
 		{
 			"at": "https://prayerlocket.net/",
-			"children": [],
+			"children": [
+				"https://locketdreams.com/"
+			],
 			"parent": "https://eidoli.ca",
 			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://locketdreams.com/",
+			"children": [],
+			"parent": "https://prayerlocket.net/",
+			"depth": 3,
 			"indexed": true
 		},
 		{
 			"at": "http://iruyz.fr.eu.org/",
 			"children": [
 				"https://willow.phantoma.online/",
-				"https://twilightsparkle.space/"
+				"https://twilightsparkle.space/",
+				"https://phantomforest.net/"
 			],
 			"parent": "https://eidoli.ca",
 			"depth": 2,
@@ -86,10 +149,309 @@
 			"indexed": true
 		},
 		{
-			"at": "https://paralogue.org/",
+			"at": "https://phantomforest.net/",
+			"children": [
+				"https://forestcat.org/"
+			],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://forestcat.org/",
+			"children": [
+				"https://dreamcat.net/"
+			],
+			"parent": "https://phantomforest.net/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://dreamcat.net/",
+			"children": [
+				"https://catcafe.io/"
+			],
+			"parent": "https://forestcat.org/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://whiskerworld.com/",
 			"children": [],
+			"parent": "https://dreamcat.net/",
+			"depth": 6,
+			"indexed": true
+		},
+		{
+			"at": "https://paralogue.org/",
+			"children": [
+				"https://parallelworlds.net/"
+			],
 			"parent": "https://eidoli.ca",
 			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://parallelworlds.net/",
+			"children": [
+				"https://catfriends.org/"
+			],
+			"parent": "https://paralogue.org/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://catfriends.org/",
+			"children": [
+				"https://whiskerworld.com/"
+			],
+			"parent": "https://parallelworlds.net/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://meowtopia.com/",
+			"children": [],
+			"parent": "https://catfriends.org/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://webchain.milkmedicine.net-extra1",
+			"children": [],
+			"parent": "https://webchain.milkmedicine.net",
+			"depth": 1,
+			"indexed": true
+		},
+		{
+			"at": "https://webchain.milkmedicine.net-extra2",
+			"children": [],
+			"parent": "https://webchain.milkmedicine.net",
+			"depth": 1,
+			"indexed": true
+		},
+		{
+			"at": "https://www.himawari.fun-extra1",
+			"children": [],
+			"parent": "https://www.himawari.fun/",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://www.himawari.fun-extra2",
+			"children": [],
+			"parent": "https://www.himawari.fun/",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://natu.moe-extra1",
+			"children": [],
+			"parent": "https://natu.moe/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://natu.moe-extra2",
+			"children": [],
+			"parent": "https://natu.moe/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://meows.zip-extra1",
+			"children": [],
+			"parent": "https://meows.zip",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://meows.zip-extra2",
+			"children": [],
+			"parent": "https://meows.zip",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://catverse.org-extra1",
+			"children": [],
+			"parent": "https://catverse.org/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://catverse.org-extra2",
+			"children": [],
+			"parent": "https://catverse.org/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://purrfect.site-extra1",
+			"children": [],
+			"parent": "https://purrfect.site/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://purrfect.site-extra2",
+			"children": [],
+			"parent": "https://purrfect.site/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://kittylane.com-extra1",
+			"children": [],
+			"parent": "https://kittylane.com/",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://kittylane.com-extra2",
+			"children": [],
+			"parent": "https://kittylane.com/",
+			"depth": 2,
+			"indexed": true
+		},
+		{
+			"at": "https://felineworld.net-extra1",
+			"children": [],
+			"parent": "https://felineworld.net/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://felineworld.net-extra2",
+			"children": [],
+			"parent": "https://felineworld.net/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://prayerlocket.net-extra1",
+			"children": [],
+			"parent": "https://prayerlocket.net/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://prayerlocket.net-extra2",
+			"children": [],
+			"parent": "https://prayerlocket.net/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "http://iruyz.fr.eu.org-extra1",
+			"children": [],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "http://iruyz.fr.eu.org-extra2",
+			"children": [],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://willow.phantoma.online-extra1",
+			"children": [],
+			"parent": "https://willow.phantoma.online/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://willow.phantoma.online-extra2",
+			"children": [],
+			"parent": "https://willow.phantoma.online/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://twilightsparkle.space-extra1",
+			"children": [],
+			"parent": "https://twilightsparkle.space/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://twilightsparkle.space-extra2",
+			"children": [],
+			"parent": "https://twilightsparkle.space/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://phantomforest.net-extra1",
+			"children": [],
+			"parent": "https://phantomforest.net/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://phantomforest.net-extra2",
+			"children": [],
+			"parent": "https://phantomforest.net/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://forestcat.org-extra1",
+			"children": [],
+			"parent": "https://forestcat.org/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://forestcat.org-extra2",
+			"children": [],
+			"parent": "https://forestcat.org/",
+			"depth": 5,
+			"indexed": true
+		},
+		{
+			"at": "https://dreamcat.net-extra1",
+			"children": [],
+			"parent": "https://dreamcat.net/",
+			"depth": 6,
+			"indexed": true
+		},
+		{
+			"at": "https://dreamcat.net-extra2",
+			"children": [],
+			"parent": "https://dreamcat.net/",
+			"depth": 6,
+			"indexed": true
+		},
+		{
+			"at": "https://parallelworlds.net-extra1",
+			"children": [],
+			"parent": "https://parallelworlds.net/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://parallelworlds.net-extra2",
+			"children": [],
+			"parent": "https://parallelworlds.net/",
+			"depth": 3,
+			"indexed": true
+		},
+		{
+			"at": "https://catfriends.org-extra1",
+			"children": [],
+			"parent": "https://catfriends.org/",
+			"depth": 4,
+			"indexed": true
+		},
+		{
+			"at": "https://catfriends.org-extra2",
+			"children": [],
+			"parent": "https://catfriends.org/",
+			"depth": 4,
 			"indexed": true
 		}
 	],

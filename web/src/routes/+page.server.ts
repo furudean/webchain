@@ -9,6 +9,7 @@ export const load: PageServerLoad = async ({
 	start: string | null
 	end: string | null
 }> => {
+	// const request = await fetch("https://webchain.milkmedicine.net/crawler/data.json")
 	const request = await fetch("/crawler/data.json")
 
 	if (!request.ok) {
