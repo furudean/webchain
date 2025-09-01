@@ -1,11 +1,11 @@
 import type GraphType from "graphology"
 import type { Node } from "$lib/node"
 
-export async function buildGraph(
+export function build_graph(
 	hashmap: Map<string, Node>,
 	positions: Map<string, { x: number; y: number }>,
 	Graph: typeof GraphType
-): Promise<GraphType> {
+): GraphType {
 	const graph = new Graph()
 
 	// Add nodes

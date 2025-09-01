@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte"
 	import type { Sigma, Camera } from "sigma"
-	import { calculateTreeLayout, buildGraph } from "$lib/graph"
+	import { calculate_tree_layout, build_graph } from "$lib/graph"
 	import type { Node } from "$lib/node"
 	import type ForceSupervisor from "graphology-layout-force/worker"
 
@@ -34,8 +34,8 @@
 				Object.values(nodes).map((node, i) => [i.toString(), node])
 			)
 
-			const positions = calculateTreeLayout(hashmap)
-			const graph = await buildGraph(hashmap, positions, Graph)
+			const positions = calculate_tree_layout(hashmap)
+			const graph = build_graph(hashmap, positions, Graph)
 			renderer = new Sigma(graph, graph_element, {
 				nodeProgramClasses: {
 					image: NodeImageProgram,
@@ -50,7 +50,7 @@
 				enableCameraRotation: false,
 				cameraPanBoundaries: {
 					tolerance: 400
-				},
+				}
 			})
 
 			let dragged_node: string | null = null
@@ -60,7 +60,7 @@
 				isNodeFixed(_, attr) {
 					return attr.highlighted
 				},
-				settings: {},
+				settings: {}
 			})
 			if (document.hasFocus()) {
 				layout.start()
@@ -72,6 +72,7 @@
 				graph.setNodeAttribute(dragged_node, "highlighted", true)
 				if (!renderer.getCustomBBox())
 					renderer.setCustomBBox(renderer.getBBox())
+				graph_element.style.cursor = "grabbing"
 			})
 
 			renderer.on("moveBody", ({ event }) => {
@@ -93,6 +94,7 @@
 				}
 				is_dragging = false
 				dragged_node = null
+				graph_element.style.cursor = ""
 			}
 			renderer.on("upNode", handle_up)
 			renderer.on("upStage", handle_up)
@@ -116,24 +118,28 @@
 	})
 </script>
 
-<div id="graph" bind:this={graph_element}></div>
+<div class="graph-container">
+	<div class="graph" bind:this={graph_element}></div>
+</div>
 
 <style>
-	#graph {
+	.graph-container {
 		grid-area: graph;
-		width: 100%;
-		height: 100vh;
-
+		overflow: hidden;
+		position: relative;
+	}
+	.graph {
 		background-image:
 			linear-gradient(to right, hsl(0, 0%, 95%) 1px, transparent 1px),
 			linear-gradient(to bottom, hsl(0, 0%, 95%) 1px, transparent 1px);
 		background-size: 83.3333px 83.3333px;
 		background-position: 8.33333% 91.6667%;
-		cursor: grab;
+		position: absolute;
+		inset: 0;
 	}
 
-	#graph:active {
-		cursor: grabbing;
+	.graph:active {
+		cursor: move;
 	}
 
 	/* @media (prefers-color-scheme: dark) {
