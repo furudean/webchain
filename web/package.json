@@ -26,7 +26,7 @@
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^3.0.0",
 		"graphology": "^0.26.0",
-		"graphology-layout-forceatlas2": "^0.10.1",
+		"graphology-layout-force": "^0.2.4",
 		"node-html-parser": "^7.0.1",
 		"oklab.ts": "^2.2.7",
 		"prettier": "^3.4.2",

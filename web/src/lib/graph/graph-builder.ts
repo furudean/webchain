@@ -1,17 +1,11 @@
 import type GraphType from "graphology"
 import type { Node } from "$lib/node"
-import type FA2LayoutSupervisor from "graphology-layout-forceatlas2/worker"
 
 export async function buildGraph(
 	hashmap: Map<string, Node>,
 	positions: Map<string, { x: number; y: number }>,
 	Graph: typeof GraphType
-): Promise<{ graph: GraphType; layout_supervisor: FA2LayoutSupervisor }> {
-	const { default: forceAtlas2 } = await import("graphology-layout-forceatlas2")
-	const { default: FA2LayoutSupervisor } = await import(
-		"graphology-layout-forceatlas2/worker"
-	)
-
+): Promise<GraphType> {
 	const graph = new Graph()
 
 	// Add nodes
@@ -21,12 +15,12 @@ export async function buildGraph(
 		const label = url.hostname + (url.pathname === "/" ? "" : url.pathname)
 
 		// Calculate size based on depth - root is bigger, then gradually shrink
-		const base_size = 24
-		// const scale = Math.max(0.5, 1 - node.depth * 0.05)
+		const base_size = 20
+		const scale = Math.max(0.5, 1 - node.depth * 0.06)
 
 		graph.addNode(id, {
 			label: label,
-			size: base_size,
+			size: base_size * scale,
 			x: pos.x,
 			y: pos.y,
 			type: node.depth === 0 ? "square" : "image",
@@ -35,7 +29,7 @@ export async function buildGraph(
 					? `/api/favicon?url=${encodeURIComponent(node.at)}`
 					: undefined,
 			url: node.at,
-			color: node.color
+			color: node.color,
 		})
 	}
 
@@ -48,21 +42,14 @@ export async function buildGraph(
 			if (parent_id) {
 				graph.addEdge(parent_id, id, {
 					size: 3,
-					color: "#efefefff",
+					color: "#e0e0e0ff",
 					type: "arrow"
 				})
 			}
 		}
 	}
 
-	const layout_supervisor = new FA2LayoutSupervisor(graph, {
-		settings: {
-			...forceAtlas2.inferSettings(graph),
-			scalingRatio: 1000,
-			gravity: 0.3,
-			slowDown: 1000,
-		}
-	})
 
-	return { graph, layout_supervisor }
+
+	return graph
 }

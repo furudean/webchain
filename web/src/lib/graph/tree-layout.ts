@@ -80,7 +80,7 @@ export const calculateTreeLayout = (hashmap: Map<string, Node>) => {
 				childX,
 				childY,
 				nextRadius,
-				childAngle - childAngleSpan * 0.5,
+				childAngle - childAngleSpan,
 				childAngleSpan,
 				depth + 1
 			)

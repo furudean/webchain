@@ -217,55 +217,6 @@
 			"indexed": true
 		},
 		{
-			"at": "https://webchain.milkmedicine.net-extra1",
-			"children": [],
-			"parent": "https://webchain.milkmedicine.net",
-			"depth": 1,
-			"indexed": true
-		},
-		{
-			"at": "https://webchain.milkmedicine.net-extra2",
-			"children": [],
-			"parent": "https://webchain.milkmedicine.net",
-			"depth": 1,
-			"indexed": true
-		},
-		{
-			"at": "https://www.himawari.fun-extra1",
-			"children": [],
-			"parent": "https://www.himawari.fun/",
-			"depth": 2,
-			"indexed": true
-		},
-		{
-			"at": "https://www.himawari.fun-extra2",
-			"children": [],
-			"parent": "https://www.himawari.fun/",
-			"depth": 2,
-			"indexed": true
-		},
-		{
-			"at": "https://natu.moe-extra1",
-			"children": [],
-			"parent": "https://natu.moe/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://natu.moe-extra2",
-			"children": [],
-			"parent": "https://natu.moe/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://meows.zip-extra1",
-			"children": [],
-			"parent": "https://meows.zip",
-			"depth": 4,
-			"indexed": true
-		},
-		{
 			"at": "https://meows.zip-extra2",
 			"children": [],
 			"parent": "https://meows.zip",
