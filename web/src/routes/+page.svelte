@@ -22,9 +22,9 @@
 <style>
 	.container {
 		display: grid;
-		grid-template-areas: "aside graph";
+		grid-template-areas: "sidebar graph";
 		grid-template-columns: 1fr 2fr;
-		width: 100vw;
-		height: 100vh;
+		width: 100%;
+		min-height: 100vh;
 	}
 </style>

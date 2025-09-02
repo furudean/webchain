@@ -9,7 +9,6 @@
 </script>
 
 
-<div class="container">
 <aside>
 	<div class="content">
 			<h1>milkmedicine webchain</h1>
@@ -46,8 +45,6 @@
 	</div>
 </aside>
 
-</div>
-
 <style>
 	aside {
 		grid-area: sidebar;
@@ -57,10 +54,7 @@
 		position: relative;
 		border-right: 1px solid hsl(0, 0%, 90%);
 		box-sizing: border-box;
-		height: 100%;
-	}
-
-	.content {
-
+		min-height: 100%;
+		display: flex;
 	}
 </style>
