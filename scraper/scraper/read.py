@@ -14,12 +14,9 @@ async def read_chain_into_table(root: str) -> HashTable:
 
     for i in saved_nodes:
         T.insert(i)
-
-    T.setTimestamp(datetime.fromtimestamp(time.time(), tz=timezone.utc).isoformat())
-
     return T
 
 def CrawledNodeToNode(to_convert: CrawledNode) -> Node:
     # print(f"url: {to_convert.at} parent: {to_convert.parent} children: {to_convert.children}")
     # TO DO : use Node.addChild instead of direct assignment
-    return Node(to_convert.at, to_convert.parent, to_convert.children)
+    return Node(to_convert.at, to_convert.parent, to_convert.children, to_convert.indexed)
