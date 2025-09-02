@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte"
 	import type { Sigma, Camera } from "sigma"
+	import type GraphType from 'graphology'
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
 	import type { Node } from "$lib/node"
 	import type ForceSupervisor from "graphology-layout-force/worker"
@@ -9,13 +10,19 @@
 
 	let { nodes }: { nodes: Node[] } = $props()
 
-	function update_camera(camera: Camera) {
+	function update_camera(camera: Camera): void {
 		const size = `${100 / camera.ratio}px`
 		graph_element.style.backgroundSize = `${size} ${size}`
 
 		const pos_y = `${50 - (camera.x * 100) / camera.ratio}%`
 		const pos_x = `${50 + (camera.y * 100) / camera.ratio}%`
 		graph_element.style.backgroundPosition = `${pos_y} ${pos_x}`
+	}
+
+	function clear_highlighted(graph: GraphType): void {
+		for (const node of graph.nodes()) {
+			graph.setNodeAttribute(node, 'highlighted', false)
+		}
 	}
 
 	onMount(() => {
@@ -47,6 +54,8 @@
 				labelRenderedSizeThreshold: 13,
 				maxCameraRatio: 4,
 				minCameraRatio: 0.75,
+				zoomingRatio: 1.3,
+				zoomDuration: 100,
 				enableCameraRotation: false,
 				cameraPanBoundaries: {
 					tolerance: 400
@@ -69,6 +78,7 @@
 			renderer.on("downNode", (e) => {
 				is_dragging = true
 				dragged_node = e.node
+				clear_highlighted(graph)
 				graph.setNodeAttribute(dragged_node, "highlighted", true)
 				if (!renderer.getCustomBBox())
 					renderer.setCustomBBox(renderer.getBBox())
@@ -89,15 +99,17 @@
 			})
 
 			function handle_up() {
-				if (dragged_node) {
-					graph.removeNodeAttribute(dragged_node, "highlighted")
-				}
+				// if (dragged_node) {
+				// 	graph.removeNodeAttribute(dragged_node, "highlighted")
+				// }
 				is_dragging = false
 				dragged_node = null
 				graph_element.style.cursor = ""
 			}
 			renderer.on("upNode", handle_up)
-			renderer.on("upStage", handle_up)
+			renderer.on("downStage", (event) => {
+				clear_highlighted(graph)
+			})
 
 			const camera = renderer.getCamera()
 			camera.setState({
@@ -125,17 +137,18 @@
 <style>
 	.graph-container {
 		grid-area: graph;
-		overflow: hidden;
 		position: relative;
+		overflow: hidden;
 	}
+
 	.graph {
+		width: 100%;
+		height: 100%;
 		background-image:
-			linear-gradient(to right, hsl(0, 0%, 95%) 1px, transparent 1px),
-			linear-gradient(to bottom, hsl(0, 0%, 95%) 1px, transparent 1px);
+			linear-gradient(to right, hsl(209, 100%, 94%) 1px, transparent 1px),
+			linear-gradient(to bottom, hsl(209, 100%, 94%) 1px, transparent 1px);
 		background-size: 83.3333px 83.3333px;
 		background-position: 8.33333% 91.6667%;
-		position: absolute;
-		inset: 0;
 	}
 
 	.graph:active {

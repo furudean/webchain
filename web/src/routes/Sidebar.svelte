@@ -8,8 +8,11 @@
 	} = $props()
 </script>
 
+
+<div class="container">
 <aside>
-	<h1>milkmedicine webchain</h1>
+	<div class="content">
+			<h1>milkmedicine webchain</h1>
 	<p>
 		a <a
 			href="https://github.com/furudean/webchain/blob/main/SPEC.md"
@@ -40,13 +43,24 @@
 		The last crawl fininished {new Date(end).toLocaleString("en-US").toLowerCase()},
 		which took {(new Date(end).getTime() - new Date(start).getTime()) / 1000} seconds
 	{/if}
+	</div>
 </aside>
+
+</div>
 
 <style>
 	aside {
-		grid-area: aside;
-		position: relative;
+		grid-area: sidebar;
 		z-index: 1;
 		padding: 0 1rem;
+		background: white;
+		position: relative;
+		border-right: 1px solid hsl(0, 0%, 90%);
+		box-sizing: border-box;
+		height: 100%;
+	}
+
+	.content {
+
 	}
 </style>

@@ -15,8 +15,8 @@
 </svelte:head>
 
 <div class="container">
-	<Sidebar start={data.start} end={data.end}></Sidebar>
 	<Graph nodes={data.nodes}></Graph>
+	<Sidebar start={data.start} end={data.end}></Sidebar>
 </div>
 
 <style>
