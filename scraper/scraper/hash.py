@@ -5,7 +5,8 @@ from scraper.node import Node
 class HashTable:
 
     tablesize = 256
-    timestamp = datetime.MINYEAR
+    start:datetime = datetime.datetime.min
+    end:datetime = datetime.datetime.min
 
     def __init__(self, tablesize=None):
         if tablesize:
@@ -22,7 +23,7 @@ class HashTable:
             s = f'{i} : {self.table[i]}\n'
             r += s
 
-        return f"[ {self.timestamp} ]\n{r}"
+        return f"start : [ {self.start} ]\nend : [ {self.end} ]\n{r}"
 
     # pass mode = 1 for condensed output, mode = 0 for default behavior (view all table entries)
     def view(self, mode = 0):
@@ -31,20 +32,23 @@ class HashTable:
             for i in range(0, self.tablesize):
                 s = f'{i} : {self.table[i]}\n'
                 r += s
-
-            print(f"[ {self.timestamp} ]\n{r}")
+            d = f"{datetime.timedelta.total_seconds(datetime.datetime.fromisoformat(self.end) - datetime.datetime.fromisoformat(self.start))}"
+            print(f"start : [ {self.start} ]\nend : [ {self.end} ]\nruntime : {d} seconds \n{r}")
         else:
             r = ''
             for i in range(0, self.tablesize):
                 if not self.table[i] == []:
                     s = f'{i} : {self.table[i]}\n'
                     r += s
+            d = f"{datetime.timedelta.total_seconds(datetime.datetime.fromisoformat(self.end) - datetime.datetime.fromisoformat(self.start))}"
+            print(f"start : [ {self.start} ]\nend : [ {self.end} ]\nruntime : {d} seconds \n{r}")
 
-            print(f"[ {self.timestamp} ]\n{r}")
 
+    def setStart(self, start : datetime):
+        self.start = start
 
-    def setTimestamp(self, ts : datetime):
-        self.timestamp = ts
+    def setEnd(self, end : datetime):
+        self.end = end
 
 
     def hash(self, key: str, mode=0):
@@ -97,7 +101,8 @@ class HashTable:
     def toDict(self):
         r = {}
         r.update({"tablesize" : self.tablesize})
-        r.update({"timestamp" : self.timestamp})
+        r.update({"start" : self.start})
+        r.update({"end" : self.end})
         t = {}
         for i in range(0, self.tablesize):
             if not (self.table[i] == []):
@@ -118,8 +123,10 @@ class HashTable:
         for (k,v) in d.items():
             if k == 'tablesize':
                 self.tablesize = v
-            elif k == 'timestamp':
-                self.timestamp = v
+            elif k == 'start':
+                self.start = v
+            elif k == 'end':
+                self.end = v
             elif k == 'table':
                 l = len(v)
                 for i in range(0,l):
@@ -135,11 +142,11 @@ class HashTable:
                         self.table.append(x)
 
     def serialize(self):
-        with open(f'table.json','w') as f:
+        with open(f'../web/static/crawler/table.json','w') as f:
             json.dump(self.toDict(),f)
 
     def deserialize(self):
-        with open(f'table.json','r') as f:
+        with open(f'../web/static/crawler/table.json','r') as f:
             self.fromDict(json.load(f))
 
 # def random_url():
