@@ -49,7 +49,7 @@
 					square: NodeSquareProgram
 				},
 				labelSize: 10,
-				labelFont: 'system-ui, sans-serif',
+				labelFont: "system-ui, sans-serif",
 				labelDensity: 0.7,
 				labelGridCellSize: 70,
 				labelRenderedSizeThreshold: 12,
@@ -70,7 +70,9 @@
 				isNodeFixed(_, attr) {
 					return attr.highlighted
 				},
-				settings: {}
+				settings: {
+					repulsion: 0.2
+				}
 			})
 			if (document.hasFocus()) {
 				layout.start()
@@ -79,14 +81,13 @@
 			window.addEventListener("focus", () => layout?.start())
 
 			renderer.on("enterNode", (e) => {
-				const node_attributes = graph.getNodeAttributes(e.node)
-				// show overlay
-				graph_element.style.cursor = "pointer"
+				graph_element.style.cursor = "grab"
+				// show overlay here
 			})
 
 			renderer.on("leaveNode", () => {
-				// hide overlay
 				graph_element.style.cursor = ""
+				// hide overlay here
 			})
 
 			renderer.on("doubleClickNode", (e) => {
@@ -120,13 +121,14 @@
 				event.original.stopPropagation()
 			})
 
+			renderer.on("doubleClickStage", (e) => {
+				e.preventSigmaDefault()
+			})
+
 			function handle_up() {
-				// if (dragged_node) {
-				// 	graph.removeNodeAttribute(dragged_node, "highlighted")
-				// }
 				is_dragging = false
 				dragged_node = null
-				graph_element.style.cursor = ""
+				graph_element.style.cursor = "grab"
 			}
 			renderer.on("upNode", handle_up)
 			renderer.on("downStage", (event) => {
