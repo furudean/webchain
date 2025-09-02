@@ -56,11 +56,16 @@ async def json(url: str):
 @webchain.command
 @asyncio_click
 async def hash_test():
+    start = time.time()
     T = await read_chain_into_table("https://webchain.milkmedicine.net")
-    T.serialize()
-    N = HashTable()
-    N.deserialize()
-    N.view(1)
+    end = time.time()
+    T.setStart(datetime.fromtimestamp(start, tz=timezone.utc).isoformat())
+    T.setEnd(datetime.fromtimestamp(end, tz=timezone.utc).isoformat())
+    # T.serialize()
+    T.view(1)
+    # N = HashTable()
+    # N.deserialize()
+    # N.view(1)
     return
 
 
