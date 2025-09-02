@@ -14,9 +14,9 @@
 		const size = `${100 / camera.ratio}px`
 		graph_element.style.backgroundSize = `${size} ${size}`
 
-		const pos_y = `${50 - (camera.x * 100) / camera.ratio}%`
-		const pos_x = `${50 + (camera.y * 100) / camera.ratio}%`
-		graph_element.style.backgroundPosition = `${pos_y} ${pos_x}`
+		const pos_x = `${50 - (camera.x * 100) / camera.ratio}%`
+		const pos_y = `${50 + (camera.y * 100) / camera.ratio}%`
+		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
 	}
 
 	function clear_highlighted(graph: GraphType): void {
@@ -49,13 +49,14 @@
 					square: NodeSquareProgram
 				},
 				labelSize: 10,
+				labelFont: 'system-ui, sans-serif',
 				labelDensity: 0.7,
 				labelGridCellSize: 70,
-				labelRenderedSizeThreshold: 13,
+				labelRenderedSizeThreshold: 12,
 				maxCameraRatio: 4,
 				minCameraRatio: 0.75,
-				zoomingRatio: 1.3,
-				zoomDuration: 100,
+				zoomingRatio: 0.7,
+				zoomDuration: 200,
 				enableCameraRotation: false,
 				cameraPanBoundaries: {
 					tolerance: 400
@@ -80,6 +81,20 @@
 			renderer.on("enterNode", (e) => {
 				const node_attributes = graph.getNodeAttributes(e.node)
 				// show overlay
+				graph_element.style.cursor = "pointer"
+			})
+
+			renderer.on("leaveNode", () => {
+				// hide overlay
+				graph_element.style.cursor = ""
+			})
+
+			renderer.on("doubleClickNode", (e) => {
+				e.preventSigmaDefault()
+				const node_attributes = graph.getNodeAttributes(e.node)
+				if (node_attributes.url) {
+					window.open(node_attributes.url, "_blank")
+				}
 			})
 
 			renderer.on("downNode", (e) => {
@@ -120,7 +135,7 @@
 
 			const camera = renderer.getCamera()
 			camera.setState({
-				ratio: 1.2
+				ratio: 1.3
 			})
 			camera.addListener("updated", update_camera)
 			update_camera(camera)
@@ -152,8 +167,8 @@
 		background-image:
 			linear-gradient(to right, hsl(209, 100%, 94%) 1px, transparent 1px),
 			linear-gradient(to bottom, hsl(209, 100%, 94%) 1px, transparent 1px);
-		background-size: 83.3333px 83.3333px;
-		background-position: 8.33333% 91.6667%;
+		/* background-size: 83.3333px 83.3333px;
+		background-position: 8.33333% 91.6667%; */
 	}
 
 	.graph:active {
