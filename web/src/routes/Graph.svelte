@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte"
 	import type { Sigma, Camera } from "sigma"
-	import type GraphType from 'graphology'
+	import type GraphType from "graphology"
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
 	import type { Node } from "$lib/node"
 	import type ForceSupervisor from "graphology-layout-force/worker"
@@ -21,7 +21,7 @@
 
 	function clear_highlighted(graph: GraphType): void {
 		for (const node of graph.nodes()) {
-			graph.setNodeAttribute(node, 'highlighted', false)
+			graph.setNodeAttribute(node, "highlighted", false)
 		}
 	}
 
@@ -74,6 +74,13 @@
 			if (document.hasFocus()) {
 				layout.start()
 			}
+			window.addEventListener("blur", () => layout?.stop())
+			window.addEventListener("focus", () => layout?.start())
+
+			renderer.on("enterNode", (e) => {
+				const node_attributes = graph.getNodeAttributes(e.node)
+				// show overlay
+			})
 
 			renderer.on("downNode", (e) => {
 				is_dragging = true
@@ -117,8 +124,6 @@
 			})
 			camera.addListener("updated", update_camera)
 			update_camera(camera)
-			window.addEventListener("blur", () => layout?.stop())
-			window.addEventListener("focus", () => layout?.start())
 		}
 
 		init_graph().catch(console.error)
