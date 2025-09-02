@@ -17,15 +17,15 @@ class Node:
     count = itertools.count()
     childlimit = 3
 
-    def __init__(self, url: str, parent: str | None, children: list[str] | None, index = -1):
+    def __init__(self, url: str, parent: str | None, children: list[str] | None, indexed = False):
         self.id = next(self.count)
         self.url = url
         self.parent = parent
         self.children = children
-        self.index = index
+        self.indexed = indexed
 
     def __repr__(self):
-        return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children}'
+        return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children} indexed : {self.indexed}'
 
     def toDict(self):
         r = {}
@@ -36,7 +36,7 @@ class Node:
         for i in self.children:
             child_list.append(i)
         r.update({'children' : child_list})
-        r.update({'index': self.index})
+        r.update({'indexed': self.indexed})
         return r
 
     def fromDict(self, d: dict):
@@ -44,7 +44,7 @@ class Node:
         self.url = ''
         self.parent = ''
         self.children = []
-        self.index = -1
+        self.indexed = False
         for (k,v) in d.items():
             if k == 'id':
                 self.id = v
@@ -55,8 +55,8 @@ class Node:
             elif k == 'children':
                 for i in v:
                     self.children.append(i)
-            elif k == 'index':
-                self.index = v
+            elif k == 'indexed':
+                self.indexed = v
 
     # if free slot exists, creates a leaf node from child_url and adds as a child.
     # this might never get used. for one, since an added child with children itself would have to have the children linked in a separate function call.
