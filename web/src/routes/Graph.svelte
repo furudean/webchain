@@ -10,6 +10,17 @@
 
 	let { nodes }: { nodes: Node[] } = $props()
 
+	let hovered_node: string | undefined = $state()
+	let highlighted_node: string | undefined = $state()
+
+	let display_node: string | undefined = $derived(
+		hovered_node || highlighted_node
+	)
+
+	let graph: GraphType | undefined = $state()
+	let renderer: Sigma | undefined = $state()
+	let layout: ForceSupervisor
+
 	function update_camera(camera: Camera): void {
 		const size = `${100 / camera.ratio}px`
 		graph_element.style.backgroundSize = `${size} ${size}`
@@ -26,9 +37,6 @@
 	}
 
 	onMount(() => {
-		let renderer: Sigma
-		let layout: ForceSupervisor
-
 		const init_graph = async () => {
 			const { default: Sigma } = await import("sigma")
 			const { default: Graph } = await import("graphology")
@@ -42,7 +50,7 @@
 			)
 
 			const positions = calculate_tree_layout(hashmap)
-			const graph = build_graph(hashmap, positions, Graph)
+			graph = build_graph(hashmap, positions, Graph)
 			renderer = new Sigma(graph, graph_element, {
 				nodeProgramClasses: {
 					image: NodeImageProgram,
@@ -81,16 +89,17 @@
 			window.addEventListener("focus", () => layout?.start())
 
 			renderer.on("enterNode", (e) => {
-				graph_element.style.cursor = "grab"
-				// show overlay here
+				graph_element.style.cursor = "pointer"
+				hovered_node = e.node
 			})
 
-			renderer.on("leaveNode", () => {
+			renderer.on("leaveNode", (e) => {
 				graph_element.style.cursor = ""
-				// hide overlay here
+				hovered_node = undefined
 			})
 
 			renderer.on("doubleClickNode", (e) => {
+				if (!graph) return
 				e.preventSigmaDefault()
 				const node_attributes = graph.getNodeAttributes(e.node)
 				if (node_attributes.url) {
@@ -99,8 +108,10 @@
 			})
 
 			renderer.on("downNode", (e) => {
+				if (!graph || !renderer) return
 				is_dragging = true
 				dragged_node = e.node
+				highlighted_node = e.node
 				clear_highlighted(graph)
 				graph.setNodeAttribute(dragged_node, "highlighted", true)
 				if (!renderer.getCustomBBox())
@@ -109,6 +120,8 @@
 			})
 
 			renderer.on("moveBody", ({ event }) => {
+				if (!graph || !renderer) return
+
 				if (!is_dragging || !dragged_node) return
 
 				const pos = renderer.viewportToGraph(event)
@@ -131,7 +144,9 @@
 				graph_element.style.cursor = "grab"
 			}
 			renderer.on("upNode", handle_up)
-			renderer.on("downStage", (event) => {
+			renderer.on("upStage", () => {
+				if (!graph) return
+				highlighted_node = undefined
 				clear_highlighted(graph)
 			})
 
@@ -153,19 +168,33 @@
 </script>
 
 <div class="graph-container">
+	{#if display_node}
+		<pre>{JSON.stringify(graph?.getNodeAttributes(display_node), null, 2)}</pre>
+	{/if}
 	<div class="graph" bind:this={graph_element}></div>
 </div>
 
 <style>
+	pre {
+		position: absolute;
+		top: -0.5em;
+		left: 0;
+		font-family: monospace;
+		font-size: 9vh;
+		opacity: 0.02;
+		margin: 0;
+	}
+
 	.graph-container {
 		grid-area: graph;
-		position: relative;
 		overflow: hidden;
+		position: relative;
+		display: flex;
 	}
 
 	.graph {
-		width: 100%;
-		height: 100%;
+		width: 100vw;
+		height: 100vh;
 		background-image:
 			linear-gradient(to right, hsl(209, 100%, 94%) 1px, transparent 1px),
 			linear-gradient(to bottom, hsl(209, 100%, 94%) 1px, transparent 1px);

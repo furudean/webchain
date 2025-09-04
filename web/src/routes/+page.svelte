@@ -16,15 +16,15 @@
 
 <div class="container">
 	<Graph nodes={data.nodes}></Graph>
-	<Sidebar start={data.start} end={data.end}></Sidebar>
+	<!-- <Sidebar start={data.start} end={data.end}></Sidebar> -->
 </div>
 
 <style>
 	.container {
-		display: grid;
-		grid-template-areas: "sidebar graph";
+		/* display: grid; */
+		/* grid-template-areas: "sidebar graph";
 		grid-template-columns: 1fr 2fr;
 		width: 100%;
-		min-height: 100vh;
+		min-height: 100vh; */
 	}
 </style>
