@@ -8,14 +8,39 @@
 
 	let graph_element: HTMLElement
 
-	let { nodes }: { nodes: Node[] } = $props()
+	let {
+		nodes,
+		hovered_node = $bindable(),
+		highlighted_node = $bindable()
+	}: {
+		nodes: Node[]
+		hovered_node: string | undefined
+		highlighted_node: string | undefined
+	} = $props()
 
-	let hovered_node: string | undefined = $state()
-	let highlighted_node: string | undefined = $state()
+	let last_x: number | undefined = $state()
+	let last_y: number | undefined = $state()
 
 	let display_node: string | undefined = $derived(
 		hovered_node || highlighted_node
 	)
+
+	// $effect(() => {
+	// 	if (!graph) return
+	// 	if (highlighted_node) return
+	// 	if (hovered_node) {
+	// 		graph?.setNodeAttribute(hovered_node, "highlighted", true)
+	// 		renderer?.getCamera().animate({
+	// 			x: graph.getNodeAttribute(hovered_node, "x"),
+	// 			y: graph.getNodeAttribute(hovered_node, "y"),
+	// 			ratio: 1.2
+	// 		}, {
+	// 			duration: 500
+	// 		})
+	// 	} else {
+	// 		clear_highlighted(graph)
+	// 	}
+	// })
 
 	let graph: GraphType | undefined = $state()
 	let renderer: Sigma | undefined = $state()
@@ -46,7 +71,7 @@
 				"graphology-layout-force/worker"
 			)
 			const hashmap = new Map(
-				Object.values(nodes).map((node, i) => [i.toString(), node])
+				Object.values(nodes).map((node) => [node.at, node])
 			)
 
 			const positions = calculate_tree_layout(hashmap)
@@ -79,10 +104,10 @@
 					return attr.highlighted
 				},
 				settings: {
-					repulsion: 0.2
+					// repulsion: 0.2
 				}
 			})
-			if (document.hasFocus()) {
+			if ("hasFocus" in document && document.hasFocus()) {
 				layout.start()
 			}
 			window.addEventListener("blur", () => layout?.stop())
@@ -129,6 +154,9 @@
 				graph.setNodeAttribute(dragged_node, "x", pos.x)
 				graph.setNodeAttribute(dragged_node, "y", pos.y)
 
+				last_x = pos.x
+				last_y = pos.y
+
 				event.preventSigmaDefault()
 				event.original.preventDefault()
 				event.original.stopPropagation()
@@ -150,6 +178,7 @@
 				clear_highlighted(graph)
 			})
 
+
 			const camera = renderer.getCamera()
 			camera.setState({
 				ratio: 1.3
@@ -160,23 +189,30 @@
 
 		init_graph().catch(console.error)
 
+
 		return function onDestroy() {
+			layout.kill()
 			renderer?.kill()
-			layout?.kill()
 		}
 	})
 </script>
 
 <div class="graph-container">
 	{#if display_node}
-		<pre>{JSON.stringify(graph?.getNodeAttributes(display_node), null, 2)}</pre>
+		{#key last_x || last_y}
+			<pre aria-hidden="true">{JSON.stringify(
+					graph?.getNodeAttributes(display_node),
+					null,
+					2
+				)}</pre>
+		{/key}
 	{/if}
 	<div class="graph" bind:this={graph_element}></div>
 </div>
 
 <style>
 	pre {
-		position: absolute;
+		position: fixed;
 		top: -0.5em;
 		left: 0;
 		font-family: monospace;
@@ -193,11 +229,15 @@
 	}
 
 	.graph {
+		position: fixed;
+		top: 0;
+		left: 0;
 		width: 100vw;
 		height: 100vh;
 		background-image:
-			linear-gradient(to right, hsl(209, 100%, 94%) 1px, transparent 1px),
-			linear-gradient(to bottom, hsl(209, 100%, 94%) 1px, transparent 1px);
+			linear-gradient(to right, hsl(209, 100%, 97%) 1px, transparent 1px),
+			linear-gradient(to bottom, hsl(209, 100%, 90%) 1px, transparent 1px);
+		background-repeat: none;
 		/* background-size: 83.3333px 83.3333px;
 		background-position: 8.33333% 91.6667%; */
 	}
