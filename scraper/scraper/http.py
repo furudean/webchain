@@ -1,6 +1,9 @@
+import logging
+
 import aiohttp
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+logger = logging.getLogger()
 
 def get_session() -> aiohttp.ClientSession:
     return aiohttp.ClientSession(
@@ -21,17 +24,14 @@ async def load_page_html(
     url: str,
     session: aiohttp.ClientSession,
     referrer: str | None,
-    print_error=True,
 ) -> str | None:
-    def log(msg: str) -> None:
-        if print_error:
-            print(msg)
 
     try:
         headers = {}
         if referrer is not None:
             headers['Referer'] = referrer
 
+        logger.info(f'get {url}...')
         async with session.get(
             url, timeout=aiohttp.ClientTimeout(total=5), headers=headers
         ) as response:
@@ -45,23 +45,23 @@ async def load_page_html(
         aiohttp.ServerTimeoutError,
     ) as e:
         # server returned no response at all. candidate for retry
-        log(f'server connection error for url {url}: ' + type(e).__name__)
+        logger.info(f'server connection error for url {url}: ' + type(e).__name__)
         raise
     except (aiohttp.InvalidURL, aiohttp.ClientConnectionError) as e:
         # some kind of low-level connection error (DNS failure, refused connection, etc)
         # we assume these are permanent and do not retry
-        log(f'could not connect to {url}: ' + type(e).__name__)
+        logger.info(f'could not connect to {url}: ' + type(e).__name__)
         return None
     except (aiohttp.TooManyRedirects, aiohttp.RedirectClientError) as e:
-        log(f'bad redirects for url {url}: ' + type(e).__name__)
+        logger.info(f'bad redirects for url {url}: ' + type(e).__name__)
         return None
     except aiohttp.ClientResponseError as e:
-        log(f'{e.status} url {url}')
+        logger.info(f'{e.status} {url}')
         if 400 <= e.status < 500:
             # client error, do not retry
             return None
         # server error, candidate for retry
         raise
     except InvalidContentType:
-        log(f'non-html content-type for url {url}: {content_type}')
+        logger.info(f'non-html content-type for url {url}: {content_type}')
         return None
