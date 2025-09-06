@@ -9,7 +9,9 @@ export const load: PageServerLoad = async ({
 	start: Date | null
 	end: Date | null
 }> => {
-	const request = await fetch("https://webchain.milkmedicine.net/crawler/data.json")
+	const request = await fetch(
+		"https://webchain.milkmedicine.net/crawler/data.json"
+	)
 	// const request = await fetch("/crawler/data.json")
 
 	if (!request.ok) {
@@ -31,7 +33,10 @@ export const load: PageServerLoad = async ({
 			nodes: nodes.map((node) => ({
 				...node,
 				color: string_to_color(node.at),
-				url: new URL(node.at)
+				url: new URL(node.at),
+				label:
+					new URL(node.at).hostname +
+					(new URL(node.at).pathname === "/" ? "" : new URL(node.at).pathname)
 			})),
 			start: new Date(start),
 			end: new Date(end)

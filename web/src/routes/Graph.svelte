@@ -5,42 +5,19 @@
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
 	import type { Node } from "$lib/node"
 	import type ForceSupervisor from "graphology-layout-force/worker"
+	import { highlighted_node, hovered_node, set_graph, set_hovered_node,set_highlighted_node } from "$lib/node_state"
 
 	let graph_element: HTMLElement
 
-	let {
-		nodes,
-		hovered_node = $bindable(),
-		highlighted_node = $bindable()
-	}: {
-		nodes: Node[]
-		hovered_node: string | undefined
-		highlighted_node: string | undefined
-	} = $props()
+	let { nodes }: { nodes: Node[] } = $props()
 
 	let last_x: number | undefined = $state()
 	let last_y: number | undefined = $state()
 
-	let display_node: string | undefined = $derived(
-		hovered_node || highlighted_node
+	const display_node: string | undefined = $derived(
+		$hovered_node || $highlighted_node
 	)
 
-	// $effect(() => {
-	// 	if (!graph) return
-	// 	if (highlighted_node) return
-	// 	if (hovered_node) {
-	// 		graph?.setNodeAttribute(hovered_node, "highlighted", true)
-	// 		renderer?.getCamera().animate({
-	// 			x: graph.getNodeAttribute(hovered_node, "x"),
-	// 			y: graph.getNodeAttribute(hovered_node, "y"),
-	// 			ratio: 1.2
-	// 		}, {
-	// 			duration: 500
-	// 		})
-	// 	} else {
-	// 		clear_highlighted(graph)
-	// 	}
-	// })
 
 	let graph: GraphType | undefined = $state()
 	let renderer: Sigma | undefined = $state()
@@ -76,6 +53,7 @@
 
 			const positions = calculate_tree_layout(hashmap)
 			graph = build_graph(hashmap, positions, Graph)
+			set_graph(graph)
 			renderer = new Sigma(graph, graph_element, {
 				nodeProgramClasses: {
 					image: NodeImageProgram,
@@ -115,12 +93,12 @@
 
 			renderer.on("enterNode", (e) => {
 				graph_element.style.cursor = "pointer"
-				hovered_node = e.node
+				set_hovered_node(e.node)
 			})
 
 			renderer.on("leaveNode", (e) => {
 				graph_element.style.cursor = ""
-				hovered_node = undefined
+				set_hovered_node(undefined)
 			})
 
 			renderer.on("doubleClickNode", (e) => {
@@ -136,7 +114,7 @@
 				if (!graph || !renderer) return
 				is_dragging = true
 				dragged_node = e.node
-				highlighted_node = e.node
+				set_highlighted_node(e.node)
 				clear_highlighted(graph)
 				graph.setNodeAttribute(dragged_node, "highlighted", true)
 				if (!renderer.getCustomBBox())
@@ -174,10 +152,9 @@
 			renderer.on("upNode", handle_up)
 			renderer.on("upStage", () => {
 				if (!graph) return
-				highlighted_node = undefined
+				set_highlighted_node(undefined)
 				clear_highlighted(graph)
 			})
-
 
 			const camera = renderer.getCamera()
 			camera.setState({
@@ -189,7 +166,6 @@
 
 		init_graph().catch(console.error)
 
-
 		return function onDestroy() {
 			layout.kill()
 			renderer?.kill()
@@ -198,6 +174,7 @@
 </script>
 
 <div class="graph-container">
+	<div class="graph" bind:this={graph_element}></div>
 	{#if display_node}
 		{#key last_x || last_y}
 			<pre aria-hidden="true">{JSON.stringify(
@@ -207,18 +184,19 @@
 				)}</pre>
 		{/key}
 	{/if}
-	<div class="graph" bind:this={graph_element}></div>
 </div>
 
 <style>
 	pre {
 		position: fixed;
-		top: -0.5em;
-		left: 0;
+		top: 0;
+		right: 0;
 		font-family: monospace;
-		font-size: 9vh;
-		opacity: 0.02;
+		font-size: 0.8rem;
 		margin: 0;
+		opacity: 0.4;
+		white-space: break-spaces;
+		max-width: 25vw;
 	}
 
 	.graph-container {
