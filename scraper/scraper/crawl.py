@@ -44,11 +44,8 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
     if seen is None:
         seen = set()
 
-    if not soup.head:
-        return None
-
     # look for the webchain declaration link in the head
-    webchain_tag = soup.head.find(name='link', attrs={'rel': 'webchain'})
+    webchain_tag = soup.find(name='link', attrs={'rel': 'webchain'})
     webchain_href = str(webchain_tag.get('href')) if isinstance(webchain_tag, Tag) else None
 
     def normalize_url(url: str) -> str:
@@ -62,7 +59,7 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
     ):
         return None
 
-    nominations = soup.head.find_all(is_valid_nomination)
+    nominations = soup.find_all(is_valid_nomination)
 
     hrefs = [
         str(tag.get('href'))

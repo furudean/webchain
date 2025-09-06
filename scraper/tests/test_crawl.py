@@ -109,3 +109,18 @@ async def test_mismatched_trailing_slash_on_root():
         seen=seen,
     )
     assert result == ['https://example.org']
+
+async def test_weird_permissive_case():
+    html = """
+    <html>
+    <body>
+        <div>
+            <link rel="webchain" href="https://mychain.net">
+            <link rel="webchain-nomination" href="https://example.org">
+        </div>
+    </body>
+    </html>
+    """
+    result = get_node_nominations(html, root='https://mychain.net')
+    assert result == ['https://example.org']
+
