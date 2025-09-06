@@ -8,6 +8,22 @@ from bs4 import BeautifulSoup, Tag
 from scraper.http import get_session, load_page_html
 
 
+@dataclass
+class HtmlMetadata:
+    title: str | None
+    description: str | None
+
+
+@dataclass
+class CrawledNode:
+    at: str
+    children: list[str]
+    parent: str | None
+    depth: int
+    indexed: bool
+    html_metadata: HtmlMetadata | None
+
+
 def validate_uri(x: str) -> bool:
     """check if a string is a valid uri with both scheme (http/https) and netloc (domain)."""
     try:
@@ -71,20 +87,30 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
     return hrefs
 
 
-@dataclass
-class CrawledNode:
-    at: str
-    children: list[str]
-    parent: str | None
-    depth: int
-    indexed: bool
+def get_html_metadata(html: str) -> HtmlMetadata | None:
+    soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
+
+    if not soup.head:
+        return None
+
+    metadata = HtmlMetadata(title=None, description=None)
+
+    title_element = soup.head.title
+    description_element = soup.head.find('meta', attrs={'name': 'description'})
+
+    metadata.title = title_element.string if title_element else None
+
+    if isinstance(description_element, Tag) and description_element.get('content'):
+        metadata.description = str(description_element.get('content'))
+
+    return metadata
 
 
 async def crawl(
     root_url: str,
     limit_nominations: int = 3,
     recursion_limit: int = 1000,
-    print_error = True,
+    print_error=True,
 ) -> list[CrawledNode]:
     """
     crawl the webchain nomination graph starting from `root_url`.
@@ -108,10 +134,13 @@ async def crawl(
         seen.add(at)
         html = await load_page_html(at, referrer=parent, session=session, print_error=print_error)
         nominations = None
+        html_metadata = None
         if html:
             nominations = get_node_nominations(html, root_url, seen)
             if nominations is not None and limit_nominations != 0:
                 nominations = nominations[:limit_nominations]
+
+            html_metadata = get_html_metadata(html)
 
         if depth == 0 and html is None:
             raise ValueError(f'starting url {root_url} is unreachable')
@@ -122,6 +151,7 @@ async def crawl(
             parent=parent,
             depth=depth,
             indexed=html is not None,
+            html_metadata=html_metadata,
         )
         nodes = [node]
 
