@@ -5,7 +5,13 @@
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
 	import type { Node } from "$lib/node"
 	import type ForceSupervisor from "graphology-layout-force/worker"
-	import { highlighted_node, hovered_node, set_graph, set_hovered_node,set_highlighted_node } from "$lib/node_state"
+	import {
+		highlighted_node,
+		hovered_node,
+		set_graph,
+		set_hovered_node,
+		set_highlighted_node
+	} from "$lib/node_state"
 
 	let graph_element: HTMLElement
 
@@ -17,7 +23,6 @@
 	const display_node: string | undefined = $derived(
 		$hovered_node || $highlighted_node
 	)
-
 
 	let graph: GraphType | undefined = $state()
 	let renderer: Sigma | undefined = $state()
@@ -174,7 +179,6 @@
 </script>
 
 <div class="graph-container">
-	<div class="graph" bind:this={graph_element}></div>
 	{#if display_node}
 		{#key last_x || last_y}
 			<pre aria-hidden="true">{JSON.stringify(
@@ -184,26 +188,25 @@
 				)}</pre>
 		{/key}
 	{/if}
+	<div class="graph" bind:this={graph_element}></div>
 </div>
 
 <style>
-	pre {
-		position: fixed;
-		top: 0;
-		right: 0;
-		font-family: monospace;
-		font-size: 0.8rem;
-		margin: 0;
-		opacity: 0.4;
-		white-space: break-spaces;
-		max-width: 25vw;
-	}
-
 	.graph-container {
 		grid-area: graph;
 		overflow: hidden;
 		position: relative;
 		display: flex;
+	}
+
+	pre {
+		position: fixed;
+		top: -0.5em;
+		left: 0;
+		font-family: monospace;
+		font-size: 8vh;
+		opacity: 0.02;
+		margin: 0;
 	}
 
 	.graph {

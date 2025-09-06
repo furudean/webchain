@@ -1,3 +1,8 @@
+export interface HtmlMetadata {
+	title: string | null
+	description: string | null
+}
+
 export interface CrawledNode {
 	at: string
 	children: string[]
@@ -5,6 +10,7 @@ export interface CrawledNode {
 	depth: number
 	indexed: boolean
 	color: string
+	html_metadata: HtmlMetadata | null
 }
 
 export interface Node extends CrawledNode {

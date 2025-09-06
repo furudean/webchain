@@ -54,7 +54,7 @@
 				class:hovered={node.at === $hovered_node}
 				style:margin-left="{node.depth}ch"
 			>
-				<div role="listitem">
+				<div class="node-container" role="listitem">
 					<button
 						class="node-header"
 						type="button"
@@ -88,7 +88,14 @@
 						<!-- <span>{expandedNodes[node.at] ? "▼" : "▶"}</span> -->
 					</button>
 					{#if $highlighted_node === node.at}
-						<a href={node.url.href}>{node.url.href}</a>
+						<div class="node-content">
+							<a href={node.url.href}
+								>{node.html_metadata?.title || node.label}</a
+							>
+							{#if node.html_metadata?.description}
+								<p>{node.html_metadata.description}</p>
+							{/if}
+						</div>
 					{/if}
 				</div>
 				{#if node.depth === 0}
@@ -148,8 +155,6 @@
 		list-style-type: none;
 	}
 
-
-
 	.nodes li.hovered:not(.highlighted),
 	.nodes li:hover:not(.highlighted) {
 		background-color: #8e8e8e36;
@@ -160,14 +165,42 @@
 		color: white;
 	}
 
-	button {
-		all: unset;
-		color: currentColor;
-		line-height: 1.5;
+	.node-container {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
 	}
 
 	.node-header {
+		all: unset;
+		color: currentColor;
+		line-height: 1.5;
 		display: flex;
 		gap: 0.25em;
+	}
+
+	.node-content {
+		border-left: 2px solid blue;
+		padding: 0.4rem;
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		background: linear-gradient(to bottom, white, transparent);
+	}
+
+	.node-content p {
+		margin: 0;
+		margin-top: 0.4rem;
+		max-width: 35ch;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.node-content a {
+		color: blue;
+	}
+
+	.node-content a:visited {
+		color: purple;
 	}
 </style>
