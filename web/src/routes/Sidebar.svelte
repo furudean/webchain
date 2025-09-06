@@ -14,7 +14,7 @@
 </script>
 
 <aside>
-	<h1>milkmedicine webchain</h1>
+	<h1>the<br>milkmedicine<br>webchain</h1>
 
 	<details class="what">
 		<summary>what?</summary>
@@ -84,7 +84,12 @@
 							}
 						}}
 					>
-						<div class="label">{node.label}</div>
+						<div class="label">
+							{node.label}
+							{#if node.depth === 0}
+								<em style="margin-top: 0.14em;">(you are here!)</em>
+							{/if}
+						</div>
 						<!-- <span>{expandedNodes[node.at] ? "▼" : "▶"}</span> -->
 					</button>
 					{#if $highlighted_node === node.at}
@@ -98,9 +103,6 @@
 						</div>
 					{/if}
 				</div>
-				{#if node.depth === 0}
-					<em>(you are here!)</em>
-				{/if}
 			</li>
 		{/each}
 	</ul>
@@ -155,14 +157,14 @@
 		list-style-type: none;
 	}
 
-	.nodes li.hovered:not(.highlighted),
-	.nodes li:hover:not(.highlighted) {
+	.nodes li.hovered:not(.highlighted) {
 		background-color: #8e8e8e36;
 	}
 
 	.nodes li.highlighted .label {
 		background-color: blue;
 		color: white;
+		flex: 1;
 	}
 
 	.node-container {

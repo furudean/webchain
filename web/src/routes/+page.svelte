@@ -12,6 +12,7 @@
 	<link rel="webchain-nomination" href="https://nekopath.fun/" />
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
 	<title>milkmedicine webchain</title>
+	<meta name="description" content="a distributed webring for friends and enemies">
 </svelte:head>
 
 <div class="container">
