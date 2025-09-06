@@ -14,7 +14,7 @@
 </script>
 
 <aside>
-	<h1>the<br>milkmedicine<br>webchain</h1>
+	<h1>the<br />milkmedicine<br />webchain</h1>
 
 	<details class="what">
 		<summary>what?</summary>
@@ -85,7 +85,15 @@
 						}}
 					>
 						<div class="label">
-							{node.label}
+							<img
+								src="/api/favicon?url={encodeURIComponent(node.at)}"
+								alt=""
+								aria-hidden="true"
+								width="16"
+								height="16"
+								style:background-color={node.color}
+							/>
+							<span>{node.label}</span>
 							{#if node.depth === 0}
 								<em style="margin-top: 0.14em;">(you are here!)</em>
 							{/if}
@@ -161,10 +169,22 @@
 		background-color: #8e8e8e36;
 	}
 
+	.label {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		gap: 0.5ch;
+		padding: 0 0.2em;
+	}
+
 	.nodes li.highlighted .label {
 		background-color: blue;
 		color: white;
-		flex: 1;
+	}
+
+	.label img {
+		display: block;
+		border-radius: 0.1rem;
 	}
 
 	.node-container {
