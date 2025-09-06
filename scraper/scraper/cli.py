@@ -4,6 +4,7 @@ import json as jjson
 from functools import wraps
 from datetime import datetime, timezone
 import time
+import dataclasses
 
 import click
 
@@ -11,11 +12,14 @@ from scraper.crawl import crawl
 from scraper.read import read_chain_into_table
 from scraper.hash import HashTable
 
+
 def asyncio_click(func):
-    '''Decorator that wraps coroutine with asyncio.run.'''
+    """Decorator that wraps coroutine with asyncio.run."""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         return asyncio.run(func(*args, **kwargs))
+
     return wrapper
 
 
@@ -45,9 +49,9 @@ async def json(url: str):
     end = time.time()
 
     data = {
-        "nodes": [node.__dict__ for node in nodes],
-        "start": datetime.fromtimestamp(start, tz=timezone.utc).isoformat(),
-        "end": datetime.fromtimestamp(end, tz=timezone.utc).isoformat(),
+        'nodes': [dataclasses.asdict(node) for node in nodes],
+        'start': datetime.fromtimestamp(start, tz=timezone.utc).isoformat(),
+        'end': datetime.fromtimestamp(end, tz=timezone.utc).isoformat(),
     }
 
     print(jjson.dumps(data, indent='\t'))
@@ -57,7 +61,7 @@ async def json(url: str):
 @asyncio_click
 async def hash_test():
     start = time.time()
-    T = await read_chain_into_table("https://webchain.milkmedicine.net")
+    T = await read_chain_into_table('https://webchain.milkmedicine.net')
     end = time.time()
     T.setStart(datetime.fromtimestamp(start, tz=timezone.utc).isoformat())
     T.setEnd(datetime.fromtimestamp(end, tz=timezone.utc).isoformat())
@@ -67,6 +71,3 @@ async def hash_test():
     # N.deserialize()
     # N.view(1)
     return
-
-
-

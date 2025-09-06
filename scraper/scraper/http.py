@@ -1,6 +1,7 @@
 import aiohttp
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+
 def get_session() -> aiohttp.ClientSession:
     return aiohttp.ClientSession(
         headers={'User-Agent': 'webchain-scraper/DRAFT'}, raise_for_status=True
@@ -17,8 +18,10 @@ class InvalidContentType(Exception):
     retry_error_callback=lambda state: None,  # return None if retries fail
 )
 async def load_page_html(
-    url: str, session: aiohttp.ClientSession, referrer: str | None,     print_error=True,
-
+    url: str,
+    session: aiohttp.ClientSession,
+    referrer: str | None,
+    print_error=True,
 ) -> str | None:
     def log(msg: str) -> None:
         if print_error:
