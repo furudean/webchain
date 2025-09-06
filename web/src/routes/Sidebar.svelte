@@ -16,6 +16,8 @@
 <aside>
 	<h1>the<br />milkmedicine<br />webchain</h1>
 
+	<p>a distributed webring for friends and enemies</p>
+
 	<details class="what">
 		<summary>what?</summary>
 		<p>
@@ -131,6 +133,10 @@
 
 	details {
 		max-width: 45ch;
+	}
+
+	details > :nth-child(2) {
+		margin-top: 0;
 	}
 
 	.what {
