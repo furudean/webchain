@@ -196,10 +196,12 @@
 		max-width: 35ch;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		font-style: italic;
 	}
 
 	.node-content a {
 		color: blue;
+		font-weight: bold;
 	}
 
 	.node-content a:visited {
