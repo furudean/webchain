@@ -84,12 +84,11 @@
 				class:hovered={node.at === $hovered_node}
 				style:margin-left="{node.depth}ch"
 			>
-				<div class="node-container" role="listitem">
-					<button
+				<details open={$highlighted_node === node.at}>
+					<summary
 						class="node-header"
-						type="button"
-						aria-expanded={$highlighted_node === node.at}
-						onclick={() => {
+						onclick={(event) => {
+							event.preventDefault()
 							const graph = get(current_graph)
 							clear_highlighted(graph)
 							set_highlighted_node(node.at)
@@ -128,8 +127,7 @@
 								<em style="margin-top: 0.14em;">(you are here!)</em>
 							{/if}
 						</div>
-						<!-- <span>{expandedNodes[node.at] ? "▼" : "▶"}</span> -->
-					</button>
+					</summary>
 					{#if $highlighted_node === node.at}
 						<div class="node-content">
 							<a href={node.url.href}
@@ -140,7 +138,7 @@
 							{/if}
 						</div>
 					{/if}
-				</div>
+				</details>
 			</li>
 		{/each}
 	</ul>
@@ -172,7 +170,7 @@
 		border: 1px solid transparent;
 	}
 
-	.qna:open {
+	.qna[open] {
 		border: 1px dashed currentColor;
 		background: rgba(255, 255, 255, 0.9);
 		margin-bottom: 1rem;
@@ -202,6 +200,9 @@
 		display: flex;
 		gap: 0.5ch;
 		list-style-type: none;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
 	}
 
 	.nodes li.hovered:not(.highlighted) {
@@ -216,7 +217,7 @@
 		padding: 0 0.2em;
 	}
 
-	.nodes li.highlighted .label {
+	.nodes li details[open] .label {
 		background-color: blue;
 		color: white;
 	}
@@ -224,12 +225,6 @@
 	.label img {
 		display: block;
 		border-radius: 0.1rem;
-	}
-
-	.node-container {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
 	}
 
 	.node-header {
