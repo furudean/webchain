@@ -53,14 +53,17 @@
 		<summary>how?</summary>
 		<p>Each member node adds markup to their HTML, for example:</p>
 		<pre><code
-				>&lt;head&gt;
+				>&lthtml&gt;
+&lt;head&gt;
   &lt;link rel="webchain"
     href="https://example.com" /&gt;
   &lt;link rel="webchain-nomination"
     href="https://another.example.com" /&gt;
   &lt;link rel="webchain-nomination"
     href="https://yetanother.example.com" /&gt;
-&lt;/head&gt;</code
+&lt;/head&gt;
+&lt;body&gt;...&lt/body&gt;
+&lt/html&gt;</code
 			></pre>
 		<p>
 			The <code>webchain</code> link points to the node's own URL, while the
