@@ -37,9 +37,9 @@ export function build_graph(
 	// Add edges
 	for (const [id, node] of hashmap.entries()) {
 		if (node.parent) {
-			const parent_id = Array.from(hashmap.entries()).find(
-				([, n]) => n.at === node.parent
-			)?.[0]
+			const parent_id = Array.from(hashmap.values()).find(
+				(n) => n.at === node.parent
+			)?.at
 			if (parent_id) {
 				graph.addEdge(parent_id, id, {
 					size: 3,
