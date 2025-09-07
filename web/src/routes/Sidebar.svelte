@@ -18,10 +18,10 @@
 
 	<p>a distributed webring for friends and enemies</p>
 
-	<details class="what">
+	<details class="qna">
 		<summary>what?</summary>
 		<p>
-			a <a
+			A <a
 				href="https://github.com/furudean/webchain/blob/main/SPEC.md"
 				rel="external">webchain</a
 			>
@@ -47,6 +47,34 @@
 				Those websites may nominate three others, and so on, and so forth.
 			</li>
 		</ol>
+	</details>
+
+	<details class="qna">
+		<summary>how?</summary>
+		<p>Each member node adds markup to their HTML, for example:</p>
+		<pre><code
+				>&lt;head&gt;
+  &lt;link rel="webchain"
+    href="https://example.com" /&gt;
+  &lt;link rel="webchain-nomination"
+    href="https://another.example.com" /&gt;
+  &lt;link rel="webchain-nomination"
+    href="https://yetanother.example.com" /&gt;
+&lt;/head&gt;</code
+			></pre>
+		<p>
+			The <code>webchain</code> link points to the node's own URL, while the
+			<code>webchain-nomination</code> links point to up to three other websites
+			that this node nominates.
+		</p>
+		<p>
+			A crawler visits each node, reads its nominations, and then visits those
+			nodes in turn, recursively, building up a graph of all reachable nodes.
+		</p>
+		<p>
+			The crawler runs periodically, so new nodes and nominations will appear on
+			this page over time.
+		</p>
 	</details>
 
 	<ul class="nodes">
@@ -139,11 +167,15 @@
 		margin-top: 0;
 	}
 
-	.what {
+	.qna {
+		padding: 0 0.5rem;
+		border: 1px solid transparent;
+	}
+
+	.qna:open {
 		border: 1px dashed currentColor;
 		background: rgba(255, 255, 255, 0.9);
-		/* backdrop-filter: blur(4px); */
-		padding: 0 0.5rem;
+		margin-bottom: 1rem;
 	}
 
 	summary {
@@ -151,7 +183,7 @@
 		padding: 0.5rem 0;
 	}
 
-	.what ol li {
+	.qna ol li {
 		margin: 0.5rem 0;
 	}
 
@@ -161,8 +193,9 @@
 	}
 
 	.nodes {
-		float: left;
 		margin-top: 1rem;
+		border-top: 1px solid currentColor;
+		border-left: 1px solid currentColor;
 	}
 
 	.nodes li {
