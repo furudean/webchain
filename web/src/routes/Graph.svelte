@@ -204,7 +204,7 @@
 		top: -0.5em;
 		left: 0;
 		font-family: monospace;
-		font-size: 8vh;
+		font-size: 7vh;
 		opacity: 0.02;
 		margin: 0;
 	}
