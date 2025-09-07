@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte"
+	import { onDestroy, onMount } from "svelte"
 	import type { Sigma, Camera } from "sigma"
 	import type GraphType from "graphology"
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
@@ -26,7 +26,6 @@
 
 	let graph: GraphType | undefined = $state()
 	let renderer: Sigma | undefined = $state()
-	let layout: ForceSupervisor
 
 	function update_camera(camera: Camera): void {
 		const size = `${100 / camera.ratio}px`
@@ -76,13 +75,13 @@
 				enableCameraRotation: false,
 				cameraPanBoundaries: {
 					tolerance: 400
-				}
+				},
 			})
 
 			let dragged_node: string | null = null
 			let is_dragging = false
 
-			layout = new ForceSupervisor(graph, {
+			const layout = new ForceSupervisor(graph, {
 				isNodeFixed(_, attr) {
 					return attr.highlighted
 				},
@@ -163,20 +162,21 @@
 
 			const camera = renderer.getCamera()
 			camera.setState({
-				ratio: 1.3
+				ratio: 1.5,
+				x: 0.45,
 			})
 			camera.addListener("updated", update_camera)
 			update_camera(camera)
+			onDestroy(() => {
+				layout.kill()
+				renderer?.kill()
+			})
 		}
 
 		init_graph().catch(console.error)
-
-		return function onDestroy() {
-			layout.kill()
-			renderer?.kill()
-		}
 	})
 </script>
+
 
 <div class="graph-container">
 	{#if display_node}
