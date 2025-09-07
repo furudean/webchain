@@ -9,92 +9,109 @@
 			],
 			"parent": null,
 			"depth": 0,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "milkmedicine webchain",
+				"description": "a distributed webring for friends and enemies"
+			}
 		},
 		{
 			"at": "https://www.himawari.fun/",
 			"children": [
-				"https://natu.moe/"
+				"https://natu.moe/",
+				"https://irc.milkmedicine.net/"
 			],
 			"parent": "https://webchain.milkmedicine.net",
 			"depth": 1,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "Welcome.... To Chuuni Heavan",
+				"description": null
+			}
 		},
 		{
 			"at": "https://natu.moe/",
 			"children": [
-				"https://meows.zip"
+				"https://meows.zip",
+				"https://cyberdoll.online/"
 			],
 			"parent": "https://www.himawari.fun/",
 			"depth": 2,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "natu.moe >w< ",
+				"description": null
+			}
 		},
 		{
 			"at": "https://meows.zip",
+			"children": [],
+			"parent": "https://natu.moe/",
+			"depth": 3,
+			"indexed": true,
+			"html_metadata": {
+				"title": "meows.zip",
+				"description": null
+			}
+		},
+		{
+			"at": "https://cyberdoll.online/",
 			"children": [
-				"https://catverse.org/",
-				"https://purrfect.site/"
+				"https://www.nixi.digital",
+				"https://www.yungtumblr.world",
+				"https://www.nixi.digital"
 			],
 			"parent": "https://natu.moe/",
 			"depth": 3,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "cyber doll",
+				"description": "portfolio"
+			}
 		},
 		{
-			"at": "https://catverse.org/",
-			"children": [
-				"https://catcafe.io/"
-			],
-			"parent": "https://meows.zip",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://purrfect.site/",
+			"at": "https://www.nixi.digital",
 			"children": [],
-			"parent": "https://meows.zip",
+			"parent": "https://cyberdoll.online/",
 			"depth": 4,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "nixi",
+				"description": null
+			}
 		},
 		{
-			"at": "https://catcafe.io/",
-			"children": [
-				"https://meowhub.net/"
-			],
-			"parent": "https://catverse.org/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://meowhub.net/",
+			"at": "https://www.yungtumblr.world",
 			"children": [],
-			"parent": "https://catcafe.io/",
-			"depth": 6,
-			"indexed": true
+			"parent": "https://cyberdoll.online/",
+			"depth": 4,
+			"indexed": true,
+			"html_metadata": {
+				"title": "yung tumblr",
+				"description": "cargo.site"
+			}
+		},
+		{
+			"at": "https://irc.milkmedicine.net/",
+			"children": [],
+			"parent": "https://www.himawari.fun/",
+			"depth": 2,
+			"indexed": true,
+			"html_metadata": {
+				"title": "milkmedicine IRC",
+				"description": "milkmedicine is an IRC network for anime, tech, music, art programming & internet culture"
+			}
 		},
 		{
 			"at": "https://nekopath.fun/",
-			"children": [
-				"https://kittylane.com/"
-			],
+			"children": [],
 			"parent": "https://webchain.milkmedicine.net",
 			"depth": 1,
-			"indexed": true
-		},
-		{
-			"at": "https://kittylane.com/",
-			"children": [
-				"https://felineworld.net/"
-			],
-			"parent": "https://nekopath.fun/",
-			"depth": 2,
-			"indexed": true
-		},
-		{
-			"at": "https://felineworld.net/",
-			"children": [],
-			"parent": "https://kittylane.com/",
-			"depth": 3,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": null,
+				"description": null
+			}
 		},
 		{
 			"at": "https://eidoli.ca",
@@ -105,307 +122,80 @@
 			],
 			"parent": "https://webchain.milkmedicine.net",
 			"depth": 1,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "~ - encyclopedia eidolica",
+				"description": "A notebook, a form, an almanac, a trace, an endless taxonomy; a description without end, and yet we try"
+			}
 		},
 		{
 			"at": "https://prayerlocket.net/",
-			"children": [
-				"https://locketdreams.com/"
-			],
+			"children": [],
 			"parent": "https://eidoli.ca",
 			"depth": 2,
-			"indexed": true
-		},
-		{
-			"at": "https://locketdreams.com/",
-			"children": [],
-			"parent": "https://prayerlocket.net/",
-			"depth": 3,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "prayerlocket :: home",
+				"description": "prayerlocket is a digital labyrinth \u2013 a selection of over a decade's worth of entries from my memex."
+			}
 		},
 		{
 			"at": "http://iruyz.fr.eu.org/",
 			"children": [
 				"https://willow.phantoma.online/",
 				"https://twilightsparkle.space/",
-				"https://phantomforest.net/"
+				"https://cyclic.zone/"
 			],
 			"parent": "https://eidoli.ca",
 			"depth": 2,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "iruyz",
+				"description": null
+			}
 		},
 		{
 			"at": "https://willow.phantoma.online/",
 			"children": [],
 			"parent": "http://iruyz.fr.eu.org/",
 			"depth": 3,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "willow's website \u2014 wlosite",
+				"description": null
+			}
 		},
 		{
 			"at": "https://twilightsparkle.space/",
 			"children": [],
 			"parent": "http://iruyz.fr.eu.org/",
 			"depth": 3,
-			"indexed": true
+			"indexed": false,
+			"html_metadata": null
 		},
 		{
-			"at": "https://phantomforest.net/",
-			"children": [
-				"https://forestcat.org/"
-			],
+			"at": "https://cyclic.zone/",
+			"children": [],
 			"parent": "http://iruyz.fr.eu.org/",
 			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://forestcat.org/",
-			"children": [
-				"https://dreamcat.net/"
-			],
-			"parent": "https://phantomforest.net/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://dreamcat.net/",
-			"children": [
-				"https://catcafe.io/"
-			],
-			"parent": "https://forestcat.org/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://whiskerworld.com/",
-			"children": [],
-			"parent": "https://dreamcat.net/",
-			"depth": 6,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "cyclic.zone",
+				"description": null
+			}
 		},
 		{
 			"at": "https://paralogue.org/",
-			"children": [
-				"https://parallelworlds.net/"
-			],
+			"children": [],
 			"parent": "https://eidoli.ca",
 			"depth": 2,
-			"indexed": true
-		},
-		{
-			"at": "https://parallelworlds.net/",
-			"children": [
-				"https://catfriends.org/"
-			],
-			"parent": "https://paralogue.org/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://catfriends.org/",
-			"children": [
-				"https://whiskerworld.com/"
-			],
-			"parent": "https://parallelworlds.net/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://meowtopia.com/",
-			"children": [],
-			"parent": "https://catfriends.org/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://meows.zip-extra2",
-			"children": [],
-			"parent": "https://meows.zip",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://catverse.org-extra1",
-			"children": [],
-			"parent": "https://catverse.org/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://catverse.org-extra2",
-			"children": [],
-			"parent": "https://catverse.org/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://purrfect.site-extra1",
-			"children": [],
-			"parent": "https://purrfect.site/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://purrfect.site-extra2",
-			"children": [],
-			"parent": "https://purrfect.site/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://kittylane.com-extra1",
-			"children": [],
-			"parent": "https://kittylane.com/",
-			"depth": 2,
-			"indexed": true
-		},
-		{
-			"at": "https://kittylane.com-extra2",
-			"children": [],
-			"parent": "https://kittylane.com/",
-			"depth": 2,
-			"indexed": true
-		},
-		{
-			"at": "https://felineworld.net-extra1",
-			"children": [],
-			"parent": "https://felineworld.net/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://felineworld.net-extra2",
-			"children": [],
-			"parent": "https://felineworld.net/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://prayerlocket.net-extra1",
-			"children": [],
-			"parent": "https://prayerlocket.net/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://prayerlocket.net-extra2",
-			"children": [],
-			"parent": "https://prayerlocket.net/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "http://iruyz.fr.eu.org-extra1",
-			"children": [],
-			"parent": "http://iruyz.fr.eu.org/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "http://iruyz.fr.eu.org-extra2",
-			"children": [],
-			"parent": "http://iruyz.fr.eu.org/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://willow.phantoma.online-extra1",
-			"children": [],
-			"parent": "https://willow.phantoma.online/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://willow.phantoma.online-extra2",
-			"children": [],
-			"parent": "https://willow.phantoma.online/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://twilightsparkle.space-extra1",
-			"children": [],
-			"parent": "https://twilightsparkle.space/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://twilightsparkle.space-extra2",
-			"children": [],
-			"parent": "https://twilightsparkle.space/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://phantomforest.net-extra1",
-			"children": [],
-			"parent": "https://phantomforest.net/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://phantomforest.net-extra2",
-			"children": [],
-			"parent": "https://phantomforest.net/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://forestcat.org-extra1",
-			"children": [],
-			"parent": "https://forestcat.org/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://forestcat.org-extra2",
-			"children": [],
-			"parent": "https://forestcat.org/",
-			"depth": 5,
-			"indexed": true
-		},
-		{
-			"at": "https://dreamcat.net-extra1",
-			"children": [],
-			"parent": "https://dreamcat.net/",
-			"depth": 6,
-			"indexed": true
-		},
-		{
-			"at": "https://dreamcat.net-extra2",
-			"children": [],
-			"parent": "https://dreamcat.net/",
-			"depth": 6,
-			"indexed": true
-		},
-		{
-			"at": "https://parallelworlds.net-extra1",
-			"children": [],
-			"parent": "https://parallelworlds.net/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://parallelworlds.net-extra2",
-			"children": [],
-			"parent": "https://parallelworlds.net/",
-			"depth": 3,
-			"indexed": true
-		},
-		{
-			"at": "https://catfriends.org-extra1",
-			"children": [],
-			"parent": "https://catfriends.org/",
-			"depth": 4,
-			"indexed": true
-		},
-		{
-			"at": "https://catfriends.org-extra2",
-			"children": [],
-			"parent": "https://catfriends.org/",
-			"depth": 4,
-			"indexed": true
+			"indexed": true,
+			"html_metadata": {
+				"title": "paralogue.org - paralogue.org",
+				"description": null
+			}
 		}
 	],
-	"start": "2025-08-29T12:35:01.702910+00:00",
-	"end": "2025-08-29T12:35:02.706351+00:00"
+	"start": "2025-09-07T01:25:01.650927+00:00",
+	"end": "2025-09-07T01:25:05.203066+00:00"
 }
