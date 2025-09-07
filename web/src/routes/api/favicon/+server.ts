@@ -70,8 +70,35 @@ function empty_response(url: string): Response {
 		}
 	})
 }
+let graph_url_cache: { data: string[]; expires: number } | null = null
 
-export const GET: RequestHandler = async ({ url }) => {
+async function list_graph_urls(get: typeof fetch): Promise<string[]> {
+	const now = Date.now()
+	if (graph_url_cache && graph_url_cache.expires > now) {
+		return graph_url_cache.data
+	}
+
+	const request = await get("/crawler/data.json")
+
+	if (!request.ok) {
+		throw new Error("failed to fetch data graph")
+	}
+
+	try {
+		const { nodes }: { nodes: { at: string }[] } = await request.json()
+		const urls = nodes.map((node) => node.at)
+		graph_url_cache = {
+			data: urls,
+			expires: now + 60_000 // 1 minute
+		}
+		return urls
+	} catch (error) {
+		console.error("error parsing JSON:", error)
+		throw new Error("failed to parse data graph")
+	}
+}
+
+export const GET: RequestHandler = async ({ url, fetch }) => {
 	const url_param = url.searchParams.get("url")
 
 	if (!url_param) {
@@ -97,6 +124,13 @@ export const GET: RequestHandler = async ({ url }) => {
 			}
 		})
 	}
+
+	// make sure the requested url is in the graph
+	const graph_urls = await list_graph_urls(fetch)
+	if (!graph_urls.includes(url_param)) {
+		return text("nice try, but i thought about that", { status: 400 })
+	}
+
 
 	// not in cache, fetch it
 	try {
