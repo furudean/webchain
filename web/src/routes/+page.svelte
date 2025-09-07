@@ -20,10 +20,10 @@
 	<Sidebar nodes={data.nodes}></Sidebar>
 
 	{#if data.start && data.end}
-		<span>
+		<a href="/crawler/data.json">
 			last crawled {new Date(data.start).toLocaleString("en-US").toLowerCase()},
 			taking {Math.round((data.end.getTime() - data.start.getTime()) / 1000)} seconds
-		</span>
+		</a>
 	{/if}
 </div>
 
@@ -37,13 +37,12 @@
 		min-height: 100vh; */
 	}
 
-	span {
+	a {
 		position: fixed;
 		bottom: 0;
 		right: 0;
 		font-size: 0.9rem;
 		color: #666;
 		padding: 0.4em;
-		pointer-events: none;
 	}
 </style>
