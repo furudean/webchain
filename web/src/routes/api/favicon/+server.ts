@@ -57,7 +57,7 @@ function response_headers(item: CachedItem): Record<string, string> {
 	return headers
 }
 
-function empty_response(url: string): Response {
+function empty_response_cache(url: string): Response {
 	const cache_duration = 10 * 60 * 1000 // 10 minutes in ms
 	FAVICON_CACHE.set(url, {
 		timestamp: Date.now(),
@@ -131,26 +131,25 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		return text("nice try, but i thought about that", { status: 400 })
 	}
 
-
 	// not in cache, fetch it
 	try {
 		const page_response = await fetch(url_param, {
 			redirect: "follow"
 		})
 
-		if (!page_response.ok) empty_response(url_param)
+		if (!page_response.ok) return new Response(null, { status: 204 })
 
 		const page_url = page_response.url
 		const html = parse(await page_response.text())
 		const head = html.querySelector("head")
 
-		if (head === null) return empty_response(url_param)
+		if (head === null) return empty_response_cache(url_param)
 
 		const icon_url = await get_icon_url(page_url, head)
-		if (!icon_url) return empty_response(url_param)
+		if (!icon_url) return empty_response_cache(url_param)
 
 		const icon_response = await fetch(icon_url)
-		if (!icon_response.ok) return empty_response(url_param)
+		if (!icon_response.ok) return empty_response_cache(url_param)
 
 		const buffer = await icon_response.arrayBuffer()
 		const content_type =
