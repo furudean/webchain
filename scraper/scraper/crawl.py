@@ -2,6 +2,7 @@ import itertools
 from urllib.parse import urlparse
 from dataclasses import dataclass
 import asyncio
+from hashlib import shake_128
 
 from bs4 import BeautifulSoup, Tag
 
@@ -16,6 +17,7 @@ class HtmlMetadata:
 
 @dataclass
 class CrawledNode:
+    hash: str
     at: str
     children: list[str]
     parent: str | None
@@ -106,10 +108,14 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
     return metadata
 
 
+def hash_string(s: str, length: int) -> str:
+    h = shake_128(usedforsecurity=False)
+    h.update(s.encode('utf-8'))
+    return h.hexdigest(length)
+
+
 async def crawl(
-    root_url: str,
-    limit_nominations: int = 3,
-    recursion_limit: int = 1000
+    root_url: str, limit_nominations: int = 3, recursion_limit: int = 1000
 ) -> list[CrawledNode]:
     """
     crawl the webchain nomination graph starting from `root_url`.
@@ -145,6 +151,7 @@ async def crawl(
             raise ValueError(f'starting url {root_url} is unreachable')
 
         node = CrawledNode(
+            hash=hash_string(at, length=8),
             at=at,
             children=nominations or [],
             parent=parent,

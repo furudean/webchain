@@ -5,6 +5,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger()
 
+
 def get_session() -> aiohttp.ClientSession:
     return aiohttp.ClientSession(
         headers={'User-Agent': 'webchain-scraper/DRAFT'}, raise_for_status=True
@@ -25,7 +26,6 @@ async def load_page_html(
     session: aiohttp.ClientSession,
     referrer: str | None,
 ) -> str | None:
-
     try:
         headers = {}
         if referrer is not None:
