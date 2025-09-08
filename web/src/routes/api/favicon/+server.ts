@@ -9,19 +9,20 @@ import {
 	type CachedItem
 } from "$lib/image-cache"
 
-async function get_icon_url(
+async function get_icon_urls(
 	base: URL | string,
 	head: HTMLElement
-): Promise<URL | undefined> {
+): Promise<URL[]> {
 	// try common favicon link rels
 	const selectors = ['link[rel="icon"]', 'link[rel="shortcut icon"]']
+	const possible_icons = []
 
 	for (const selector of selectors) {
 		const element = head.querySelector(selector)
 		if (element?.hasAttribute("href")) {
 			const href = element.getAttribute("href")!
 			try {
-				return new URL(href, base)
+				possible_icons.push(new URL(href, base))
 			} catch {
 				continue
 			}
@@ -29,17 +30,9 @@ async function get_icon_url(
 	}
 
 	// try favicon.ico
-	const url = new URL("/favicon.ico", base)
-	const result = await fetch(url, {
-		method: "HEAD",
-		redirect: "follow"
-	})
+	possible_icons.push(new URL("/favicon.ico", base))
 
-	if (result.ok) {
-		return url
-	}
-
-	return undefined
+	return possible_icons
 }
 
 function response_headers(item: CachedItem): Record<string, string> {
@@ -145,21 +138,31 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 
 		if (head === null) return empty_response_cache(url_param)
 
-		const icon_url = await get_icon_url(page_url, head)
-		if (!icon_url) return empty_response_cache(url_param)
+		const icon_urls = await get_icon_urls(page_url, head)
+		if (icon_urls.length === 0) return empty_response_cache(url_param)
 
-		const icon_response = await fetch(icon_url)
-		if (!icon_response.ok) return empty_response_cache(url_param)
+		const icon_responses = await Promise.allSettled(
+			icon_urls.map((icon_url) =>
+				fetch(icon_url, {
+					redirect: "follow"
+				}
+			)
+		))
+		const best_icon = icon_responses.find(
+			(result): result is PromiseFulfilledResult<Response> =>
+				result.status === "fulfilled" && result.value.ok
+		)?.value
+		if (!best_icon) return empty_response_cache(url_param)
 
-		const buffer = await icon_response.arrayBuffer()
+		const buffer = await best_icon.arrayBuffer()
 		const content_type =
-			icon_response.headers.get("Content-Type") || "image/x-icon"
+			best_icon.headers.get("Content-Type") || "image/x-icon"
 
 		const cache_item = await write_cache_file({
 			key: url_param,
 			data: buffer,
 			content_type,
-			file_url: icon_url.toString()
+			file_url: icon_urls.toString()
 		})
 
 		return new Response(buffer, {
