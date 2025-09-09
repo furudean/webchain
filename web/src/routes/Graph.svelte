@@ -22,7 +22,6 @@
 	let layout: ForceSupervisorType | undefined = $state()
 	let last_x: number | undefined = $state()
 	let last_y: number | undefined = $state()
-	let camera: Camera | undefined = $state()
 
 	let zoom_frame: number | null = null
 	let graph_element: HTMLElement
@@ -41,7 +40,7 @@
 		if (!camera) return
 		const factor = 1.025
 		camera.setState({
-			ratio: camera.ratio * (direction === 1 ? factor : 1 / factor)
+			ratio: camera.ratio * (direction < 1 ? factor : 1 / factor)
 		})
 	}
 
