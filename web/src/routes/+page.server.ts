@@ -26,13 +26,15 @@ export const load: PageServerLoad = async ({
 			end: string
 		} = await request.json()
 
+		const no_www = /^www\./i
+
 		return {
 			nodes: nodes.map((node) => ({
 				...node,
 				color: string_to_color(node.at),
 				url: new URL(node.at),
 				label:
-					new URL(node.at).hostname +
+					new URL(node.at).hostname.replace(no_www, "") +
 					(new URL(node.at).pathname === "/" ? "" : new URL(node.at).pathname)
 			})),
 			start: new Date(start),
