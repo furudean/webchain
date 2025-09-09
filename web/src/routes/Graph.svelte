@@ -153,12 +153,6 @@
 		})
 
 		const camera = renderer.getCamera()
-		camera.animate({
-			ratio: 1.5,
-			x: 0.4
-		}, {
-			duration: 400
-		})
 		camera.addListener("updated", update_camera)
 		update_camera(camera)
 	}
