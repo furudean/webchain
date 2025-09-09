@@ -62,9 +62,11 @@
 			zoomDuration: 200,
 			enableCameraRotation: false,
 			cameraPanBoundaries: {
-				tolerance: 400
+				tolerance: 250
 			},
-			stagePadding: 100
+			stagePadding: 125,
+			autoRescale: true,
+			autoCenter: true,
 		})
 
 		let dragged_node: string | null = null

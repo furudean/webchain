@@ -12,25 +12,15 @@ export function build_graph(
 	for (const [id, node] of hashmap.entries()) {
 		const pos = positions.get(id) || { x: 0, y: 0 }
 
-		// Calculate size based on depth - root is bigger, then gradually shrink
-		const base_size = 20
-		const scale = Math.max(0.5, 1 - node.depth * 0.06)
-
 		graph.addNode(id, {
 			label: node.label,
-			size: base_size * scale,
-			labelWeight: node.depth === 0 ? "bold" : "normal",
-
+			size: 20,
 			x: pos.x,
 			y: pos.y,
 			type: node.depth === 0 ? "square" : "image",
-			image:
-				node.indexed && node.depth !== 0
-					? `/api/favicon?url=${encodeURIComponent(node.at)}`
-					: undefined,
+			image: `/api/favicon?url=${encodeURIComponent(node.at)}`,
 			url: node.at,
 			color: node.color,
-			indexed: node.indexed
 		})
 	}
 
@@ -42,8 +32,8 @@ export function build_graph(
 			)?.at
 			if (parent_id) {
 				graph.addEdge(parent_id, id, {
-					size: 3,
-					color: "#e0e0e0ff",
+					size: 4,
+					color: "#dedede",
 					type: "arrow"
 				})
 			}
