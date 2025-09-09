@@ -89,7 +89,7 @@
 	<hr />
 
 	<ul class="nodes">
-		{#each nodes as node}
+		{#each nodes as node, i (node.at)}
 			<li
 				class:highlighted={node.at === $highlighted_node}
 				class:hovered={node.at === $hovered_node}
@@ -97,6 +97,7 @@
 			>
 				<details open={$highlighted_node === node.at}>
 					<summary
+						tabindex="0"
 						class="node-header"
 						onclick={(event) => {
 							event.preventDefault()
@@ -123,6 +124,18 @@
 								graph.setNodeAttribute(node.at, "highlighted", false)
 							}
 						}}
+						onkeydown={(event) => {
+							if (event.key === "ArrowDown") {
+								event.preventDefault()
+								const next = document.querySelectorAll(".nodes summary")[i + 1]
+								if (next) (next as HTMLElement).focus()
+							}
+							if (event.key === "ArrowUp") {
+								event.preventDefault()
+								const prev = document.querySelectorAll(".nodes summary")[i - 1]
+								if (prev) (prev as HTMLElement).focus()
+							}
+						}}
 					>
 						<div class="label">
 							<img
@@ -134,9 +147,6 @@
 								style:background-color={node.color}
 							/>
 							<span>{node.label}</span>
-							{#if node.depth === 0}
-								<em style="margin-top: 0.14em;">(you are here!)</em>
-							{/if}
 						</div>
 					</summary>
 					{#if $highlighted_node === node.at}
@@ -146,10 +156,6 @@
 							</a>
 							{#if node.html_metadata?.description}
 								<p>{node.html_metadata.description}</p>
-							{:else}
-								<p class="shy">
-									<em>without description</em>
-								</p>
 							{/if}
 						</div>
 					{/if}
@@ -166,6 +172,12 @@
 		left: 0;
 		padding: 0 1rem;
 		background: linear-gradient(to right, white, transparent);
+		min-height: 100vh;
+	}
+
+	aside:hover {
+		/* background: white; */
+		border-right: 1px solid rgba(0, 0, 0, 0.25);
 	}
 
 	summary {
@@ -224,8 +236,12 @@
 		flex: 1;
 	}
 
-	.nodes li.hovered:not(.highlighted) {
+	.nodes li:is(.hovered, :hover):not(.highlighted) {
 		background-color: #8e8e8e36;
+	}
+
+	.nodes li:has(summary:focus-visible) {
+		border-left: 2px solid blue;
 	}
 
 	.label {
@@ -260,11 +276,6 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		background: linear-gradient(
-			to bottom,
-			rgba(255, 255, 255, 0.5),
-			transparent
-		);
 	}
 
 	.node-content p {
@@ -283,9 +294,5 @@
 
 	.node-content a:visited {
 		color: purple;
-	}
-
-	.shy {
-		opacity: 0.75;
 	}
 </style>
