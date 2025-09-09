@@ -11,20 +11,22 @@ import {
 
 async function get_icon_urls(
 	base: URL | string,
-	head: HTMLElement
+	head: HTMLElement | null
 ): Promise<URL[]> {
 	// try common favicon link rels
 	const selectors = ['link[rel="icon"]', 'link[rel="shortcut icon"]']
 	const possible_icons = []
 
-	for (const selector of selectors) {
-		const element = head.querySelector(selector)
-		if (element?.hasAttribute("href")) {
-			const href = element.getAttribute("href")!
-			try {
-				possible_icons.push(new URL(href, base))
-			} catch {
-				continue
+	if (head) {
+		for (const selector of selectors) {
+			const element = head.querySelector(selector)
+			if (element?.hasAttribute("href")) {
+				const href = element.getAttribute("href")!
+				try {
+					possible_icons.push(new URL(href, base))
+				} catch {
+					continue
+				}
 			}
 		}
 	}
@@ -134,11 +136,9 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 
 		const page_url = page_response.url
 		const html = parse(await page_response.text())
-		const head = html.querySelector("head")
+		if (!html) return empty_response_cache(url_param)
 
-		if (head === null) return empty_response_cache(url_param)
-
-		const icon_urls = await get_icon_urls(page_url, head)
+		const icon_urls = await get_icon_urls(page_url, html.querySelector("head"))
 		if (icon_urls.length === 0) return empty_response_cache(url_param)
 
 		const icon_responses = await Promise.allSettled(
