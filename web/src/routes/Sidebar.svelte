@@ -17,14 +17,12 @@
 	})
 
 	function hover_in(at: string | undefined) {
-		hovered_node.set(at)
 		if ($graph?.hasNode(at)) {
 			$graph.setNodeAttribute(at, "highlighted", true)
 		}
 	}
 
 	function hover_out(at: string | undefined) {
-		hovered_node.set(undefined)
 		if ($graph?.hasNode(at) && at !== highlighted_node) {
 			$graph.setNodeAttribute(at, "highlighted", false)
 		}
@@ -253,7 +251,6 @@
 	}
 
 	.qna summary {
-		cursor: pointer;
 		padding: 0.5rem 0;
 		font-style: italic;
 	}
@@ -348,6 +345,10 @@
 	.node-content a {
 		color: blue;
 		font-weight: bold;
+	}
+
+	.node-content a:hover {
+		text-decoration-style: double;
 	}
 
 	.node-content a:visited {

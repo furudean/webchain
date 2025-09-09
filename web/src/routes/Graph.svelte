@@ -153,9 +153,11 @@
 		})
 
 		const camera = renderer.getCamera()
-		camera.setState({
-			ratio: 1.4,
-			x: 0.35
+		camera.animate({
+			ratio: 1.5,
+			x: 0.4
+		}, {
+			duration: 400
 		})
 		camera.addListener("updated", update_camera)
 		update_camera(camera)
@@ -178,19 +180,6 @@
 		}
 		if (highlighted_node) {
 			graph.setNodeAttribute(highlighted_node, "highlighted", true)
-			// const camera = renderer?.getCamera()
-			// if (!camera) return
-			// const node_position = graph.getNodeAttributes(highlighted_node)
-			// if (!node_position) return
-			// camera.animate(
-			// 	{
-			// 		x: node_position.x,
-			// 		y: node_position.y,
-			// 	},
-			// 	{
-			// 		duration: 400
-			// 	}
-			// )
 		}
 	})
 </script>
