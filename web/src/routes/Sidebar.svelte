@@ -47,6 +47,12 @@
 				Those websites may nominate three others, and so on, and so forth.
 			</li>
 		</ol>
+		<p>
+			Source code can be found <a
+				href="https://github.com/furudean/webchain"
+				rel="external">on our GitHub</a
+			>.
+		</p>
 	</details>
 
 	<details class="qna">
@@ -79,6 +85,8 @@
 			this page over time.
 		</p>
 	</details>
+
+	<hr />
 
 	<ul class="nodes">
 		{#each nodes as node}
@@ -133,11 +141,15 @@
 					</summary>
 					{#if $highlighted_node === node.at}
 						<div class="node-content">
-							<a href={node.url.href}
-								>{node.html_metadata?.title || node.label}</a
-							>
+							<a href={node.url.href} rel="external">
+								{node.html_metadata?.title || node.label}
+							</a>
 							{#if node.html_metadata?.description}
 								<p>{node.html_metadata.description}</p>
+							{:else}
+								<p class="shy">
+									<em>no description</em>
+								</p>
 							{/if}
 						</div>
 					{/if}
@@ -152,8 +164,8 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-
 		padding: 0 1rem;
+		background: linear-gradient(to right, white, transparent);
 	}
 
 	summary {
@@ -193,10 +205,14 @@
 		padding: 0;
 	}
 
+	hr {
+		margin: 1rem 0;
+		border: none;
+		border-top: 1px dashed currentColor;
+	}
+
 	.nodes {
 		margin-top: 1rem;
-		border-top: 1px solid currentColor;
-		border-left: 1px solid currentColor;
 	}
 
 	.nodes li {
@@ -217,7 +233,7 @@
 		flex: 1;
 		align-items: center;
 		gap: 0.5ch;
-		padding: 0 0.2em;
+		padding: 0 0.4em;
 	}
 
 	.nodes li details[open] .label {
@@ -244,7 +260,11 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		background: linear-gradient(to bottom, white, transparent);
+		background: linear-gradient(
+			to bottom,
+			rgba(255, 255, 255, 0.5),
+			transparent
+		);
 	}
 
 	.node-content p {
@@ -263,5 +283,9 @@
 
 	.node-content a:visited {
 		color: purple;
+	}
+
+	.shy {
+		opacity: 0.75;
 	}
 </style>
