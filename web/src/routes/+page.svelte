@@ -45,8 +45,9 @@
 	a {
 		position: fixed;
 		bottom: 0;
-		right: 0;
-		font-size: 0.9rem;
+		left: 50%;
+		transform: translateX(-50%);
+		font-size: 0.8rem;
 		color: #666;
 		padding: 0.4em;
 	}

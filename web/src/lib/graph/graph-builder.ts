@@ -20,7 +20,7 @@ export function build_graph(
 			type: node.depth === 0 ? "square" : "image",
 			image: `/api/favicon?url=${encodeURIComponent(node.at)}`,
 			url: node.at,
-			color: node.color,
+			color: node.color
 		})
 	}
 

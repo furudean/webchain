@@ -15,7 +15,6 @@
 	let { nodes }: { nodes: Node[] } = $props()
 
 	const highlighted_node = $derived(page.state.node)
-	let graph_element: HTMLElement
 	const display_node = $derived($hovered_node || highlighted_node)
 
 	let graph: GraphType | undefined = $state()
@@ -23,6 +22,10 @@
 	let layout: ForceSupervisorType | undefined = $state()
 	let last_x: number | undefined = $state()
 	let last_y: number | undefined = $state()
+	let camera: Camera | undefined = $state()
+
+	let zoom_frame: number | null = null
+	let graph_element: HTMLElement
 
 	function update_camera(camera: Camera): void {
 		const size = `${100 / camera.ratio}px`
@@ -31,6 +34,32 @@
 		const pos_x = `${50 - (camera.x * 100) / camera.ratio}%`
 		const pos_y = `${50 + (camera.y * 100) / camera.ratio}%`
 		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
+	}
+
+	function zoom(direction: "in" | "out"): void {
+		if (!camera) return
+		const factor = 1.025
+		camera.setState({
+			ratio: direction === "in" ? camera.ratio / factor : camera.ratio * factor
+		})
+	}
+
+	function zoom_loop(direction: "in" | "out"): void {
+		zoom(direction)
+		zoom_frame = requestAnimationFrame(() => zoom_loop(direction))
+	}
+
+	function start_zoom(direction: "in" | "out"): void {
+		if (zoom_frame === null) {
+			zoom(direction)
+			zoom_frame = requestAnimationFrame(() => zoom_loop(direction))
+		}
+	}
+	function stop_zoom(): void {
+		if (zoom_frame !== null) {
+			cancelAnimationFrame(zoom_frame)
+			zoom_frame = null
+		}
 	}
 
 	async function init_graph(): Promise<void> {
@@ -66,7 +95,7 @@
 			},
 			stagePadding: 125,
 			autoRescale: true,
-			autoCenter: true,
+			autoCenter: true
 		})
 
 		let dragged_node: string | null = null
@@ -154,9 +183,10 @@
 			set_highlighted_node(undefined)
 		})
 
-		const camera = renderer.getCamera()
-		camera.addListener("updated", update_camera)
-		update_camera(camera)
+		const cam = renderer.getCamera()
+		camera = cam
+		cam.addListener("updated", update_camera)
+		update_camera(cam)
 	}
 
 	onMount(() => {
@@ -191,6 +221,21 @@
 		{/key}
 	{/if}
 	<div class="graph" bind:this={graph_element}></div>
+
+	<div class="camera-controls">
+		<button
+			onpointerdown={() => start_zoom("in")}
+			onpointerup={stop_zoom}
+			onpointerleave={stop_zoom}
+			aria-label="Zoom in">+</button
+		>
+		<button
+			onpointerdown={() => start_zoom("out")}
+			onpointerup={stop_zoom}
+			onpointerleave={stop_zoom}
+			aria-label="Zoom out">-</button
+		>
+	</div>
 </div>
 
 <style>
@@ -199,6 +244,33 @@
 		overflow: hidden;
 		position: relative;
 		display: flex;
+	}
+
+	.camera-controls {
+		position: fixed;
+		right: 1em;
+		bottom: 1em;
+		z-index: 10;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+	}
+	.camera-controls button {
+		all: unset;
+		width: 1.5em;
+		height: 1.5em;
+		font-size: 1em;
+		border: 1px solid #ccc;
+		color: #333;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		user-select: none;
+		backdrop-filter: blur(2px);
+	}
+
+	.camera-controls button:active {
+		background-color: #eee;
 	}
 
 	pre {
