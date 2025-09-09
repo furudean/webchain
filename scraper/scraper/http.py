@@ -31,7 +31,6 @@ async def load_page_html(
         if referrer is not None:
             headers['Referer'] = referrer
 
-        logger.info(f'get {url}...')
         async with session.get(
             url, timeout=aiohttp.ClientTimeout(total=5), headers=headers
         ) as response:
@@ -39,6 +38,7 @@ async def load_page_html(
             if not content_type.startswith('text/html'):
                 raise InvalidContentType
             html = await response.text()
+            logger.debug(f'got {url}')
         return html
     except (
         aiohttp.ServerConnectionError,
