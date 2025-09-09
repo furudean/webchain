@@ -1,7 +1,7 @@
 export interface HtmlMetadata {
 	title: string | null
 	description: string | null
-	color: string | null
+	theme_color: string | null
 }
 
 export interface CrawledNode {

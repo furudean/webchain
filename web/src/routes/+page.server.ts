@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({
 		return {
 			nodes: nodes.map((node) => ({
 				...node,
-				generated_color: node.html_metadata?.color || string_to_color(node.at),
+				generated_color: node.html_metadata?.theme_color || string_to_color(node.at),
 				url: new URL(node.at),
 				label:
 					new URL(node.at).hostname.replace(no_www, "") +
