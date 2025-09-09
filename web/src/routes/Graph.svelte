@@ -119,7 +119,7 @@
 		window.addEventListener("focus", () => layout?.start())
 
 		renderer.on("enterNode", (e) => {
-			graph_element.style.cursor = "pointer"
+			graph_element.style.cursor = "grab"
 			hovered_node.set(e.node)
 		})
 
