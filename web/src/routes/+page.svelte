@@ -21,7 +21,7 @@
 
 	{#if data.start && data.end}
 		<a href="/crawler/data.json">
-			last crawled {new Date(data.start).toLocaleString("en-US").toLowerCase()},
+			last crawled <time datetime={data.start.toISOString()}>{new Date(data.start).toLocaleString("en-US").toLowerCase()}</time>,
 			taking {Math.round((data.end.getTime() - data.start.getTime()) / 1000)} seconds
 		</a>
 	{/if}
