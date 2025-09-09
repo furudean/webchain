@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from "svelte"
+	import { onMount, tick } from "svelte"
 	import type { Sigma, Camera } from "sigma"
 	import type GraphType from "graphology"
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
@@ -11,6 +11,7 @@
 	} from "$lib/node_state"
 	import { page } from "$app/state"
 	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
+	import { getCameraStateToFitViewportToNodes } from "@sigma/utils"
 
 	let { nodes }: { nodes: Node[] } = $props()
 
@@ -33,6 +34,15 @@
 		const pos_x = `${50 - (camera.x * 100) / camera.ratio}%`
 		const pos_y = `${50 + (camera.y * 100) / camera.ratio}%`
 		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
+	}
+
+	export async function center_on_nodes(
+		nodes: string[] | undefined = undefined
+	): Promise<void> {
+		if (!renderer) return
+		nodes = typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
+		const camera_state = getCameraStateToFitViewportToNodes(renderer, nodes)
+		await renderer.getCamera()?.animate(camera_state)
 	}
 
 	function zoom(direction: 1 | -1): void {
@@ -87,9 +97,6 @@
 			labelRenderedSizeThreshold: 12,
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
-			cameraPanBoundaries: {
-				tolerance: 250
-			},
 			stagePadding: 125,
 			autoRescale: true,
 			autoCenter: true
@@ -123,9 +130,9 @@
 			hovered_node.set(e.node)
 		})
 
-		renderer.on("leaveNode", (e) => {
-			graph_element.style.cursor = ""
+		renderer.on("leaveNode", async (e) => {
 			hovered_node.set(undefined)
+			graph_element.style.cursor = ""
 		})
 
 		renderer.on("doubleClickNode", (e) => {
@@ -172,8 +179,21 @@
 		renderer.on("leaveStage", ({ event }) => {
 			graph_element.style.cursor = ""
 		})
-		renderer.on("upStage", () => {
-			set_highlighted_node(undefined)
+		renderer.on("upStage", (e) => {
+			if (is_dragging) {
+				e.preventSigmaDefault()
+				set_highlighted_node(undefined)
+			}
+		})
+		renderer.on("clickStage", () => {
+			if (highlighted_node) {
+				set_highlighted_node(undefined)
+			} else {
+				center_on_nodes()
+			}
+		})
+		renderer.on("doubleClickStage", (e) => {
+			e.preventSigmaDefault()
 		})
 
 		const camera = renderer.getCamera()
@@ -217,10 +237,10 @@
 	<div class="camera-controls">
 		<button
 			onclick={() => {
-				if (!renderer) return
-				renderer.getCamera().animatedReset()
+				center_on_nodes()
 			}}
-			title="Reset camera view">⇿</button
+			title="Reset camera view">
+			<span style="transform: rotate(-45deg); margin-top: -2px;">⇿</span></button
 		>
 		<button
 			onpointerdown={() => start_zoom(1)}
@@ -277,7 +297,7 @@
 		top: -0.5em;
 		left: 0;
 		font-family: monospace;
-		font-size: 8.5vh;
+		font-size: 9.25vh;
 		opacity: 0.02;
 		margin: 0;
 	}

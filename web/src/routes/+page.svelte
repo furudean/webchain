@@ -4,6 +4,7 @@
 	import Sidebar from "./Sidebar.svelte"
 
 	let { data }: PageProps = $props()
+	let graph_component: Graph | undefined = $state()
 </script>
 
 <svelte:head>
@@ -20,8 +21,8 @@
 </svelte:head>
 
 <div class="container">
-	<Graph nodes={data.nodes}></Graph>
-	<Sidebar nodes={data.nodes}></Sidebar>
+	<Graph nodes={data.nodes} bind:this={graph_component}></Graph>
+	<Sidebar nodes={data.nodes} graph_component={graph_component}></Sidebar>
 
 	{#if data.start && data.end}
 		<a href="/crawler/data.json">

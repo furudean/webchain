@@ -2,30 +2,33 @@
 	import type { Node } from "$lib/node"
 	import { hovered_node, graph, set_highlighted_node } from "$lib/node_state"
 	import { page } from "$app/state"
+	import Graph from "./Graph.svelte"
 
-	let { nodes }: { nodes: Node[] } = $props()
+	let { nodes, graph_component }: { nodes: Node[], graph_component: Graph } = $props()
 
 	const highlighted_node = $derived(page.state.node)
 
 	let node_elements: Record<string, HTMLElement> = $state({})
 
-	$effect.pre(() => {
+	$effect(() => {
 		if (highlighted_node === undefined) return
 		const current_element = node_elements[highlighted_node]
-		current_element?.scrollIntoView({ behavior: "auto", block: "nearest" })
-		current_element?.focus()
+		if (!current_element) return
+		current_element.scrollIntoView({ behavior: "auto", block: "nearest" })
 	})
 
 	function hover_in(at: string | undefined) {
 		if ($graph?.hasNode(at)) {
 			$graph.setNodeAttribute(at, "highlighted", true)
 		}
+		hovered_node.set(at)
 	}
 
 	function hover_out(at: string | undefined) {
 		if ($graph?.hasNode(at) && at !== highlighted_node) {
 			$graph.setNodeAttribute(at, "highlighted", false)
 		}
+		hovered_node.set(undefined)
 	}
 </script>
 
@@ -135,11 +138,11 @@
 				style:margin-left="{node.depth}ch"
 				aria-describedby="{node.hash}-desc"
 			>
-				<details open={node.at === highlighted_node} name="nodes">
+				<details open={node.at === highlighted_node} name="nodes" 						bind:this={node_elements[node.at]}
+>
 					<summary
 						class="node-header"
 						id="{node.hash}-desc"
-						bind:this={node_elements[node.at]}
 						onmouseenter={() => hover_in(node.at)}
 						onmouseleave={() => hover_out(node.at)}
 						onfocusin={() => hover_in(node.at)}
@@ -151,6 +154,7 @@
 							} else {
 								set_highlighted_node(node.at)
 							}
+							graph_component.center_on_nodes([node.at])
 						}}
 						onkeydown={(event) => {
 							if (event.key === "ArrowDown") {
@@ -291,7 +295,7 @@
 		flex: 1;
 	}
 
-	.nodes li:is(.hovered, :hover) {
+	.nodes li:is(.hovered, :hover):not(.highlighted) {
 		background-color: #8e8e8e36;
 	}
 
