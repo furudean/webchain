@@ -8,7 +8,8 @@ logger = logging.getLogger()
 
 def get_session() -> aiohttp.ClientSession:
     return aiohttp.ClientSession(
-        headers={'User-Agent': 'webchain-scraper/DRAFT'}, raise_for_status=True
+        headers={'User-Agent': 'webchain-scraper/DRAFT', 'Accept-Language': 'en-US, *;q=0.5'},
+        raise_for_status=True,
     )
 
 
