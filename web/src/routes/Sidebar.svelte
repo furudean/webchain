@@ -172,7 +172,7 @@
 								aria-hidden="true"
 								width="16"
 								height="16"
-								style:background-color={node.color}
+								style:background-color={node.generated_color}
 							/>
 							<span>{node.label}</span>
 						</div>

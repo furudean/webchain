@@ -1,6 +1,7 @@
 export interface HtmlMetadata {
 	title: string | null
 	description: string | null
+	color: string | null
 }
 
 export interface CrawledNode {
@@ -10,12 +11,11 @@ export interface CrawledNode {
 	parent: string | null
 	depth: number
 	indexed: boolean
-	color: string
 	html_metadata: HtmlMetadata | null
 }
 
 export interface Node extends CrawledNode {
 	url: URL
-	color: string
+	generated_color: string
 	label: string
 }

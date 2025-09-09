@@ -5,6 +5,7 @@ import asyncio
 from hashlib import shake_128
 
 from bs4 import BeautifulSoup, Tag
+from bs4.element import PageElement
 
 from scraper.http import get_session, load_page_html
 
@@ -13,6 +14,7 @@ from scraper.http import get_session, load_page_html
 class HtmlMetadata:
     title: str | None
     description: str | None
+    theme_color: str | None
 
 
 @dataclass
@@ -89,21 +91,29 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
     return hrefs
 
 
+def handle_meta_element(node: Tag | PageElement | None) -> str | None:
+    if isinstance(node, Tag) and node.get('content'):
+        return str(node.get('content'))
+
+    return None
+
+
 def get_html_metadata(html: str) -> HtmlMetadata | None:
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
 
     if not soup.head:
         return None
 
-    metadata = HtmlMetadata(title=None, description=None)
+    metadata = HtmlMetadata(title=None, description=None, theme_color=None)
 
     title_element = soup.head.title
-    description_element = soup.head.find('meta', attrs={'name': 'description'})
-
     metadata.title = title_element.string if title_element else None
-
-    if isinstance(description_element, Tag) and description_element.get('content'):
-        metadata.description = str(description_element.get('content'))
+    metadata.description = handle_meta_element(
+        soup.head.find('meta', attrs={'name': 'description'})
+    )
+    metadata.theme_color = handle_meta_element(
+        soup.head.find('meta', attrs={'name': 'theme-color'})
+    )
 
     return metadata
 

@@ -16,6 +16,7 @@
 		name="description"
 		content="a distributed webring for friends and enemies"
 	/>
+	<meta name="theme-color" content="#00000ff">
 </svelte:head>
 
 <div class="container">

@@ -36,20 +36,21 @@
 		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
 	}
 
-	function zoom(direction: "in" | "out"): void {
+	function zoom(direction: 1 | -1): void {
+		const camera = renderer?.getCamera()
 		if (!camera) return
 		const factor = 1.025
 		camera.setState({
-			ratio: direction === "in" ? camera.ratio / factor : camera.ratio * factor
+			ratio: camera.ratio * (direction === 1 ? factor : 1 / factor)
 		})
 	}
 
-	function zoom_loop(direction: "in" | "out"): void {
+	function zoom_loop(direction: 1 | -1): void {
 		zoom(direction)
 		zoom_frame = requestAnimationFrame(() => zoom_loop(direction))
 	}
 
-	function start_zoom(direction: "in" | "out"): void {
+	function start_zoom(direction: 1 | -1): void {
 		if (zoom_frame === null) {
 			zoom(direction)
 			zoom_frame = requestAnimationFrame(() => zoom_loop(direction))
@@ -85,11 +86,8 @@
 			labelDensity: 0.7,
 			labelGridCellSize: 70,
 			labelRenderedSizeThreshold: 12,
-			maxCameraRatio: 4,
+			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
-			zoomingRatio: 0.7,
-			zoomDuration: 200,
-			enableCameraRotation: false,
 			cameraPanBoundaries: {
 				tolerance: 250
 			},
@@ -167,10 +165,6 @@
 			event.original.stopPropagation()
 		})
 
-		renderer.on("doubleClickStage", (e) => {
-			e.preventSigmaDefault()
-		})
-
 		renderer.on("upNode", () => {
 			is_dragging = false
 			dragged_node = null
@@ -183,10 +177,9 @@
 			set_highlighted_node(undefined)
 		})
 
-		const cam = renderer.getCamera()
-		camera = cam
-		cam.addListener("updated", update_camera)
-		update_camera(cam)
+		const camera = renderer.getCamera()
+		camera.addListener("updated", update_camera)
+		update_camera(camera)
 	}
 
 	onMount(() => {
@@ -224,16 +217,23 @@
 
 	<div class="camera-controls">
 		<button
-			onpointerdown={() => start_zoom("in")}
-			onpointerup={stop_zoom}
-			onpointerleave={stop_zoom}
-			aria-label="Zoom in">+</button
+			onclick={() => {
+				if (!renderer) return
+				renderer.getCamera().animatedReset()
+			}}
+			title="Reset camera view">⇿</button
 		>
 		<button
-			onpointerdown={() => start_zoom("out")}
+			onpointerdown={() => start_zoom(1)}
 			onpointerup={stop_zoom}
 			onpointerleave={stop_zoom}
-			aria-label="Zoom out">-</button
+			title="Zoom in">+</button
+		>
+		<button
+			onpointerdown={() => start_zoom(-1)}
+			onpointerup={stop_zoom}
+			onpointerleave={stop_zoom}
+			title="Zoom out">-</button
 		>
 	</div>
 </div>
