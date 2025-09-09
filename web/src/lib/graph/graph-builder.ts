@@ -30,7 +30,7 @@ export function build_graph(
 					: undefined,
 			url: node.at,
 			color: node.color,
-			indexed: node.indexed,
+			indexed: node.indexed
 		})
 	}
 
@@ -49,8 +49,6 @@ export function build_graph(
 			}
 		}
 	}
-
-
 
 	return graph
 }

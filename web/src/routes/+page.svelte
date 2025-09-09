@@ -12,7 +12,10 @@
 	<link rel="webchain-nomination" href="https://nekopath.fun/" />
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
 	<title>milkmedicine webchain</title>
-	<meta name="description" content="a distributed webring for friends and enemies">
+	<meta
+		name="description"
+		content="a distributed webring for friends and enemies"
+	/>
 </svelte:head>
 
 <div class="container">
@@ -21,8 +24,10 @@
 
 	{#if data.start && data.end}
 		<a href="/crawler/data.json">
-			last crawled <time datetime={data.start.toISOString()}>{new Date(data.start).toLocaleString("en-US").toLowerCase()}</time>,
-			taking {Math.round((data.end.getTime() - data.start.getTime()) / 1000)} seconds
+			last crawled <time datetime={data.start.toISOString()}
+				>{new Date(data.start).toLocaleString("en-US").toLowerCase()}</time
+			>, taking {Math.round((data.end.getTime() - data.start.getTime()) / 1000)}
+			seconds
 		</a>
 	{/if}
 </div>

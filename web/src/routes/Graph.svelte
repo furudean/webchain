@@ -4,28 +4,25 @@
 	import type GraphType from "graphology"
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
 	import type { Node } from "$lib/node"
-	import type ForceSupervisor from "graphology-layout-force/worker"
 	import {
-		highlighted_node,
 		hovered_node,
-		set_graph,
-		set_hovered_node,
+		graph as graph_store,
 		set_highlighted_node
 	} from "$lib/node_state"
-
-	let graph_element: HTMLElement
+	import { page } from "$app/state"
+	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
 
 	let { nodes }: { nodes: Node[] } = $props()
 
-	let last_x: number | undefined = $state()
-	let last_y: number | undefined = $state()
-
-	const display_node: string | undefined = $derived(
-		$hovered_node || $highlighted_node
-	)
+	const highlighted_node = $derived(page.state.node)
+	let graph_element: HTMLElement
+	const display_node = $derived($hovered_node || highlighted_node)
 
 	let graph: GraphType | undefined = $state()
 	let renderer: Sigma | undefined = $state()
+	let layout: ForceSupervisorType | undefined = $state()
+	let last_x: number | undefined = $state()
+	let last_y: number | undefined = $state()
 
 	function update_camera(camera: Camera): void {
 		const size = `${100 / camera.ratio}px`
@@ -36,147 +33,167 @@
 		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
 	}
 
-	function clear_highlighted(graph: GraphType): void {
-		for (const node of graph.nodes()) {
-			graph.setNodeAttribute(node, "highlighted", false)
+	async function init_graph(): Promise<void> {
+		const { default: Sigma } = await import("sigma")
+		const { default: Graph } = await import("graphology")
+		const { NodeImageProgram } = await import("@sigma/node-image")
+		const { NodeSquareProgram } = await import("@sigma/node-square")
+		const { default: ForceSupervisor } = await import(
+			"graphology-layout-force/worker"
+		)
+		const hashmap = new Map(Object.values(nodes).map((node) => [node.at, node]))
+
+		const positions = calculate_tree_layout(hashmap)
+		graph = build_graph(hashmap, positions, Graph)
+		graph_store.set(graph)
+		renderer = new Sigma(graph, graph_element, {
+			nodeProgramClasses: {
+				image: NodeImageProgram,
+				square: NodeSquareProgram
+			},
+			labelSize: 10,
+			labelFont: "system-ui, sans-serif",
+			labelDensity: 0.7,
+			labelGridCellSize: 70,
+			labelRenderedSizeThreshold: 12,
+			maxCameraRatio: 4,
+			minCameraRatio: 0.75,
+			zoomingRatio: 0.7,
+			zoomDuration: 200,
+			enableCameraRotation: false,
+			cameraPanBoundaries: {
+				tolerance: 400
+			},
+			stagePadding: 100
+		})
+
+		let dragged_node: string | null = null
+		let is_dragging = false
+
+		layout = new ForceSupervisor(graph, {
+			isNodeFixed(_, attr) {
+				return attr.highlighted
+			},
+			settings: {
+				// repulsion: 0.2
+			}
+		})
+		if (!document.hidden) {
+			layout.start()
 		}
+		window.addEventListener("visibilitychange", (e) => {
+			if (document.hidden) {
+				layout?.stop()
+			} else {
+				layout?.start()
+			}
+		})
+		window.addEventListener("focus", () => layout?.start())
+
+		renderer.on("enterNode", (e) => {
+			graph_element.style.cursor = "pointer"
+			hovered_node.set(e.node)
+		})
+
+		renderer.on("leaveNode", (e) => {
+			graph_element.style.cursor = ""
+			hovered_node.set(undefined)
+		})
+
+		renderer.on("doubleClickNode", (e) => {
+			if (!graph) return
+			e.preventSigmaDefault()
+			const node_attributes = graph.getNodeAttributes(e.node)
+			if (node_attributes.url) {
+				window.open(node_attributes.url, "_blank")
+			}
+		})
+
+		renderer.on("downNode", (e) => {
+			if (!graph || !renderer) return
+			is_dragging = true
+			dragged_node = e.node
+			hovered_node.set(e.node)
+			set_highlighted_node(e.node)
+			if (!renderer.getCustomBBox()) renderer.setCustomBBox(renderer.getBBox())
+			graph_element.style.cursor = "grabbing"
+		})
+
+		renderer.on("moveBody", ({ event }) => {
+			if (!graph || !renderer) return
+			if (!is_dragging || !dragged_node) return
+
+			const pos = renderer.viewportToGraph(event)
+
+			graph.setNodeAttribute(dragged_node, "x", pos.x)
+			graph.setNodeAttribute(dragged_node, "y", pos.y)
+
+			last_x = pos.x
+			last_y = pos.y
+
+			event.preventSigmaDefault()
+			event.original.preventDefault()
+			event.original.stopPropagation()
+		})
+
+		renderer.on("doubleClickStage", (e) => {
+			e.preventSigmaDefault()
+		})
+
+		renderer.on("upNode", () => {
+			is_dragging = false
+			dragged_node = null
+			graph_element.style.cursor = "grab"
+		})
+		renderer.on("leaveStage", ({ event }) => {
+			graph_element.style.cursor = ""
+		})
+		renderer.on("upStage", () => {
+			set_highlighted_node(undefined)
+		})
+
+		const camera = renderer.getCamera()
+		camera.setState({
+			ratio: 1.4,
+			x: 0.35
+		})
+		camera.addListener("updated", update_camera)
+		update_camera(camera)
 	}
 
 	onMount(() => {
-		const init_graph = async () => {
-			const { default: Sigma } = await import("sigma")
-			const { default: Graph } = await import("graphology")
-			const { NodeImageProgram } = await import("@sigma/node-image")
-			const { NodeSquareProgram } = await import("@sigma/node-square")
-			const { default: ForceSupervisor } = await import(
-				"graphology-layout-force/worker"
-			)
-			const hashmap = new Map(
-				Object.values(nodes).map((node) => [node.at, node])
-			)
-
-			const positions = calculate_tree_layout(hashmap)
-			graph = build_graph(hashmap, positions, Graph)
-			set_graph(graph)
-			renderer = new Sigma(graph, graph_element, {
-				nodeProgramClasses: {
-					image: NodeImageProgram,
-					square: NodeSquareProgram
-				},
-				labelSize: 10,
-				labelFont: "system-ui, sans-serif",
-				labelDensity: 0.7,
-				labelGridCellSize: 70,
-				labelRenderedSizeThreshold: 12,
-				maxCameraRatio: 4,
-				minCameraRatio: 0.75,
-				zoomingRatio: 0.7,
-				zoomDuration: 200,
-				enableCameraRotation: false,
-				cameraPanBoundaries: {
-					tolerance: 400
-				},
-			})
-
-			let dragged_node: string | null = null
-			let is_dragging = false
-
-			const layout = new ForceSupervisor(graph, {
-				isNodeFixed(_, attr) {
-					return attr.highlighted
-				},
-				settings: {
-					// repulsion: 0.2
-				}
-			})
-			if ("hasFocus" in document && document.hasFocus()) {
-				layout.start()
-			}
-			window.addEventListener("blur", () => layout?.stop())
-			window.addEventListener("focus", () => layout?.start())
-
-			renderer.on("enterNode", (e) => {
-				graph_element.style.cursor = "pointer"
-				set_hovered_node(e.node)
-			})
-
-			renderer.on("leaveNode", (e) => {
-				graph_element.style.cursor = ""
-				set_hovered_node(undefined)
-			})
-
-			renderer.on("doubleClickNode", (e) => {
-				if (!graph) return
-				e.preventSigmaDefault()
-				const node_attributes = graph.getNodeAttributes(e.node)
-				if (node_attributes.url) {
-					window.open(node_attributes.url, "_blank")
-				}
-			})
-
-			renderer.on("downNode", (e) => {
-				if (!graph || !renderer) return
-				is_dragging = true
-				dragged_node = e.node
-				set_highlighted_node(e.node)
-				clear_highlighted(graph)
-				graph.setNodeAttribute(dragged_node, "highlighted", true)
-				if (!renderer.getCustomBBox())
-					renderer.setCustomBBox(renderer.getBBox())
-				graph_element.style.cursor = "grabbing"
-			})
-
-			renderer.on("moveBody", ({ event }) => {
-				if (!graph || !renderer) return
-
-				if (!is_dragging || !dragged_node) return
-
-				const pos = renderer.viewportToGraph(event)
-
-				graph.setNodeAttribute(dragged_node, "x", pos.x)
-				graph.setNodeAttribute(dragged_node, "y", pos.y)
-
-				last_x = pos.x
-				last_y = pos.y
-
-				event.preventSigmaDefault()
-				event.original.preventDefault()
-				event.original.stopPropagation()
-			})
-
-			renderer.on("doubleClickStage", (e) => {
-				e.preventSigmaDefault()
-			})
-
-			function handle_up() {
-				is_dragging = false
-				dragged_node = null
-				graph_element.style.cursor = "grab"
-			}
-			renderer.on("upNode", handle_up)
-			renderer.on("upStage", () => {
-				if (!graph) return
-				set_highlighted_node(undefined)
-				clear_highlighted(graph)
-			})
-
-			const camera = renderer.getCamera()
-			camera.setState({
-				ratio: 1.5,
-				x: 0.45,
-			})
-			camera.addListener("updated", update_camera)
-			update_camera(camera)
-			onDestroy(() => {
-				layout.kill()
-				renderer?.kill()
-			})
-		}
-
 		init_graph().catch(console.error)
+
+		return () => {
+			layout?.kill()
+			renderer?.kill()
+		}
+	})
+
+	$effect(() => {
+		if (!graph) return
+
+		for (const node of graph.nodes()) {
+			graph.setNodeAttribute(node, "highlighted", false)
+		}
+		if (highlighted_node) {
+			graph.setNodeAttribute(highlighted_node, "highlighted", true)
+			// const camera = renderer?.getCamera()
+			// if (!camera) return
+			// const node_position = graph.getNodeAttributes(highlighted_node)
+			// if (!node_position) return
+			// camera.animate(
+			// 	{
+			// 		x: node_position.x,
+			// 		y: node_position.y,
+			// 	},
+			// 	{
+			// 		duration: 400
+			// 	}
+			// )
+		}
 	})
 </script>
-
 
 <div class="graph-container">
 	{#if display_node}

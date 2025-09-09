@@ -1,25 +1,34 @@
 <script lang="ts">
 	import type { Node } from "$lib/node"
-	import {
-		highlighted_node,
-		hovered_node,
-		current_graph,
-		set_highlighted_node,
-		set_hovered_node,
-		clear_highlighted
-	} from "$lib/node_state"
-	import { get } from "svelte/store"
+	import { hovered_node, graph, set_highlighted_node } from "$lib/node_state"
+	import { page } from "$app/state"
 
 	let { nodes }: { nodes: Node[] } = $props()
 
+	const highlighted_node = $derived(page.state.node)
+
 	let node_elements: Record<string, HTMLElement> = $state({})
 
-	$effect(() => {
-		if ($highlighted_node === undefined) return
-
-		const current_element = node_elements[$highlighted_node]
+	$effect.pre(() => {
+		if (highlighted_node === undefined) return
+		const current_element = node_elements[highlighted_node]
 		current_element?.scrollIntoView({ behavior: "auto", block: "nearest" })
+		current_element?.focus()
 	})
+
+	function hover_in(at: string | undefined) {
+		hovered_node.set(at)
+		if ($graph?.hasNode(at)) {
+			$graph.setNodeAttribute(at, "highlighted", true)
+		}
+	}
+
+	function hover_out(at: string | undefined) {
+		hovered_node.set(undefined)
+		if ($graph?.hasNode(at) && at !== highlighted_node) {
+			$graph.setNodeAttribute(at, "highlighted", false)
+		}
+	}
 </script>
 
 <aside>
@@ -27,7 +36,7 @@
 
 	<p>a distributed webring for friends and enemies</p>
 
-	<details class="qna">
+	<details class="qna" name="qna">
 		<summary>what?</summary>
 		<p>
 			A <a
@@ -59,14 +68,17 @@
 		<p>
 			Source code can be found <a
 				href="https://github.com/furudean/webchain"
-				rel="external">on our GitHub</a
+				rel="external">on GitHub</a
 			>.
 		</p>
 	</details>
 
-	<details class="qna">
+	<details class="qna" name="qna">
 		<summary>how?</summary>
-		<p>Each member node adds markup to their HTML, for example:</p>
+		<p>
+			To join the webchain, each member node adds markup to their HTML, for
+			example:
+		</p>
 		<pre><code
 				>&lthtml&gt;
 &lt;head&gt;
@@ -77,7 +89,9 @@
   &lt;link rel="webchain-nomination"
     href="https://yetanother.example.com" /&gt;
 &lt;/head&gt;
-&lt;body&gt;...&lt/body&gt;
+&lt;body&gt;
+    ...
+&lt/body&gt;
 &lt/html&gt;</code
 			></pre>
 		<p>
@@ -85,6 +99,10 @@
 			<code>webchain-nomination</code> links point to up to three other websites
 			that this node nominates.
 		</p>
+		<blockquote>
+			Note that a node must first be nominated by the webchain before it can add
+			others.
+		</blockquote>
 		<p>
 			A crawler visits each node, reads its nominations, and then visits those
 			nodes in turn, recursively, building up a graph of all reachable nodes.
@@ -95,54 +113,45 @@
 		</p>
 	</details>
 
-	<details class="qna">
+	<details class="qna" name="qna">
 		<summary>questions</summary>
 		<p>
-			If you have any inquiries (including wanting to join this webchain), you
-			can come chat at <a href="https://irc.milkmedicine.net" rel="external"
-				>#webchain on irc.milkmedicine.net</a
-			>
+			If you have inquiries (including wanting to join this webchain), you can
+			come chat in the <a href="https://irc.milkmedicine.net" rel="external"
+				>#webchain channel on irc.milkmedicine.net</a
+			>.
 		</p>
 	</details>
 
 	<hr />
 
-	<p>{nodes.length} websites in the webchain</p>
-
 	<ul class="nodes">
+		<h2>members</h2>
+		<p>
+			{new Intl.NumberFormat("en-US").format(nodes.length)} sites in this webchain
+		</p>
 		{#each nodes as node, i (node.at)}
 			<li
-				class:highlighted={node.at === $highlighted_node}
+				class:highlighted={node.at === highlighted_node}
 				class:hovered={node.at === $hovered_node}
 				style:margin-left="{node.depth}ch"
+				aria-describedby="{node.hash}-desc"
 			>
-				<details open={$highlighted_node === node.at}>
+				<details open={node.at === highlighted_node} name="nodes">
 					<summary
-						tabindex="0"
 						class="node-header"
-						onclick={(event) => {
-							event.preventDefault()
-							const graph = get(current_graph)
-							clear_highlighted(graph)
-							set_highlighted_node(node.at)
-							$highlighted_node = node.at
-						}}
-						onmouseenter={() => {
-							set_hovered_node(node.at)
-							const graph = get(current_graph)
-							if (graph && graph.hasNode(node.at)) {
-								graph.setNodeAttribute(node.at, "highlighted", true)
-							}
-						}}
-						onmouseleave={() => {
-							set_hovered_node(undefined)
-							const graph = get(current_graph)
-							if (
-								graph &&
-								graph.hasNode(node.at) &&
-								node.at !== $highlighted_node
-							) {
-								graph.setNodeAttribute(node.at, "highlighted", false)
+						id="{node.hash}-desc"
+						bind:this={node_elements[node.at]}
+						onmouseenter={() => hover_in(node.at)}
+						onmouseleave={() => hover_out(node.at)}
+						onfocusin={() => hover_in(node.at)}
+						onfocusout={() => hover_out(node.at)}
+						onclick={(e) => {
+							e.preventDefault()
+							if (node.at === highlighted_node) {
+								set_highlighted_node(undefined)
+							} else {
+								set_highlighted_node(node.at)
 							}
 						}}
 						onkeydown={(event) => {
@@ -170,8 +179,8 @@
 							<span>{node.label}</span>
 						</div>
 					</summary>
-					{#if $highlighted_node === node.at}
-						<div class="node-content" bind:this={node_elements[node.at]}>
+					{#if highlighted_node === node.at}
+						<div class="node-content">
 							<a href={node.url.href} rel="external">
 								{node.html_metadata?.title || node.label}
 							</a>
@@ -225,15 +234,36 @@
 		border: 1px solid transparent;
 	}
 
-	.qna[open] {
-		border: 1px dashed currentColor;
-		background: rgba(255, 255, 255, 0.9);
-		margin-bottom: 1rem;
+	.qna:has(> :focus-visible) {
+		outline: 2px solid blue;
 	}
 
-	summary {
+	.qna summary:focus {
+		outline: none;
+	}
+
+	.qna:is(:hover, :focus-visible) {
+		border: 1px dashed currentColor;
+	}
+
+	.qna[open] {
+		border: 1px dashed currentColor;
+		background: #efefef;
+		margin: 1rem 0;
+	}
+
+	.qna summary {
 		cursor: pointer;
 		padding: 0.5rem 0;
+		font-style: italic;
+	}
+
+	.qna blockquote {
+		margin: 0;
+		padding-left: 0.5rem;
+		border-left: 2px solid currentColor;
+		font-style: italic;
+		color: #555;
 	}
 
 	.qna ol li {
@@ -264,7 +294,7 @@
 		flex: 1;
 	}
 
-	.nodes li:is(.hovered, :hover):not(.highlighted) {
+	.nodes li:is(.hovered, :hover) {
 		background-color: #8e8e8e36;
 	}
 

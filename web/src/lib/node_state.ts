@@ -1,24 +1,22 @@
-import type GraphType from "graphology"
 import { writable } from "svelte/store"
+import type GraphType from "graphology"
+import { goto } from "$app/navigation"
+import { page } from "$app/state"
 
-export const highlighted_node = writable<string | undefined>(undefined)
 export const hovered_node = writable<string | undefined>(undefined)
-export const current_graph = writable<GraphType>(undefined)
+export const graph = writable<GraphType>(undefined)
 
-export function clear_highlighted(graph: GraphType): void {
-	for (const node of graph.nodes()) {
-		graph.setNodeAttribute(node, "highlighted", false)
+export async function set_highlighted_node(node: string | undefined) {
+	const url = new URL(page.url)
+	if (node) {
+		url.searchParams.set("node", node)
+	} else {
+		url.searchParams.delete("node")
 	}
-}
-
-export function set_highlighted_node(node: string | undefined) {
-	highlighted_node.set(node)
-}
-
-export function set_hovered_node(node: string | undefined) {
-	hovered_node.set(node)
-}
-
-export function set_graph(graph: GraphType) {
-	current_graph.set(graph)
+	await goto("?" + url.searchParams, {
+		state: { node },
+		replaceState: true,
+		keepFocus: true,
+		noScroll: true
+	})
 }

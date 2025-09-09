@@ -145,9 +145,9 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			icon_urls.map((icon_url) =>
 				fetch(icon_url, {
 					redirect: "follow"
-				}
+				})
 			)
-		))
+		)
 		const best_icon = icon_responses.find(
 			(result): result is PromiseFulfilledResult<Response> =>
 				result.status === "fulfilled" && result.value.ok
@@ -155,8 +155,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		if (!best_icon) return empty_response_cache(url_param)
 
 		const buffer = await best_icon.arrayBuffer()
-		const content_type =
-			best_icon.headers.get("Content-Type") || "image/x-icon"
+		const content_type = best_icon.headers.get("Content-Type") || "image/x-icon"
 
 		const cache_item = await write_cache_file({
 			key: url_param,
