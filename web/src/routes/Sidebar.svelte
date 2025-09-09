@@ -11,6 +11,15 @@
 	import { get } from "svelte/store"
 
 	let { nodes }: { nodes: Node[] } = $props()
+
+	let node_elements: Record<string, HTMLElement> = $state({})
+
+	$effect(() => {
+		if ($highlighted_node === undefined) return
+
+		const current_element = node_elements[$highlighted_node]
+		current_element?.scrollIntoView({ behavior: "auto", block: "nearest" })
+	})
 </script>
 
 <aside>
@@ -86,7 +95,19 @@
 		</p>
 	</details>
 
+	<details class="qna">
+		<summary>questions</summary>
+		<p>
+			If you have any inquiries (including wanting to join this webchain), you
+			can come chat at <a href="https://irc.milkmedicine.net" rel="external"
+				>#webchain on irc.milkmedicine.net</a
+			>
+		</p>
+	</details>
+
 	<hr />
+
+	<p>{nodes.length} websites in the webchain</p>
 
 	<ul class="nodes">
 		{#each nodes as node, i (node.at)}
@@ -150,7 +171,7 @@
 						</div>
 					</summary>
 					{#if $highlighted_node === node.at}
-						<div class="node-content">
+						<div class="node-content" bind:this={node_elements[node.at]}>
 							<a href={node.url.href} rel="external">
 								{node.html_metadata?.title || node.label}
 							</a>
@@ -173,11 +194,18 @@
 		padding: 0 1rem;
 		background: linear-gradient(to right, white, transparent);
 		min-height: 100vh;
+		will-change: backdrop-filter;
+	}
+
+	aside > :last-child {
+		margin-bottom: 20vh;
 	}
 
 	aside:hover {
 		/* background: white; */
 		border-right: 1px solid rgba(0, 0, 0, 0.25);
+		background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+		backdrop-filter: blur(1.5px);
 	}
 
 	summary {
