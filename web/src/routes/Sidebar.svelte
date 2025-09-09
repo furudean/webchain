@@ -148,7 +148,7 @@
 								<p>{node.html_metadata.description}</p>
 							{:else}
 								<p class="shy">
-									<em>no description</em>
+									<em>without description</em>
 								</p>
 							{/if}
 						</div>
