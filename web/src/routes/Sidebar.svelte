@@ -15,7 +15,7 @@
 		if (highlighted_node === undefined) return
 		const current_element = node_elements[highlighted_node]
 		if (!current_element) return
-		current_element.scrollIntoView({ behavior: "auto", block: "nearest" })
+		current_element.scrollIntoView({ behavior: "auto", block: "center" })
 	})
 
 	function hover_in(at: string | undefined) {

@@ -15,7 +15,7 @@
 	<title>milkmedicine webchain</title>
 	<meta
 		name="description"
-		content="a distributed webring for friends and enemies"
+		content="a distributed webring for friends and enemies. you are here!"
 	/>
 	<meta name="theme-color" content="#0000ff">
 </svelte:head>
