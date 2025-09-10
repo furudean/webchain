@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount, tick } from "svelte"
+	import { onMount } from "svelte"
 	import type { Sigma, Camera } from "sigma"
+	import type { AnimateOptions } from "sigma/utils"
 	import type GraphType from "graphology"
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
 	import type { Node } from "$lib/node"
@@ -37,12 +38,12 @@
 	}
 
 	export async function center_on_nodes(
-		nodes: string[] | undefined = undefined
+		nodes: string[] | undefined = undefined, options: Partial<AnimateOptions> = {}
 	): Promise<void> {
 		if (!renderer) return
 		nodes = typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
 		const camera_state = getCameraStateToFitViewportToNodes(renderer, nodes)
-		await renderer.getCamera()?.animate(camera_state)
+		await renderer.getCamera()?.animate(camera_state, options)
 	}
 
 	function zoom(direction: 1 | -1): void {
@@ -108,7 +109,7 @@
 				return attr.highlighted
 			},
 			settings: {
-				// repulsion: 0.2
+				inertia: 0.6
 			}
 		})
 		if (!document.hidden) {
@@ -197,7 +198,15 @@
 		const camera = renderer.getCamera()
 		camera.addListener("updated", update_camera)
 		update_camera(camera)
-		center_on_nodes()
+		camera.setState({
+			ratio: 3
+		})
+		setTimeout(() => {
+			center_on_nodes(undefined, {
+				duration: 650,
+				easing: "cubicInOut"
+			})
+		}, 400)
 	}
 
 	onMount(() => {
@@ -238,9 +247,15 @@
 			onclick={() => {
 				center_on_nodes()
 			}}
-			title="Reset camera view">
-			<span style="transform: rotate(-45deg); margin-top: -2px;">⇿</span></button
-		>
+			title="Reset camera view"
+			aria-label="Reset camera view">
+			<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+				<path d="M6 8V6H8" stroke="currentColor" stroke-width="1" fill="none"/>
+				<path d="M14 8V6H12" stroke="currentColor" stroke-width="1" fill="none"/>
+				<path d="M14 12V14H12" stroke="currentColor" stroke-width="1" fill="none"/>
+				<path d="M6 12V14H8" stroke="currentColor" stroke-width="1" fill="none"/>
+			</svg>
+		</button>
 		<button
 			onpointerdown={() => start_zoom(1)}
 			onpointerup={stop_zoom}
