@@ -176,7 +176,7 @@
 							}
 						}}
 					>
-						<div class="label">
+						<div class="label" data-indexed={node.indexed}>
 							<img
 								src="/api/favicon?url={encodeURIComponent(node.at)}"
 								alt=""
@@ -185,12 +185,16 @@
 								height="16"
 								style:background-color={node.generated_color}
 							/>
-							<span>
+							<span >
 								{node.label}
 								{#if [$hovered_node, highlighted_node].includes(node.at)}
-									<span class="slots" class:full={node.children.length === 3}
-										>{node.children.length}/3</span
-									>
+									<span class="slots" class:full={node.children.length === 3}>
+										{#if node.indexed}
+											{node.children.length}/3
+										{:else}
+											offline
+										{/if}
+									</span>
 								{/if}
 							</span>
 						</div>
@@ -335,12 +339,13 @@
 	}
 
 	.label .slots {
-		font-size: 0.7em;
+		font-size: 0.75em;
 		font-family: monospace;
 		vertical-align: middle;
 		color: currentColor;
 		user-select: none;
 		pointer-events: none;
+		margin-left: 0.5ch;
 	}
 
 	.label .slots.full {
@@ -355,6 +360,10 @@
 	.label img {
 		display: block;
 		border-radius: 0.1rem;
+	}
+
+	.label[data-indexed="false"] > * {
+		opacity: 0.65;
 	}
 
 	.node-header {
