@@ -4,7 +4,8 @@
 	import { page } from "$app/state"
 	import Graph from "./Graph.svelte"
 
-	let { nodes, graph_component }: { nodes: Node[], graph_component: Graph } = $props()
+	let { nodes, graph_component }: { nodes: Node[]; graph_component: Graph } =
+		$props()
 
 	const highlighted_node = $derived(page.state.node)
 
@@ -33,7 +34,10 @@
 </script>
 
 <aside>
-	<h1>the<br />milkmedicine<br />webchain</h1>
+	<h1>
+		<span class="square" aria-hidden="true"></span>the<br />milkmedicine<br
+		/>webchain
+	</h1>
 
 	<p>a distributed webring for friends and enemies</p>
 
@@ -138,8 +142,11 @@
 				style:margin-left="{node.depth}ch"
 				aria-describedby="{node.hash}-desc"
 			>
-				<details open={node.at === highlighted_node} name="nodes" 						bind:this={node_elements[node.at]}
->
+				<details
+					open={node.at === highlighted_node}
+					name="nodes"
+					bind:this={node_elements[node.at]}
+				>
 					<summary
 						class="node-header"
 						id="{node.hash}-desc"
@@ -206,6 +213,15 @@
 		background: linear-gradient(to right, white, transparent);
 		min-height: 100vh;
 		will-change: backdrop-filter;
+	}
+
+	.square {
+		display: inline-block;
+		width: 1.1em;
+		height: 1.1em;
+		background: blue;
+		margin-right: 0.1em;
+		vertical-align: sub;
 	}
 
 	aside > :last-child {

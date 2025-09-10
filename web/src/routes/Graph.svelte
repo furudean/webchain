@@ -267,7 +267,7 @@
 	.camera-controls {
 		position: fixed;
 		right: 1em;
-		bottom: 1em;
+		bottom: 1.9em;
 		z-index: 10;
 		display: flex;
 		flex-direction: column;
@@ -278,6 +278,7 @@
 		width: 1.5em;
 		height: 1.5em;
 		font-size: 1em;
+		background-color: #ffffffd8;
 		border: 1px solid #ccc;
 		color: #333;
 		display: flex;
