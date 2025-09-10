@@ -98,8 +98,6 @@
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
 			stagePadding: 125,
-			autoRescale: true,
-			autoCenter: true
 		})
 
 		let dragged_node: string | null = null
