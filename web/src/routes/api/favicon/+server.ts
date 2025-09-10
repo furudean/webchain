@@ -9,6 +9,18 @@ import {
 	type CachedItem
 } from "$lib/image-cache"
 
+function is_valid_url(str: string): boolean {
+	let url: URL | undefined
+
+	try {
+		url = new URL(str)
+	} catch {
+		return false
+	}
+
+	return url.protocol === "http:" || url.protocol === "https:"
+}
+
 async function get_icon_urls(
 	base: URL | string,
 	head: HTMLElement | null
@@ -22,10 +34,19 @@ async function get_icon_urls(
 			const element = head.querySelector(selector)
 			if (element?.hasAttribute("href")) {
 				const href = element.getAttribute("href")!
-				try {
-					possible_icons.push(new URL(href, base))
-				} catch {
-					continue
+				// first check if its a valid url on its own
+				const valid_url = is_valid_url(href)
+				if (valid_url) {
+					possible_icons.push(new URL(href))
+				} else {
+					// if not, it's probably a relative url, try to resolve it
+					try {
+						possible_icons.push(new URL(href, base))
+					} catch {
+						// invalid url, skip
+						console.log(`skipping invalid favicon url: ${href}`)
+						continue
+					}
 				}
 			}
 		}
@@ -100,6 +121,10 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		return text("url parameter required", { status: 400 })
 	}
 
+	if (!is_valid_url(url_param)) {
+		return text("invalid url parameter", { status: 400 })
+	}
+
 	// handle disk cache
 	const cache_hit = await get_cached_file(url_param)
 	if (cache_hit?.data) {
@@ -134,11 +159,10 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 
 		if (!page_response.ok) return new Response(null, { status: 204 })
 
-		const page_url = page_response.url
 		const html = parse(await page_response.text())
 		if (!html) return empty_response_cache(url_param)
 
-		const icon_urls = await get_icon_urls(page_url, html.querySelector("head"))
+		const icon_urls = await get_icon_urls(url_param, html.querySelector("head"))
 		if (icon_urls.length === 0) return empty_response_cache(url_param)
 
 		const icon_responses = await Promise.allSettled(

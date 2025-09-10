@@ -16,8 +16,9 @@ rsync -zhave ssh --progress build webchain.milkmedicine.net:/var/www/
 
 ssh webchain.milkmedicine.net "
     cd /var/www/ && \
+	systemctl stop node.service && \
     rm -rf webchain.milkmedicine.net && \
     mv build webchain.milkmedicine.net && \
     chown -R node:node webchain.milkmedicine.net && \
-    systemctl restart node.service
+    systemctl start node.service
 "
