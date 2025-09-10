@@ -199,6 +199,7 @@
 		const camera = renderer.getCamera()
 		camera.addListener("updated", update_camera)
 		update_camera(camera)
+		center_on_nodes()
 	}
 
 	onMount(() => {
