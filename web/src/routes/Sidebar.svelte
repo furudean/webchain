@@ -128,8 +128,6 @@
 		</p>
 	</details>
 
-	<hr />
-
 	<ul class="nodes">
 		<h2>members</h2>
 		<p>
