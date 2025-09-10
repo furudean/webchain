@@ -35,7 +35,7 @@
 
 <aside>
 	<h1>
-		<span class="square" aria-hidden="true"></span>the<br />milkmedicine<br
+		<span class="square" aria-hidden="true"></span> the<br />milkmedicine<br
 		/>webchain
 	</h1>
 
