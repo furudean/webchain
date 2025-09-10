@@ -23,7 +23,7 @@ higher up the chain.
 2. Each node in the tree represents a website, which is identified by its URL.
 3. Each node may define child nominations by including appropriate `<link>` tags
    in the `<head>` section of its HTML (see examples below).
-4. Each node can nominate up to 3 other nodes, with any additional nominations
+4. Each node can nominate up to `n`[^1] other nodes, with any additional nominations
    being ignored. Nominations may be freely added or removed by the node owner,
    at their discretion.
 5. A nominated node can be any valid URL, including subdomains, paths, or even
@@ -34,6 +34,10 @@ higher up the chain.
    node is considered offline. Offline nodes are still a part of the data
    representation, but its subtree is not traversable until it comes online
    again.
+
+[^1]: The value of `n` is left unspecified. The webchain admin may choose a suitable
+    value based on the desired growth rate and trust level of the chain.
+	 A common choice might be `n = 3`.
 
 ## Example node
 
@@ -115,19 +119,22 @@ emerge.
 
 ## Concerns
 
-Since a nomination URL can be any valid URL, it is possible for a single actor
-to create a large number of nodes and nominate each other. Since the webchain is
-based on trust, such an attack is not likely to succeed unless the attacker can
-convince existing members to nominate them.
+- Since a nomination URL can be any valid URL, it is possible for a single actor
+  to create a large number of nodes and nominate each other. Since the webchain
+  is based on trust, such an attack is not likely to succeed unless the attacker
+  can convince existing members to nominate them.
 
-If a nominated domain expires and is purchased by a malicious actor, they
-inherit the trust relationship and position in the webchain without the original
-vetting process.
+- If a nominated domain expires and is purchased by a malicious actor, they
+  inherit the trust relationship and position in the webchain without the
+  original vetting process.
 
-With each node limited to 2 nominations, the webchain could become unable to
-grow if the edges don't invite new nodes. This could be mitigated by allowing
-more nominations per node, but that would also increase the risk of abuse.
+- With each node having its number nominations limited, the webchain could
+  become unable to grow if the edges don't invite new nodes. This could be
+  mitigated by allowing more nominations per node, but that would also increase
+  the risk of abuse.
 
-With the current design, members may only be in one webchain at a time. This is
-a deliberate choice to keep things simple. Allowing multiple webchains would
-increase markup and crawler complexity.
+- With the current design, members may only be in one webchain at a time. This
+  is a deliberate choice to keep things simple. Allowing multiple webchains
+  would increase markup and crawler complexity.
+
+This is not an exhaustive list.
