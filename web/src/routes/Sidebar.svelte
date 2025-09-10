@@ -185,7 +185,14 @@
 								height="16"
 								style:background-color={node.generated_color}
 							/>
-							<span>{node.label}</span>
+							<span>
+								{node.label}
+								{#if [$hovered_node, highlighted_node].includes(node.at)}
+									<span class="slots" class:full={node.children.length === 3}
+										>{node.children.length}/3</span
+									>
+								{/if}
+							</span>
 						</div>
 					</summary>
 					{#if highlighted_node === node.at}
@@ -325,6 +332,19 @@
 		align-items: center;
 		gap: 0.5ch;
 		padding: 0 0.4em;
+	}
+
+	.label .slots {
+		font-size: 0.7em;
+		font-family: monospace;
+		vertical-align: middle;
+		color: currentColor;
+		user-select: none;
+		pointer-events: none;
+	}
+
+	.label .slots.full {
+		opacity: 0.7;
 	}
 
 	.nodes li details[open] .label {
