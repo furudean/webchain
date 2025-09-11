@@ -100,9 +100,11 @@
 &lt/html&gt;</code
 			></pre>
 		<p>
-			The <code>webchain</code> link points to the node's own URL, while the
-			<code>webchain-nomination</code> links point to up to three other websites
-			that this node nominates.
+			The <code>webchain</code> link points to root of the webchain the website
+			wants to be a part of, in this case that would be
+			<code>https://webchain.milkmedicine.net/</code>. The
+			<code>webchain-nomination</code> links point to up to other websites that this
+			node nominates.
 		</p>
 		<blockquote>
 			Note that a node must first be nominated by the webchain before it can add
@@ -183,7 +185,7 @@
 								height="16"
 								style:background-color={node.generated_color}
 							/>
-							<span >
+							<span>
 								{node.label}
 								{#if [$hovered_node, highlighted_node].includes(node.at)}
 									<span class="slots" class:full={node.children.length === 3}>
