@@ -67,11 +67,11 @@
 		<ol>
 			<li>
 				This page is the starting point of the <em>milkmedicine webchain</em>,
-				which nominates {nominations_limit} other websites
+				which is itself a webchain node, nominating other websites.
 			</li>
 			<li>
-				Nominated websites may add their own nominations by adding markup to
-				their HTML, up to a limit of {nominations_limit}.
+				Nominated websites may add their nominations by adding markup to their
+				HTML, up to a limit of {nominations_limit}.
 			</li>
 			<li>
 				Those websites may nominate {nominations_limit} others, and so on, and so

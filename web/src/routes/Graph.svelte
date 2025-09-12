@@ -44,6 +44,7 @@
 		if (!renderer) return
 		nodes = typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
 		const camera_state = getCameraStateToFitViewportToNodes(renderer, nodes)
+		camera_state.ratio *= 1.1 // add some padding
 		await renderer.getCamera()?.animate(camera_state, options)
 	}
 
