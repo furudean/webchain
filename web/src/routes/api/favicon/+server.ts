@@ -133,7 +133,8 @@ async function log_page_fetch_error(response: Response): Promise<string> {
 const request_headers = new Headers({
 	"User-Agent":
 		"webchain-favicon-fetcher/DRAFT (+https://webchain.milkmedicine.net)",
-	"Accept-Language": "en-US, *;q=0.5"
+	"Accept-Language": "en-US,en;q=0.9,*;q=0.5",
+	Accept: "*/*"
 })
 
 export const GET: RequestHandler = async ({ url, fetch }) => {
