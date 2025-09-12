@@ -38,7 +38,8 @@
 	}
 
 	export async function center_on_nodes(
-		nodes: string[] | undefined = undefined, options: Partial<AnimateOptions> = {}
+		nodes: string[] | undefined = undefined,
+		options: Partial<AnimateOptions> = {}
 	): Promise<void> {
 		if (!renderer) return
 		nodes = typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
@@ -98,7 +99,7 @@
 			labelRenderedSizeThreshold: 12,
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
-			stagePadding: 125,
+			stagePadding: 125
 		})
 
 		let dragged_node: string | null = null
@@ -248,12 +249,34 @@
 				center_on_nodes()
 			}}
 			title="Reset camera view"
-			aria-label="Reset camera view">
-			<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-				<path d="M6 8V6H8" stroke="currentColor" stroke-width="1" fill="none"/>
-				<path d="M14 8V6H12" stroke="currentColor" stroke-width="1" fill="none"/>
-				<path d="M14 12V14H12" stroke="currentColor" stroke-width="1" fill="none"/>
-				<path d="M6 12V14H8" stroke="currentColor" stroke-width="1" fill="none"/>
+			aria-label="Reset camera view"
+		>
+			<svg
+				width="20"
+				height="20"
+				viewBox="0 0 20 20"
+				aria-hidden="true"
+				focusable="false"
+			>
+				<path d="M6 8V6H8" stroke="currentColor" stroke-width="1" fill="none" />
+				<path
+					d="M14 8V6H12"
+					stroke="currentColor"
+					stroke-width="1"
+					fill="none"
+				/>
+				<path
+					d="M14 12V14H12"
+					stroke="currentColor"
+					stroke-width="1"
+					fill="none"
+				/>
+				<path
+					d="M6 12V14H8"
+					stroke="currentColor"
+					stroke-width="1"
+					fill="none"
+				/>
 			</svg>
 		</button>
 		<button
