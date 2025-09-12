@@ -10,12 +10,13 @@
 <svelte:head>
 	<!-- common webchain metadata -->
 	<link rel="webchain" href="https://webchain.milkmedicine.net" />
+	<link rel="webchain-nomination" href="https://irc.milkmedicine.net/" />
 	<link rel="webchain-nomination" href="https://www.himawari.fun/" />
 	<link rel="webchain-nomination" href="https://nekopath.fun/" />
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
 
 	<!-- set the nominations limit for each node - root only -->
-	<meta name="webchain-nominations-limit" content="3" />
+	<meta name="webchain-nominations-limit" content="4" />
 
 	<title>milkmedicine webchain</title>
 	<meta
