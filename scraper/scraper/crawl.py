@@ -91,7 +91,7 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
         and tag.get('href') not in seen  # any previously seen urls are already a part of the graph
     ]
 
-    return list(set(hrefs))
+    return hrefs
 
 
 def handle_meta_element(node: Tag | PageElement | None) -> str | None:
