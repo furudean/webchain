@@ -185,7 +185,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			key: url_param,
 			data: buffer,
 			content_type,
-			file_url: icon_urls.toString()
+			file_url: best_icon.url
 		})
 
 		return new Response(buffer, {
