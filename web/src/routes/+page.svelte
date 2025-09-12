@@ -8,21 +8,30 @@
 </script>
 
 <svelte:head>
+	<!-- common webchain metadata -->
 	<link rel="webchain" href="https://webchain.milkmedicine.net" />
 	<link rel="webchain-nomination" href="https://www.himawari.fun/" />
 	<link rel="webchain-nomination" href="https://nekopath.fun/" />
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
+
+	<!-- set the nominations limit for each node - root only -->
+	<meta name="webchain-nominations-limit" content="3" />
+
 	<title>milkmedicine webchain</title>
 	<meta
 		name="description"
 		content="a distributed webring for friends and enemies. you are here!"
 	/>
-	<meta name="theme-color" content="#0000ff">
+	<meta name="theme-color" content="#0000ff" />
 </svelte:head>
 
 <div class="container">
 	<Graph nodes={data.nodes} bind:this={graph_component}></Graph>
-	<Sidebar nodes={data.nodes} graph_component={graph_component}></Sidebar>
+	<Sidebar
+		nodes={data.nodes}
+		{graph_component}
+		nominations_limit={data.nominations_limit}
+	></Sidebar>
 
 	{#if data.start && data.end}
 		<a href="/crawler/data.json">

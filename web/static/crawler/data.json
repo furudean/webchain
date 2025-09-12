@@ -1,108 +1,24 @@
 {
 	"nodes": [
 		{
+			"hash": "a13bbd43c1e22b0c",
 			"at": "https://webchain.milkmedicine.net",
 			"children": [
-				"https://www.himawari.fun/",
 				"https://nekopath.fun/",
-				"https://eidoli.ca"
+				"https://eidoli.ca",
+				"https://www.himawari.fun/"
 			],
 			"parent": null,
 			"depth": 0,
 			"indexed": true,
 			"html_metadata": {
 				"title": "milkmedicine webchain",
-				"description": "a distributed webring for friends and enemies"
+				"description": "a distributed webring for friends and enemies. you are here!",
+				"theme_color": "#0000ff"
 			}
 		},
 		{
-			"at": "https://www.himawari.fun/",
-			"children": [
-				"https://natu.moe/",
-				"https://irc.milkmedicine.net/"
-			],
-			"parent": "https://webchain.milkmedicine.net",
-			"depth": 1,
-			"indexed": true,
-			"html_metadata": {
-				"title": "Welcome.... To Chuuni Heavan",
-				"description": null
-			}
-		},
-		{
-			"at": "https://natu.moe/",
-			"children": [
-				"https://meows.zip",
-				"https://cyberdoll.online/"
-			],
-			"parent": "https://www.himawari.fun/",
-			"depth": 2,
-			"indexed": true,
-			"html_metadata": {
-				"title": "natu.moe >w< ",
-				"description": null
-			}
-		},
-		{
-			"at": "https://meows.zip",
-			"children": [],
-			"parent": "https://natu.moe/",
-			"depth": 3,
-			"indexed": true,
-			"html_metadata": {
-				"title": "meows.zip",
-				"description": null
-			}
-		},
-		{
-			"at": "https://cyberdoll.online/",
-			"children": [
-				"https://www.nixi.digital",
-				"https://www.yungtumblr.world",
-				"https://www.nixi.digital"
-			],
-			"parent": "https://natu.moe/",
-			"depth": 3,
-			"indexed": true,
-			"html_metadata": {
-				"title": "cyber doll",
-				"description": "portfolio"
-			}
-		},
-		{
-			"at": "https://www.nixi.digital",
-			"children": [],
-			"parent": "https://cyberdoll.online/",
-			"depth": 4,
-			"indexed": true,
-			"html_metadata": {
-				"title": "nixi",
-				"description": null
-			}
-		},
-		{
-			"at": "https://www.yungtumblr.world",
-			"children": [],
-			"parent": "https://cyberdoll.online/",
-			"depth": 4,
-			"indexed": true,
-			"html_metadata": {
-				"title": "yung tumblr",
-				"description": "cargo.site"
-			}
-		},
-		{
-			"at": "https://irc.milkmedicine.net/",
-			"children": [],
-			"parent": "https://www.himawari.fun/",
-			"depth": 2,
-			"indexed": true,
-			"html_metadata": {
-				"title": "milkmedicine IRC",
-				"description": "milkmedicine is an IRC network for anime, tech, music, art programming & internet culture"
-			}
-		},
-		{
+			"hash": "fa9052dcc726e236",
 			"at": "https://nekopath.fun/",
 			"children": [],
 			"parent": "https://webchain.milkmedicine.net",
@@ -110,81 +26,29 @@
 			"indexed": true,
 			"html_metadata": {
 				"title": null,
-				"description": null
+				"description": null,
+				"theme_color": null
 			}
 		},
 		{
+			"hash": "9a704953012458a3",
 			"at": "https://eidoli.ca",
 			"children": [
+				"https://paralogue.org/",
 				"https://prayerlocket.net/",
-				"http://iruyz.fr.eu.org/",
-				"https://paralogue.org/"
+				"http://iruyz.fr.eu.org/"
 			],
 			"parent": "https://webchain.milkmedicine.net",
 			"depth": 1,
 			"indexed": true,
 			"html_metadata": {
 				"title": "~ - encyclopedia eidolica",
-				"description": "A notebook, a form, an almanac, a trace, an endless taxonomy; a description without end, and yet we try"
+				"description": "A notebook, a form, an almanac, a trace, an endless taxonomy; a description without end, and yet we try",
+				"theme_color": null
 			}
 		},
 		{
-			"at": "https://prayerlocket.net/",
-			"children": [],
-			"parent": "https://eidoli.ca",
-			"depth": 2,
-			"indexed": true,
-			"html_metadata": {
-				"title": "prayerlocket :: home",
-				"description": "prayerlocket is a digital labyrinth \u2013 a selection of over a decade's worth of entries from my memex."
-			}
-		},
-		{
-			"at": "http://iruyz.fr.eu.org/",
-			"children": [
-				"https://willow.phantoma.online/",
-				"https://twilightsparkle.space/",
-				"https://cyclic.zone/"
-			],
-			"parent": "https://eidoli.ca",
-			"depth": 2,
-			"indexed": true,
-			"html_metadata": {
-				"title": "iruyz",
-				"description": null
-			}
-		},
-		{
-			"at": "https://willow.phantoma.online/",
-			"children": [],
-			"parent": "http://iruyz.fr.eu.org/",
-			"depth": 3,
-			"indexed": true,
-			"html_metadata": {
-				"title": "willow's website \u2014 wlosite",
-				"description": null
-			}
-		},
-		{
-			"at": "https://twilightsparkle.space/",
-			"children": [],
-			"parent": "http://iruyz.fr.eu.org/",
-			"depth": 3,
-			"indexed": false,
-			"html_metadata": null
-		},
-		{
-			"at": "https://cyclic.zone/",
-			"children": [],
-			"parent": "http://iruyz.fr.eu.org/",
-			"depth": 3,
-			"indexed": true,
-			"html_metadata": {
-				"title": "cyclic.zone",
-				"description": null
-			}
-		},
-		{
+			"hash": "cde6ec668bedd3e5",
 			"at": "https://paralogue.org/",
 			"children": [],
 			"parent": "https://eidoli.ca",
@@ -192,10 +56,189 @@
 			"indexed": true,
 			"html_metadata": {
 				"title": "paralogue.org - paralogue.org",
-				"description": null
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "da5a3c00ef789a5f",
+			"at": "https://prayerlocket.net/",
+			"children": [],
+			"parent": "https://eidoli.ca",
+			"depth": 2,
+			"indexed": true,
+			"html_metadata": {
+				"title": "prayerlocket :: home",
+				"description": "prayerlocket is a digital labyrinth \u2013 a selection of over a decade's worth of entries from my memex.",
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "b86a061092a3451e",
+			"at": "http://iruyz.fr.eu.org/",
+			"children": [
+				"https://cyclic.zone/",
+				"https://twilightsparkle.space/",
+				"https://willow.phantoma.online/"
+			],
+			"parent": "https://eidoli.ca",
+			"depth": 2,
+			"indexed": true,
+			"html_metadata": {
+				"title": "iruyz",
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "aa2813e3c27d2a92",
+			"at": "https://cyclic.zone/",
+			"children": [],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true,
+			"html_metadata": {
+				"title": "cyclic.zone",
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "535b1168293a555d",
+			"at": "https://twilightsparkle.space/",
+			"children": [],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true,
+			"html_metadata": {
+				"title": "ConfuSomu's website",
+				"description": "Computers, nature, arts and more!",
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "9cee75881ee1856b",
+			"at": "https://willow.phantoma.online/",
+			"children": [],
+			"parent": "http://iruyz.fr.eu.org/",
+			"depth": 3,
+			"indexed": true,
+			"html_metadata": {
+				"title": "willow's website \u2014 wlosite",
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "7bd3862189d6117b",
+			"at": "https://www.himawari.fun/",
+			"children": [
+				"https://irc.milkmedicine.net/",
+				"https://kazehai.com/",
+				"https://natu.moe/"
+			],
+			"parent": "https://webchain.milkmedicine.net",
+			"depth": 1,
+			"indexed": true,
+			"html_metadata": {
+				"title": "Welcome.... To Chuuni Heavan",
+				"description": "the homepage of merilynn paisley on the internet. renowed author, objects noticer, arbiter of rikas, and keeper of oatmealians.",
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "ba0516fcc22ac067",
+			"at": "https://irc.milkmedicine.net/",
+			"children": [],
+			"parent": "https://www.himawari.fun/",
+			"depth": 2,
+			"indexed": true,
+			"html_metadata": {
+				"title": "milkmedicine IRC",
+				"description": "milkmedicine is an IRC network for anime, tech, music, art, programming & internet obscura",
+				"theme_color": "#007bff"
+			}
+		},
+		{
+			"hash": "f282ed79d141e1ff",
+			"at": "https://kazehai.com/",
+			"children": [],
+			"parent": "https://www.himawari.fun/",
+			"depth": 2,
+			"indexed": true,
+			"html_metadata": {
+				"title": "kazehai",
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "4e3fc610e8af10e6",
+			"at": "https://natu.moe/",
+			"children": ["https://meows.zip", "https://cyberdoll.online/"],
+			"parent": "https://www.himawari.fun/",
+			"depth": 2,
+			"indexed": true,
+			"html_metadata": {
+				"title": "natu.moe >w< ",
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "4dc51f8b4bcb6abc",
+			"at": "https://meows.zip",
+			"children": [],
+			"parent": "https://natu.moe/",
+			"depth": 3,
+			"indexed": true,
+			"html_metadata": {
+				"title": "meows.zip",
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "7c84a4fe744b7d92",
+			"at": "https://cyberdoll.online/",
+			"children": ["https://www.nixi.digital", "https://www.yungtumblr.world"],
+			"parent": "https://natu.moe/",
+			"depth": 3,
+			"indexed": true,
+			"html_metadata": {
+				"title": "cyber doll",
+				"description": "2001 daniel johnston: sylvia plath pretty hearts #beautifulangelphobia #whiteheart4eva mkultra, lain' cathode-rayt\u00fcbe . schizoartpieces . \ud83e\udd0d",
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "c8608f386f8cb60f",
+			"at": "https://www.nixi.digital",
+			"children": [],
+			"parent": "https://cyberdoll.online/",
+			"depth": 4,
+			"indexed": true,
+			"html_metadata": {
+				"title": "nixi",
+				"description": null,
+				"theme_color": null
+			}
+		},
+		{
+			"hash": "3b146d77f8325234",
+			"at": "https://www.yungtumblr.world",
+			"children": [],
+			"parent": "https://cyberdoll.online/",
+			"depth": 4,
+			"indexed": true,
+			"html_metadata": {
+				"title": "yung tumblr",
+				"description": "yung t's world",
+				"theme_color": null
 			}
 		}
 	],
-	"start": "2025-09-07T01:25:01.650927+00:00",
-	"end": "2025-09-07T01:25:05.203066+00:00"
+	"nominations_limit": 3,
+	"start": "2025-09-12T04:51:46.522957+00:00",
+	"end": "2025-09-12T04:51:48.340645+00:00"
 }

@@ -6,6 +6,7 @@ export const load: PageServerLoad = async ({
 	fetch
 }): Promise<{
 	nodes: Node[]
+	nominations_limit: number | null
 	start: Date | null
 	end: Date | null
 }> => {
@@ -18,10 +19,12 @@ export const load: PageServerLoad = async ({
 	try {
 		const {
 			nodes,
+			nominations_limit,
 			start,
 			end
 		}: {
 			nodes: CrawledNode[]
+			nominations_limit: number
 			start: string
 			end: string
 		} = await request.json()
@@ -39,6 +42,7 @@ export const load: PageServerLoad = async ({
 					new URL(node.at).hostname.replace(no_www, "") +
 					(new URL(node.at).pathname === "/" ? "" : new URL(node.at).pathname)
 			})),
+			nominations_limit,
 			start: new Date(start),
 			end: new Date(end)
 		}
@@ -47,6 +51,7 @@ export const load: PageServerLoad = async ({
 		return {
 			nodes: [],
 			start: null,
+			nominations_limit: null,
 			end: null
 		}
 	}

@@ -4,8 +4,15 @@
 	import { page } from "$app/state"
 	import Graph from "./Graph.svelte"
 
-	let { nodes, graph_component }: { nodes: Node[]; graph_component: Graph } =
-		$props()
+	let {
+		nodes,
+		nominations_limit,
+		graph_component
+	}: {
+		nodes: Node[]
+		nominations_limit: number | null
+		graph_component: Graph
+	} = $props()
 
 	const highlighted_node = $derived(page.state.node)
 
@@ -60,14 +67,15 @@
 		<ol>
 			<li>
 				This page is the starting point of the <em>milkmedicine webchain</em>,
-				which nominates three other websites
+				which nominates {nominations_limit} other websites
 			</li>
 			<li>
 				Nominated websites may add their own nominations by adding markup to
-				their HTML, up to a limit of three.
+				their HTML, up to a limit of {nominations_limit}.
 			</li>
 			<li>
-				Those websites may nominate three others, and so on, and so forth.
+				Those websites may nominate {nominations_limit} others, and so on, and so
+				forth.
 			</li>
 		</ol>
 		<p>
@@ -188,9 +196,12 @@
 							<span>
 								{node.label}
 								{#if [$hovered_node, highlighted_node].includes(node.at)}
-									<span class="slots" class:full={node.children.length === 3}>
+									<span
+										class="slots"
+										class:full={node.children.length === nominations_limit}
+									>
 										{#if node.indexed}
-											{node.children.length}/3
+											{node.children.length}/{nominations_limit}
 										{:else}
 											offline
 										{/if}
@@ -303,12 +314,6 @@
 		padding: 0;
 	}
 
-	hr {
-		margin: 1rem 0;
-		border: none;
-		border-top: 1px dashed currentColor;
-	}
-
 	.nodes {
 		margin-top: 1rem;
 	}
@@ -346,10 +351,6 @@
 		user-select: none;
 		pointer-events: none;
 		margin-left: 0.5ch;
-	}
-
-	.label .slots.full {
-		opacity: 0.7;
 	}
 
 	.nodes li details[open] .label {

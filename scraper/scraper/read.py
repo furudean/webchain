@@ -7,9 +7,9 @@ import time
 async def read_chain_into_table(root: str) -> HashTable:
     T = HashTable()
 
-    crawled_nodes = await crawl(root)
+    crawled = await crawl(root)
     saved_nodes = []
-    for i in crawled_nodes:
+    for i in crawled.nodes:
         saved_nodes.append(CrawledNodeToNode(i))
 
     for i in saved_nodes:

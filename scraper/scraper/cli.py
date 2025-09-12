@@ -37,7 +37,8 @@ def webchain():
 @asyncio_click
 async def tree(url: str):
     try:
-        for node in await crawl(url):
+        crawled = await crawl(url)
+        for node in crawled.nodes:
             print('    ' * node.depth + node.at + (' (offline)' if not node.indexed else ''))
     except ValueError as e:
         print(f'error: {e}')
@@ -48,14 +49,13 @@ async def tree(url: str):
 @click.argument('url', required=True)
 @asyncio_click
 async def json(url: str):
-    start = time.time()
-    nodes = await crawl(url)
-    end = time.time()
+    crawled = await crawl(url)
 
     data = {
-        'nodes': [dataclasses.asdict(node) for node in nodes],
-        'start': datetime.fromtimestamp(start, tz=timezone.utc).isoformat(),
-        'end': datetime.fromtimestamp(end, tz=timezone.utc).isoformat(),
+        'nodes': [dataclasses.asdict(node) for node in crawled.nodes],
+        'nominations_limit': crawled.nominations_limit,
+        'start': crawled.start,
+        'end': crawled.end
     }
 
     print(jjson.dumps(data, indent='\t'))

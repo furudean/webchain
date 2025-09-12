@@ -3,6 +3,8 @@ from urllib.parse import urlparse
 from dataclasses import dataclass
 import asyncio
 from hashlib import shake_128
+from datetime import datetime, timezone
+from time import time
 
 from bs4 import BeautifulSoup, Tag
 from bs4.element import PageElement
@@ -64,7 +66,8 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
     if seen is None:
         seen = set()
 
-    # look for the webchain declaration link in the head
+    # look for the webchain declaration link in the html. we're permissive, so
+    # we search the entire document, not just the head.
     webchain_tag = soup.find(name='link', attrs={'rel': 'webchain'})
     webchain_href = str(webchain_tag.get('href')) if isinstance(webchain_tag, Tag) else None
 
@@ -118,15 +121,46 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
     return metadata
 
 
+def get_nominations_limit(html: str, default: int | None = None) -> int | None:
+    soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
+
+    if not soup.head:
+        return default
+
+    limit_element = soup.find('meta', attrs={'name': 'webchain-nominations-limit'})
+    limit_str = handle_meta_element(limit_element)
+
+    if limit_str is None:
+        return default
+
+    try:
+        limit = int(limit_str)
+        if limit < 0:
+            return default
+        return limit
+    except ValueError:
+        return default
+
+
 def hash_string(s: str, length: int) -> str:
     h = shake_128(usedforsecurity=False)
     h.update(s.encode('utf-8'))
     return h.hexdigest(length)
 
 
-async def crawl(
-    root_url: str, limit_nominations: int = 3, recursion_limit: int = 1000
-) -> list[CrawledNode]:
+def to_iso_timestamp(x: float) -> str:
+    return datetime.fromtimestamp(x, tz=timezone.utc).isoformat()
+
+
+@dataclass
+class CrawlResponse:
+    nodes: list[CrawledNode]
+    nominations_limit: int
+    start: str
+    end: str
+
+
+async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
     """
     crawl the webchain nomination graph starting from `root_url`.
 
@@ -141,8 +175,12 @@ async def crawl(
 
     """
     seen: set[str] = set()
+    nominations_limit: int | None = None
+    start = time()
 
     async def process_node(at: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
+        nonlocal nominations_limit
+
         if at in seen:
             return []
 
@@ -150,15 +188,24 @@ async def crawl(
         html = await load_page_html(at, referrer=parent, session=session)
         nominations = None
         html_metadata = None
+
+        if depth == 0:
+            if html is None:
+                raise ValueError(f'starting url {root_url} is unreachable')
+
+            nominations_limit = get_nominations_limit(html)
+
+            if nominations_limit is None:
+                raise ValueError(
+                    f'starting url {root_url} does not specify a valid nominations limit'
+                )
+
         if html:
             nominations = get_node_nominations(html, root_url, seen)
-            if nominations is not None and limit_nominations != 0:
-                nominations = nominations[:limit_nominations]
+            if nominations is not None and nominations_limit != 0:
+                nominations = nominations[:nominations_limit]
 
             html_metadata = get_html_metadata(html)
-
-        if depth == 0 and html is None:
-            raise ValueError(f'starting url {root_url} is unreachable')
 
         node = CrawledNode(
             hash=hash_string(at, length=8),
@@ -172,7 +219,7 @@ async def crawl(
         nodes = [node]
 
         if nominations and depth < recursion_limit:
-            tasks = [process_node(url, at, depth + 1) for url in nominations]
+            tasks = [process_node(at=url, parent=at, depth=depth + 1) for url in nominations]
             results = await asyncio.gather(*tasks)
 
             nodes.extend(itertools.chain(*results))
@@ -180,4 +227,13 @@ async def crawl(
         return nodes
 
     async with get_session() as session:
-        return await process_node(root_url)
+        start = time()
+        nodes = await process_node(root_url)
+        end = time()
+
+        return CrawlResponse(
+            nodes=nodes,
+            nominations_limit=nominations_limit or 0,
+            start=to_iso_timestamp(start),
+            end=to_iso_timestamp(end),
+        )
