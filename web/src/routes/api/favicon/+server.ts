@@ -27,7 +27,7 @@ async function get_icon_urls(
 ): Promise<URL[]> {
 	// try common favicon link rels
 	const selectors = ['link[rel="icon"]', 'link[rel="shortcut icon"]']
-	const possible_icons = []
+	const possible_icons: Set<URL> = new Set()
 
 	if (head) {
 		for (const selector of selectors) {
@@ -37,11 +37,11 @@ async function get_icon_urls(
 				// first check if its a valid url on its own
 				const valid_url = is_valid_url(href)
 				if (valid_url) {
-					possible_icons.push(new URL(href))
+					possible_icons.add(new URL(href))
 				} else {
 					// if not, it's probably a relative url, try to resolve it
 					try {
-						possible_icons.push(new URL(href, base))
+						possible_icons.add(new URL(href, base))
 					} catch {
 						// invalid url, skip
 						console.log(`skipping invalid favicon url: ${href}`)
@@ -53,9 +53,9 @@ async function get_icon_urls(
 	}
 
 	// try favicon.ico
-	possible_icons.push(new URL("/favicon.ico", base))
+	possible_icons.add(new URL("/favicon.ico", base))
 
-	return possible_icons
+	return Array.from(possible_icons.values())
 }
 
 function response_headers(item: CachedItem): Record<string, string> {
@@ -114,6 +114,28 @@ async function list_graph_urls(get: typeof fetch): Promise<string[]> {
 	}
 }
 
+async function log_page_fetch_error(response: Response): Promise<string> {
+	const headers = Array.from(response.headers.entries())
+		.map(([key, value]) => `  ${key}: ${value}`)
+		.join("\n")
+
+	return [
+		`failed to fetch page ${response.url}`,
+		`status: ${response.status} ${response.statusText}`,
+		"headers:",
+		headers,
+		"response body:",
+		(await response.text())?.slice(0, 500),
+		"\n"
+	].join("\n")
+}
+
+const request_headers = new Headers({
+	"User-Agent":
+		"webchain-favicon-fetcher/DRAFT (+https://webchain.milkmedicine.net)",
+	"Accept-Language": "en-US, *;q=0.5"
+})
+
 export const GET: RequestHandler = async ({ url, fetch }) => {
 	const url_param = url.searchParams.get("url")
 
@@ -154,10 +176,17 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 	// not in cache, fetch it
 	try {
 		const page_response = await fetch(url_param, {
-			redirect: "follow"
+			redirect: "follow",
+			headers: request_headers
 		})
 
-		if (!page_response.ok) return new Response(null, { status: 204 })
+		if (!page_response.ok) {
+			console.log(await log_page_fetch_error(page_response))
+			return new Response(
+				`failed not load ${url_param}: ${page_response.status} ${page_response.statusText}`,
+				{ status: 422 }
+			)
+		}
 
 		const html = parse(await page_response.text())
 		if (!html) return empty_response_cache(url_param)
@@ -168,7 +197,8 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		const icon_responses = await Promise.allSettled(
 			icon_urls.map((icon_url) =>
 				fetch(icon_url, {
-					redirect: "follow"
+					redirect: "follow",
+					headers: request_headers
 				})
 			)
 		)
@@ -197,6 +227,6 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		})
 	} catch (error) {
 		console.error(`error fetching favicon for ${url_param}`, error)
-		return text("failed to fetch favicon", { status: 500 })
+		return text(`failed to fetch favicon: ${error}`, { status: 500 })
 	}
 }
