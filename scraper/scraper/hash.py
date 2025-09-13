@@ -25,9 +25,9 @@ class HashTable:
 
         return f"start : [ {self.start} ]\nend : [ {self.end} ]\n{r}"
 
-    # pass mode = 1 for condensed output, mode = 0 for default behavior (view all table entries)
+    # pass mode = 0 for (default) condensed output, mode = 1 for verbose behavior (view all table entries)
     def view(self, mode = 0):
-        if not mode:
+        if mode:
             r = ''
             for i in range(0, self.tablesize):
                 s = f'{i} : {self.table[i]}\n'
@@ -116,6 +116,19 @@ class HashTable:
         r.update({'table' : t})
         return r
 
+    # inverse of fromData
+    def log(self):
+        # get all unique nodes
+        nodes = []
+        for i in range(0, self.tablesize):
+            if not self.table[i] == []:
+                    nodes.append(self.table[i])
+        r = {}
+        r.update({'nodes' : nodes})
+        r.update({"start" : self.start})
+        r.update({"end" : self.end})
+        return r
+
 
     def fromDict(self, d: dict):
         self.tablesize = -1
@@ -141,13 +154,52 @@ class HashTable:
                     else:
                         self.table.append(x)
 
-    def serialize(self):
-        with open(f'../web/static/crawler/table.json','w') as f:
-            json.dump(self.toDict(),f)
 
-    def deserialize(self):
-        with open(f'../web/static/crawler/table.json','r') as f:
-            self.fromDict(json.load(f))
+    def fromData(self, d: dict):
+        nodelist = []
+        for (k,v) in d.items():
+            if k == "nodes":
+                nodelist = v
+            elif k == 'start':
+                self.start = v
+                # print(v)
+                # print(type(v))
+            elif k == 'end':
+                self.end = v
+        for i in nodelist:
+            n = Node('',None,None)
+            n.fromDict(i)
+            self.insert(n)
+        return self
+
+    def compare(self, d: dict):
+        Temp = HashTable()
+        Temp.fromData(d)
+        print("temp:")
+        Temp.view()
+        print("self:")
+        # self.view()
+
+    def serialize(self, filename:str | None = None):
+        if filename:
+            with open(f'../web/static/crawler/{filename}.json','w') as f:
+                json.dump(self.toDict(),f)
+        else:
+            with open(f'../web/static/crawler/table.json','w') as f:
+                json.dump(self.toDict(),f)
+
+    def deserialize(self,filename:str | None = None):
+        if filename:
+            with open(f'../web/static/crawler/{filename}.json','r') as f:
+                self.fromDict(json.load(f))
+        else:
+            with open(f'../web/static/crawler/table.json','r') as f:
+                self.fromDict(json.load(f))
+
+
+
+
+
 
 # def random_url():
 #     letters = string.ascii_lowercase

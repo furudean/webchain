@@ -15,28 +15,30 @@ class Node:
     # count assigns each node an id, strictly ascending.
     # childlimit acts as a cap on the length of children[]
     count = itertools.count()
-    childlimit = 3
+    childlimit = 4
 
-    def __init__(self, url: str, parent: str | None, children: list[str] | None, indexed = False):
+    def __init__(self, url: str, parent: str | None, children: list[str] | None, indexed = False, html_metadata = {}):
         self.id = next(self.count)
         self.url = url
         self.parent = parent
         self.children = children
         self.indexed = indexed
+        self.html_metadata = {'title' : None , 'description' : None}
 
     def __repr__(self):
-        return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children} indexed : {self.indexed}'
+        return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children} indexed : {self.indexed} html_metadata : {self.html_metadata}'
 
     def toDict(self):
         r = {}
         r.update({'id' : self.id})
-        r.update({'url' : self.url})
+        r.update({'at' : self.url})
         r.update({'parent' : self.parent})
         child_list = []
         for i in self.children:
             child_list.append(i)
         r.update({'children' : child_list})
         r.update({'indexed': self.indexed})
+        r.update({'html_metadata': self.html_metadata})
         return r
 
     def fromDict(self, d: dict):
@@ -48,7 +50,7 @@ class Node:
         for (k,v) in d.items():
             if k == 'id':
                 self.id = v
-            elif k == 'url':
+            elif k == 'url' or k == 'at':
                 self.url = v
             elif k == 'parent':
                 self.parent = v
@@ -57,6 +59,8 @@ class Node:
                     self.children.append(i)
             elif k == 'indexed':
                 self.indexed = v
+            elif k == 'html_metadata':
+                self.html_metadata = v
 
     # if free slot exists, creates a leaf node from child_url and adds as a child.
     # this might never get used. for one, since an added child with children itself would have to have the children linked in a separate function call.
