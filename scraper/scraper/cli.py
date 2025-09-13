@@ -11,7 +11,7 @@ import logging
 import click
 
 from scraper.crawl import crawl
-from scraper.read import read_chain_into_table
+from scraper.read import read_chain_into_table, compareState
 from scraper.hash import HashTable
 
 
@@ -75,3 +75,11 @@ async def hash_test():
     # N.deserialize()
     # N.view(1)
     return
+
+
+@webchain.command
+@asyncio_click
+async def compare():
+    # compare to data.json in web.
+    with open(f'../web/static/crawler/data.json','r') as f:
+        await compareState(jjson.load(f))
