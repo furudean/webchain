@@ -2,20 +2,13 @@ from __future__ import annotations
 import itertools
 import sys
 
-"""
-Still need to do:
-1.  create whatever "shell" these nodes will live in.
-    ideally this shell will have methods like (or the ability to do) things like
-    - find_by_id
-    - find_by_url
-    - be the "memory" from which nodes are added or deleted (i.e. serve as a master record of all active nodes) [see todos in remove function]
-"""
 
 class Node:
     # count assigns each node an id, strictly ascending.
     # childlimit acts as a cap on the length of children[]
     count = itertools.count()
     childlimit = 4
+
 
     def __init__(self, url: str, parent: str | None, children: list[str] | None, indexed = False, html_metadata = {}):
         self.id = next(self.count)
@@ -25,8 +18,10 @@ class Node:
         self.indexed = indexed
         self.html_metadata = html_metadata
 
+
     def __repr__(self):
-        return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children} indexed : {self.indexed} html_metadata : {self.html_metadata}'
+        return f'[ {self.id} url: {self.url} ]\nparent: {self.parent}\nchildren : {self.children}\nindexed : {self.indexed}\nhtml_metadata : {self.html_metadata}\n'
+
 
     def toDict(self):
         r = {}
@@ -40,6 +35,7 @@ class Node:
         r.update({'indexed': self.indexed})
         r.update({'html_metadata': self.html_metadata})
         return r
+
 
     def fromDict(self, d: dict):
         self.id = -1
@@ -62,6 +58,7 @@ class Node:
             elif k == 'html_metadata':
                 self.html_metadata = v
 
+
     # if free slot exists, creates a leaf node from child_url and adds as a child.
     # this might never get used. for one, since an added child with children itself would have to have the children linked in a separate function call.
     # For now i'll leave this here since replaceChild depends on it
@@ -69,10 +66,6 @@ class Node:
         if len(self.children) < self.childlimit:
             self.children.append(child_url)
         return
-
-    # def nodeFromList(cls, url, parent, children: list[str] | None):
-    #     if size(chol)
-    #     return
 
     # to_remove is index of child to be removed, passing nothing removes latest node
     def removeChild(self, to_remove=None):
@@ -89,13 +82,4 @@ class Node:
         self.removeChild(to_replace)
         self.addChild(child_url)
 
-    # prints subtree
-    # def printSubtree(self):
-    #     printTree(self)
 
-
-# relies on the root itself being static, prints entire tree
-# def printTree(root: Node):
-#     print(root)
-#     for i in root.children:
-#         printTree(i)
