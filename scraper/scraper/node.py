@@ -23,7 +23,7 @@ class Node:
         self.parent = parent
         self.children = children
         self.indexed = indexed
-        self.html_metadata = {'title' : None , 'description' : None}
+        self.html_metadata = html_metadata
 
     def __repr__(self):
         return f'{self.id} url: {self.url} parent: {self.parent} children : {self.children} indexed : {self.indexed} html_metadata : {self.html_metadata}'
