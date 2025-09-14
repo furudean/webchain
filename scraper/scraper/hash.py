@@ -50,7 +50,7 @@ class HashTable:
     def setEnd(self, end : datetime):
         self.end = end
 
-
+    # mode = 0 is my version of a hashing algorithm
     def hash(self, key: str, mode=0):
         if mode:
             return hash(key) % self.tablesize
@@ -72,6 +72,26 @@ class HashTable:
         self.table[index].append(node_to_insert)
         return index
 
+    # for hypothetical directly addressed table
+    def altInsert(self, node_to_insert: Node, index = -1):
+        if index == -1:
+            index = self.hash(node_to_insert.url)
+
+        if self.table[index] != []:
+        # try again : will scan up in sequence then down in sequence
+            self.altInsert(node_to_insert, index+1)
+            self.altInsert(node_to_insert, index-1)
+
+        self.table[index].append(node_to_insert)
+        return index
+
+    # implements linear search instead of searching by computing hash
+    def find(self, search_key):
+        for i in range(0, len(self.table)):
+            for x in self.table[i]:
+                if x.url == search_key:
+                    return x
+        return -1
 
     # Returns Node object with url matching search_key if found, else returns -1
     def findValueByURL(self, search_key):
@@ -122,7 +142,8 @@ class HashTable:
         nodes = []
         for i in range(0, self.tablesize):
             if not self.table[i] == []:
-                    nodes.append(self.table[i])
+                    for n in self.table[i]:
+                        nodes.append(n.toDict())
         r = {}
         r.update({'nodes' : nodes})
         r.update({"start" : self.start})
@@ -169,16 +190,9 @@ class HashTable:
         for i in nodelist:
             n = Node('',None,None)
             n.fromDict(i)
-            self.insert(n)
+            self.altInsert(n)
         return self
 
-    def compare(self, d: dict):
-        Temp = HashTable()
-        Temp.fromData(d)
-        print("temp:")
-        Temp.view()
-        print("self:")
-        # self.view()
 
     def serialize(self, filename:str | None = None):
         if filename:
@@ -195,11 +209,6 @@ class HashTable:
         else:
             with open(f'../web/static/crawler/table.json','r') as f:
                 self.fromDict(json.load(f))
-
-
-
-
-
 
 # def random_url():
 #     letters = string.ascii_lowercase
