@@ -1,28 +1,30 @@
 from scraper.crawl import crawl, CrawledNode, HtmlMetadata
 from scraper.node import Node
-from scraper.hash import HashTable
+from scraper.state import StateTable
 from datetime import datetime, timezone
 import json as jjson
 import time
 
-async def read_chain_into_table(root: str) -> HashTable:
-    T = HashTable()
+async def read_chain_into_table(root: str) -> StateTable:
+    T = StateTable()
 
     crawled = await crawl(root)
     saved_nodes = []
     for i in crawled.nodes:
-        saved_nodes.append(CrawledNodeToNode(i))
+        saved_nodes.append(crawled_node_to_node(i))
 
     for i in saved_nodes:
-        T.altInsert(i)
+        T.insert(i)
     return T
 
-def CrawledNodeToNode(to_convert: CrawledNode) -> Node:
+def crawled_node_to_node(to_convert: CrawledNode) -> Node:
     # Convert HTMLMetadata class instance to dict
     metadata_dict = {}
-    metadata_dict.update({"title" : to_convert.html_metadata.title})
-    metadata_dict.update({"description" : to_convert.html_metadata.description })
-    metadata_dict.update({"theme_color" : to_convert.html_metadata.theme_color})
+
+    if to_convert.html_metadata is not None:
+        metadata_dict.update({"title" : to_convert.html_metadata.title})
+        metadata_dict.update({"description" : to_convert.html_metadata.description })
+        metadata_dict.update({"theme_color" : to_convert.html_metadata.theme_color})
 
     # Make sure all children are unique
     child_list = list(set(to_convert.children))
@@ -35,7 +37,7 @@ def CrawledNodeToNode(to_convert: CrawledNode) -> Node:
 async def compareState(old:dict):
     CHANGEFLAG = 0
 
-    OldTable = HashTable()
+    OldTable = StateTable()
     OldTable.fromData(old)
 
     # crawl chain anew, save into table
@@ -52,19 +54,19 @@ async def compareState(old:dict):
     # NewTable.view()
 
     # check if nodes have been added or deleted
-    if len(NewTable.table) != len(OldTable.table):
+    if len(NewTable.nodes) != len(OldTable.nodes):
         # either node has been added or deleted. this means time to make a new state
         CHANGEFLAG = 1
 
     # compare new nodes to old table
     changed_nodes = []
-    for l in NewTable.table:
-        for i in l:
-            result = nodeCompare(i, OldTable)
-            if result != [0,0,0]:
-                # if something changed even once, we know time to make a new state
-                CHANGEFLAG = 1
-                changed_nodes.append(i)
+    for i in NewTable.nodes:
+        result = nodeCompare(i, OldTable)
+        if result != [0,0,0]:
+            # if something changed even once, we know time to make a new state
+            CHANGEFLAG = 1
+            print(f"CHANGE DETECTED AT NODE {i}")
+            changed_nodes.append(i)
 
     if CHANGEFLAG:
         # save it as current
@@ -89,9 +91,10 @@ async def compareState(old:dict):
 #   is 1 if the crawled node was online and is now offline
 #   is 2 if the crawled node was offline and is now online again
 # EXCEPT if the crawled node is not in the old table, then it is a new node and retList is [-1,-1,-1]
-def nodeCompare(new_node:Node, oldTable: HashTable):
+def nodeCompare(new_node:Node, oldTable: StateTable):
     retList = [0,0,0]
-    old_node = oldTable.find(new_node.url)
+    old_node_index = oldTable.find(new_node.url)
+    old_node = oldTable.nodes[old_node_index]
     print(f"new: {new_node}")
     # This means node did not exist in old table (i.e new node).
     #
@@ -123,7 +126,7 @@ def nodeCompare(new_node:Node, oldTable: HashTable):
 
 
 # These use log() and fromData() to maintain compliance with crawl()
-def Serialize(T:HashTable, filename:str|None = None) -> str:
+def Serialize(T:StateTable, filename:str|None = None) -> str:
     if filename:
         location = filename
         with open(f'../web/static/crawler/{location}','w') as f:
@@ -134,8 +137,8 @@ def Serialize(T:HashTable, filename:str|None = None) -> str:
             jjson.dump(T.log(),f)
     return location
 
-def Deserialize(filename: str|None = None) -> HashTable:
-    T = HashTable()
+def Deserialize(filename: str|None = None) -> StateTable:
+    T = StateTable()
     if filename:
         with open(f'../web/static/crawler/{filename}.json','r') as f:
             T.fromData(jjson.load(f))
