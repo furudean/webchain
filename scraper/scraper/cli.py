@@ -12,7 +12,7 @@ import click
 
 from scraper.crawl import crawl
 from scraper.read import read_chain_into_table, compareState
-from scraper.hash import HashTable
+from scraper.state import StateTable
 
 
 def asyncio_click(func):
@@ -59,23 +59,6 @@ async def json(url: str):
     }
 
     print(jjson.dumps(data, indent='\t'))
-
-
-@webchain.command
-@asyncio_click
-async def hash_test():
-    start = time.time()
-    T = await read_chain_into_table('https://webchain.milkmedicine.net')
-    end = time.time()
-    T.setStart(datetime.fromtimestamp(start, tz=timezone.utc).isoformat())
-    T.setEnd(datetime.fromtimestamp(end, tz=timezone.utc).isoformat())
-    # T.serialize()
-    T.view(1)
-    # N = HashTable()
-    # N.deserialize()
-    # N.view(1)
-    return
-
 
 @webchain.command
 @asyncio_click
