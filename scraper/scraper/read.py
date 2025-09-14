@@ -1,4 +1,4 @@
-from scraper.crawl import crawl, CrawledNode
+from scraper.crawl import crawl, CrawledNode, HtmlMetadata
 from scraper.node import Node
 from scraper.hash import HashTable
 from datetime import datetime, timezone
@@ -14,20 +14,32 @@ async def read_chain_into_table(root: str) -> HashTable:
         saved_nodes.append(CrawledNodeToNode(i))
 
     for i in saved_nodes:
-        T.insert(i)
+        T.altInsert(i)
     return T
 
 def CrawledNodeToNode(to_convert: CrawledNode) -> Node:
-    # print(f"url: {to_convert.at} parent: {to_convert.parent} children: {to_convert.children}")
-    # TO DO : use Node.addChild instead of direct assignment
-    return Node(to_convert.at, to_convert.parent, to_convert.children, to_convert.indexed, to_convert.html_metadata)
+    # Convert HTMLMetadata class instance to dict
+    metadata_dict = {}
+    metadata_dict.update({"title" : to_convert.html_metadata.title})
+    metadata_dict.update({"description" : to_convert.html_metadata.description })
+    metadata_dict.update({"theme_color" : to_convert.html_metadata.theme_color})
+
+    # Make sure all children are unique
+    child_list = list(set(to_convert.children))
+
+    return Node(to_convert.at, to_convert.parent, child_list, to_convert.indexed, metadata_dict)
+
 
 # This is currently a simple version of this. it answers the question: "do we need to make a new history entry?". the answer is YES if nodes have been added, deleted, changed, or are offline
-
-async def compareState(base:dict):
+# In the future, I would like to improve this so that we are logging WHAT changes are being made
+async def compareState(old:dict):
     CHANGEFLAG = 0
+
     OldTable = HashTable()
-    OldTable.fromData(base)
+    OldTable.fromData(old)
+
+    # crawl chain anew, save into table
+    # could rewrite this to load NewTable from some .json if necessary
     start = time.time()
     NewTable = await read_chain_into_table('https://webchain.milkmedicine.net')
     end = time.time()
@@ -56,11 +68,17 @@ async def compareState(base:dict):
 
     if CHANGEFLAG:
         # save it as current
-        Serialize(NewTable, "current")
+        Serialize(NewTable, "current.json")
+
         # log old table as timestamped ver
         # to do: process name better
-        Serialize(OldTable, f"v{OldTable.end}")
+        # ds = datetime.fromisoformat(OldTable.end)
+        # print(f"ds: {ds}")
+
+        Serialize(OldTable, f"{OldTable.end}.json")
+
     return CHANGEFLAG
+
 
 # nodeCompare
 # return codes:
@@ -71,50 +89,50 @@ async def compareState(base:dict):
 #   is 1 if the crawled node was online and is now offline
 #   is 2 if the crawled node was offline and is now online again
 # EXCEPT if the crawled node is not in the old table, then it is a new node and retList is [-1,-1,-1]
-
-def nodeCompare(n1:Node, oldTable: HashTable):
+def nodeCompare(new_node:Node, oldTable: HashTable):
     retList = [0,0,0]
-    CONSTANTFLAG = 0
-    n2 = oldTable.findValueByURL(n1.url)
-    print(f"n1: {n1}")
+    old_node = oldTable.find(new_node.url)
+    print(f"new: {new_node}")
     # This means node did not exist in old table (i.e new node).
     #
-    if n2 == -1:
-        print ("BINGUS")
+    if old_node == -1:
+        print ("old: NOT FOUND")
         return [-1,-1,-1]
     # else Node DID exist in old table, confirm that parents/children are same, and that indexed = true in new one.
     else:
-        print(f"n2: {n2}")
+        print(f"old: {old_node}")
         ChangedChildren = []
-        for i in n1.children:
-            if i not in n2.children:
-                print(f"{i} not in list {n2.children}")
+        for i in new_node.children:
+            if i not in old_node.children:
+                print(f"{i} not in list {old_node.children}")
                 #returns position of child thats changed
-                ChangedChildren.append(n1.children.index(i))
+                ChangedChildren.append(new_node.children.index(i))
                 retList[0] = ChangedChildren
             else:
                 retList[0] = 0
         # this could happen if the site is dropped by original parent but picked up by different one
-        if n1.parent != n2.parent:
+        if new_node.parent != old_node.parent:
             retList[1] = 1
         # i.e is it offline / unreachable now but wasnt in past
-        if n1.indexed == False and n2.indexed == True:
+        if new_node.indexed == False and old_node.indexed == True:
             retList[2] = 1
         # i.e is it offline / unreachable in past but online now
-        if (n1.indexed == True and n2.indexed == False):
+        if (new_node.indexed == True and old_node.indexed == False):
             retList[2] = 2
         return retList
 
 
 # These use log() and fromData() to maintain compliance with crawl()
-def Serialize(T:HashTable, filename:str|None = None):
+def Serialize(T:HashTable, filename:str|None = None) -> str:
     if filename:
-        with open(f'../web/static/crawler/{filename}.json','w') as f:
+        location = filename
+        with open(f'../web/static/crawler/{location}','w') as f:
             jjson.dump(T.log(),f)
     else:
-        with open(f'../web/static/crawler/table.json','w') as f:
+        location = 'table.json'
+        with open(f'../web/static/crawler/{location}','w') as f:
             jjson.dump(T.log(),f)
-    return
+    return location
 
 def Deserialize(filename: str|None = None) -> HashTable:
     T = HashTable()
