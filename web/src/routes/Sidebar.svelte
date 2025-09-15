@@ -211,16 +211,14 @@
 							</span>
 						</div>
 					</summary>
-					{#if highlighted_node === node.at}
-						<div class="node-content">
-							<a href={node.url.href} rel="external">
-								{node.html_metadata?.title || node.label}
-							</a>
-							{#if node.html_metadata?.description}
-								<p>{node.html_metadata.description}</p>
-							{/if}
-						</div>
-					{/if}
+					<div class="node-content">
+						<a href={node.url.href} rel="external">
+							{node.html_metadata?.title || node.label}
+						</a>
+						{#if node.html_metadata?.description}
+							<p>{node.html_metadata.description}</p>
+						{/if}
+					</div>
 				</details>
 			</li>
 		{/each}
