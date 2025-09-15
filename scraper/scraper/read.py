@@ -125,7 +125,6 @@ def nodeCompare(new_node:Node, oldTable: StateTable):
         return retList
 
 
-# These use log() and fromData() to maintain compliance with crawl()
 def Serialize(T:StateTable, filename:str|None = None) -> str:
     if filename:
         location = filename
