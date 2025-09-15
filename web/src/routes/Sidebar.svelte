@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Node } from "$lib/node"
-	import { hovered_node, graph, set_highlighted_node } from "$lib/node_state"
 	import { page } from "$app/state"
 	import Graph from "./Graph.svelte"
+	import SidebarNode from "./SidebarNode.svelte"
 
 	let {
 		nodes,
@@ -16,28 +16,14 @@
 
 	const highlighted_node = $derived(page.state.node)
 
-	let node_elements: Record<string, HTMLElement> = $state({})
+	let node_components: Record<string, SidebarNode> = $state({})
 
 	$effect(() => {
 		if (highlighted_node === undefined) return
-		const current_element = node_elements[highlighted_node]
-		if (!current_element) return
-		current_element.scrollIntoView({ behavior: "auto", block: "center" })
+		const current_component = node_components[highlighted_node]
+		if (!current_component) return
+		current_component.scrollIntoView()
 	})
-
-	function hover_in(at: string | undefined) {
-		if ($graph?.hasNode(at)) {
-			$graph.setNodeAttribute(at, "highlighted", true)
-		}
-		hovered_node.set(at)
-	}
-
-	function hover_out(at: string | undefined) {
-		if ($graph?.hasNode(at) && at !== highlighted_node) {
-			$graph.setNodeAttribute(at, "highlighted", false)
-		}
-		hovered_node.set(undefined)
-	}
 </script>
 
 <aside>
@@ -145,82 +131,14 @@
 			{new Intl.NumberFormat("en-US").format(nodes.length)} sites in this webchain
 		</p>
 		{#each nodes as node, i (node.at)}
-			<li
-				class:highlighted={node.at === highlighted_node}
-				class:hovered={node.at === $hovered_node}
-				style:margin-left="{node.depth}ch"
-				aria-describedby="{node.hash}-desc"
-			>
-				<details
-					open={node.at === highlighted_node}
-					name="nodes"
-					bind:this={node_elements[node.at]}
-				>
-					<summary
-						class="node-header"
-						id="{node.hash}-desc"
-						onmouseenter={() => hover_in(node.at)}
-						onmouseleave={() => hover_out(node.at)}
-						onfocusin={() => hover_in(node.at)}
-						onfocusout={() => hover_out(node.at)}
-						onclick={(e) => {
-							e.preventDefault()
-							if (node.at === highlighted_node) {
-								set_highlighted_node(undefined)
-							} else {
-								set_highlighted_node(node.at)
-							}
-							graph_component.center_on_nodes([node.at])
-						}}
-						onkeydown={(event) => {
-							if (event.key === "ArrowDown") {
-								event.preventDefault()
-								const next = document.querySelectorAll(".nodes summary")[i + 1]
-								if (next) (next as HTMLElement).focus()
-							}
-							if (event.key === "ArrowUp") {
-								event.preventDefault()
-								const prev = document.querySelectorAll(".nodes summary")[i - 1]
-								if (prev) (prev as HTMLElement).focus()
-							}
-						}}
-					>
-						<div class="label" data-indexed={node.indexed}>
-							<img
-								src="/api/favicon?url={encodeURIComponent(node.at)}"
-								alt=""
-								aria-hidden="true"
-								width="16"
-								height="16"
-								style:background-color={node.generated_color}
-							/>
-							<span>
-								{node.label}
-								{#if [$hovered_node, highlighted_node].includes(node.at)}
-									<span
-										class="slots"
-										class:full={node.children.length === nominations_limit}
-									>
-										{#if node.indexed}
-											{node.children.length}/{nominations_limit}
-										{:else}
-											offline
-										{/if}
-									</span>
-								{/if}
-							</span>
-						</div>
-					</summary>
-					<div class="node-content">
-						<a href={node.url.href} rel="external">
-							{node.html_metadata?.title || node.label}
-						</a>
-						{#if node.html_metadata?.description}
-							<p>{node.html_metadata.description}</p>
-						{/if}
-					</div>
-				</details>
-			</li>
+			<SidebarNode
+				bind:this={node_components[node.at]}
+				{node}
+				index={i}
+				{highlighted_node}
+				{nominations_limit}
+				{graph_component}
+			/>
 		{/each}
 	</ul>
 </aside>
@@ -315,92 +233,5 @@
 
 	.nodes {
 		margin-top: 1rem;
-	}
-
-	.nodes li {
-		display: flex;
-		gap: 0.5ch;
-		list-style-type: none;
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-	}
-
-	.nodes li:is(.hovered, :hover):not(.highlighted) {
-		background-color: #8e8e8e36;
-	}
-
-	.nodes li:has(summary:focus-visible) {
-		border-left: 2px solid blue;
-	}
-
-	.label {
-		display: flex;
-		flex: 1;
-		align-items: center;
-		gap: 0.5ch;
-		padding: 0 0.4em;
-	}
-
-	.label .slots {
-		font-size: 0.75em;
-		font-family: monospace;
-		vertical-align: middle;
-		color: currentColor;
-		user-select: none;
-		pointer-events: none;
-		margin-left: 0.5ch;
-	}
-
-	.nodes li details[open] .label {
-		background-color: blue;
-		color: white;
-	}
-
-	.label img {
-		display: block;
-		border-radius: 0.1rem;
-	}
-
-	.label[data-indexed="false"] > * {
-		opacity: 0.65;
-	}
-
-	.node-header {
-		all: unset;
-		color: currentColor;
-		line-height: 1.5;
-		display: flex;
-		gap: 0.25em;
-	}
-
-	.node-content {
-		border-left: 2px solid blue;
-		padding: 0.4rem;
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-	}
-
-	.node-content p {
-		margin: 0;
-		margin-top: 0.4rem;
-		max-width: 35ch;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		font-style: italic;
-	}
-
-	.node-content a {
-		color: blue;
-		font-weight: bold;
-	}
-
-	.node-content a:hover {
-		text-decoration-style: double;
-	}
-
-	.node-content a:visited {
-		color: purple;
 	}
 </style>
