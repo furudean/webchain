@@ -150,7 +150,7 @@
 			is_dragging = true
 			dragged_node = e.node
 			hovered_node.set(e.node)
-			set_highlighted_node(e.node)
+			set_highlighted_node(e.node, hashmap.get(e.node)?.url_param)
 			if (!renderer.getCustomBBox()) renderer.setCustomBBox(renderer.getBBox())
 			graph_element.style.cursor = "grabbing"
 		})
@@ -224,10 +224,7 @@
 		if (!graph) return
 
 		for (const node of graph.nodes()) {
-			graph.setNodeAttribute(node, "highlighted", false)
-		}
-		if (highlighted_node) {
-			graph.setNodeAttribute(highlighted_node, "highlighted", true)
+			graph.setNodeAttribute(node, "highlighted", node === highlighted_node)
 		}
 	})
 </script>

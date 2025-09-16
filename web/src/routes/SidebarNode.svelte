@@ -63,7 +63,7 @@
 				if (node.at === highlighted_node) {
 					set_highlighted_node(undefined)
 				} else {
-					set_highlighted_node(node.at)
+					set_highlighted_node(node.at, node.url_param)
 				}
 				graph_component.center_on_nodes([node.at])
 			}}

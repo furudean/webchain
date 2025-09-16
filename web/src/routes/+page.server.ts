@@ -32,16 +32,19 @@ export const load: PageServerLoad = async ({
 		const no_www = /^www\./i
 
 		return {
-			nodes: nodes.map((node) => ({
-				...node,
-				generated_color: node.indexed
-					? node.html_metadata?.theme_color || string_to_color(node.at)
-					: "#b7b7b7ff",
-				url: new URL(node.at),
-				label:
-					new URL(node.at).hostname.replace(no_www, "") +
-					(new URL(node.at).pathname === "/" ? "" : new URL(node.at).pathname)
-			})),
+			nodes: nodes.map((node) => {
+				const url = new URL(node.at)
+				return {
+					...node,
+					generated_color: node.indexed
+						? node.html_metadata?.theme_color || string_to_color(node.at)
+						: "#b7b7b7ff",
+					url,
+					label:
+						url.hostname.replace(no_www, "") + url.pathname.replace(/\/$/, ""),
+					url_param: url.hostname + url.pathname.replace(/\/$/, "_")
+				}
+			}),
 			nominations_limit,
 			start: new Date(start),
 			end: new Date(end)

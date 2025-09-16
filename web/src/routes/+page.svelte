@@ -1,10 +1,24 @@
 <script lang="ts">
+	import { onMount } from "svelte"
 	import type { PageProps } from "./$types"
 	import Graph from "./Graph.svelte"
 	import Sidebar from "./Sidebar.svelte"
+	import { goto } from "$app/navigation"
+	import { page } from "$app/state"
 
 	let { data }: PageProps = $props()
 	let graph_component: Graph | undefined = $state()
+
+	onMount(() => {
+		const url_param = page.url.searchParams.get("node")
+		const current_node = data.nodes.find((n) => n.url_param === url_param)
+
+		goto("", {
+			state: {
+				node: current_node?.at
+			}
+		})
+	})
 </script>
 
 <svelte:head>

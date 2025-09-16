@@ -18,4 +18,5 @@ export interface Node extends CrawledNode {
 	url: URL
 	generated_color: string
 	label: string
+	url_param: string
 }
