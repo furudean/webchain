@@ -1,0 +1,11 @@
+- you can run `webchain patch` with a stdin and it will output a new "patched"
+  state based on the old one compared with a new crawl
+- if nothing changed, return an error code so that bash scripting can short
+  circuit (we only want to update the files if something meaingful changed)
+- input is via stdin, and output is via stdout. you can handle these using click
+  like this @click.argument('input', type=click.File('r'), required=False,
+  default='-') for example. check click docs
+- CrawledNode and Node could probably be the same class, they're not different
+  enough to warrant two classes. check out python dataclasses for extra credit
+- preserve order of children (you can use list(dict.fromkeys(my_list))) instead
+  of set()
