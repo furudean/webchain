@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+import fileinput
 import json as jjson
 from functools import wraps
 from datetime import datetime, timezone
@@ -60,9 +61,22 @@ async def json(url: str):
 
     print(jjson.dumps(data, indent='\t'))
 
+
 @webchain.command
 @asyncio_click
-async def compare():
-    # compare to data.json in web.
-    with open(f'../web/static/crawler/data.json','r') as f:
-        await compareState(jjson.load(f))
+async def patch() -> str:
+    try:
+        strin = sys.stdin.read()
+        strin.rstrip('\n')
+        res = jjson.loads(strin)
+        data = await compareState(res)
+    except:
+        print("Input not valid JSON. Try again")
+    if not data:
+        print (doingus)
+    try:
+        ret = jjson.dumps(data, indent='\t')
+        print(ret)
+        return ret
+    except:
+        print("Write failed.")

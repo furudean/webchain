@@ -22,7 +22,7 @@ dev = ["pytest~=8.4.1", "pytest-asyncio~=1.1.0", "ruff~=0.12.10"]
 webchain = "scraper.cli:webchain"
 # tree = "scraper.cli:get_tree"
 # json = "scraper.cli:get_json"
-# compare = "scraper.cli:compare"
+# patch = "scraper.cli:patch"
 
 [tool.uv]
 default-groups = ["dev"]
