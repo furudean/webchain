@@ -27,8 +27,10 @@ def crawled_node_to_node(to_convert: CrawledNode) -> Node:
         metadata_dict.update({"theme_color" : to_convert.html_metadata.theme_color})
 
     # Make sure all children are unique
-    child_list = list(set(to_convert.children))
-
+    child_list = []
+    for x in to_convert.children:
+        if x not in child_list:
+            child_list.append(x)
     return Node(to_convert.at, to_convert.parent, child_list, to_convert.indexed, metadata_dict)
 
 
@@ -48,14 +50,8 @@ async def compareState(old:dict):
     NewTable.setStart(datetime.fromtimestamp(start, tz=timezone.utc).isoformat())
     NewTable.setEnd(datetime.fromtimestamp(end, tz=timezone.utc).isoformat())
 
-    # print("======= OLD TABLE =======")
-    # OldTable.view()
-    # print("======= NEW TABLE =======")
-    # NewTable.view()
-
     # check if nodes have been added or deleted
     if len(NewTable.nodes) != len(OldTable.nodes):
-        # either node has been added or deleted. this means time to make a new state
         CHANGEFLAG = 1
 
     # compare new nodes to old table
@@ -65,21 +61,25 @@ async def compareState(old:dict):
         if result != [0,0,0]:
             # if something changed even once, we know time to make a new state
             CHANGEFLAG = 1
-            print(f"CHANGE DETECTED AT NODE {i}")
+            # print(f"CHANGE DETECTED AT NODE\n{i}")
             changed_nodes.append(i)
 
     if CHANGEFLAG:
-        # save it as current
-        Serialize(NewTable, "current.json")
+        return NewTable.log()
 
-        # log old table as timestamped ver
-        # to do: process name better
-        # ds = datetime.fromisoformat(OldTable.end)
-        # print(f"ds: {ds}")
+        # # Return Newtable for patch to print
+        # # save it as current
+        # Serialize(NewTable, "current.json")
 
-        Serialize(OldTable, f"{OldTable.end}.json")
+        # # log old table as timestamped ver
+        # # to do: process name better
+        # # ds = datetime.fromisoformat(OldTable.end)
+        # # print(f"ds: {ds}")
 
-    return CHANGEFLAG
+        # Serialize(OldTable, f"{OldTable.end}.json")
+
+    if not CHANGEFLAG:
+        return 1
 
 
 # nodeCompare
@@ -95,19 +95,19 @@ def nodeCompare(new_node:Node, oldTable: StateTable):
     retList = [0,0,0]
     old_node_index = oldTable.find(new_node.url)
     old_node = oldTable.nodes[old_node_index]
-    print(f"new: {new_node}")
+    # print(f"new: {new_node}")
     # This means node did not exist in old table (i.e new node).
     #
     if old_node == -1:
-        print ("old: NOT FOUND")
+        # print ("old: NOT FOUND")
         return [-1,-1,-1]
     # else Node DID exist in old table, confirm that parents/children are same, and that indexed = true in new one.
     else:
-        print(f"old: {old_node}")
+        # print(f"old: {old_node}")
         ChangedChildren = []
         for i in new_node.children:
             if i not in old_node.children:
-                print(f"{i} not in list {old_node.children}")
+                # print(f"{i} not in list {old_node.children}")
                 #returns position of child thats changed
                 ChangedChildren.append(new_node.children.index(i))
                 retList[0] = ChangedChildren
