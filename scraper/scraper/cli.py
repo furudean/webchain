@@ -64,7 +64,7 @@ async def json(url: str):
 
 @webchain.command
 @asyncio_click
-async def patch() -> str:
+async def patch() -> str|int:
     try:
         strin = sys.stdin.read()
         strin.rstrip('\n')
@@ -73,7 +73,8 @@ async def patch() -> str:
     except:
         print("Input not valid JSON. Try again")
     if not data:
-        print (doingus)
+        print(1)
+        return 1
     try:
         ret = jjson.dumps(data, indent='\t')
         print(ret)

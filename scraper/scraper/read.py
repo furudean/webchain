@@ -79,7 +79,7 @@ async def compareState(old:dict):
         # Serialize(OldTable, f"{OldTable.end}.json")
 
     if not CHANGEFLAG:
-        return 1
+        return 0
 
 
 # nodeCompare
