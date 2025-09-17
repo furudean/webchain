@@ -61,7 +61,9 @@ async def json(url: str):
 
     print(jjson.dumps(data, indent='\t'))
 
-
+# checks for updates to the state encapsulated in res
+# data will be the updated state, if there is an update, or will be 0 else.
+# if data == 0, return 1 to interrupt bash
 @webchain.command
 @asyncio_click
 async def patch() -> str|int:
