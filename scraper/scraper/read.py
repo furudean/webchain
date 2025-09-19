@@ -56,13 +56,21 @@ async def compareState(old:dict):
 
     # compare new nodes to old table
     changed_nodes = []
+    mark_not_indexed = []
     for i in NewTable.nodes:
         result = nodeCompare(i, OldTable)
         if result != [0,0,0]:
+            if len(result)>3:
+                for i in result[4]:
+                    mark_not_indexed.append(i)
             # if something changed even once, we know time to make a new state
             CHANGEFLAG = 1
             # print(f"CHANGE DETECTED AT NODE\n{i}")
             changed_nodes.append(i)
+
+    for i in mark_not_indexed:
+        mark = NewTable[NewTable.find(i)]
+        mark.indexed = False
 
     if CHANGEFLAG:
         return NewTable.log()
@@ -116,12 +124,16 @@ def nodeCompare(new_node:Node, oldTable: StateTable):
         # this could happen if the site is dropped by original parent but picked up by different one
         if new_node.parent != old_node.parent:
             retList[1] = 1
-        # i.e is it offline / unreachable now but wasnt in past
-        if new_node.indexed == False and old_node.indexed == True:
-            retList[2] = 1
+
+        if new_node.indexed == False:
+            retList[4] = new_node.children
+            if old_node.indexed == True:
+                # i.e is it offline / unreachable now but wasnt in past
+                retList[2] = 1
         # i.e is it offline / unreachable in past but online now
         if (new_node.indexed == True and old_node.indexed == False):
             retList[2] = 2
+
         return retList
 
 
