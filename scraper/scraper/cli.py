@@ -67,13 +67,20 @@ async def json(url: str):
 @webchain.command
 @asyncio_click
 async def patch() -> str|int:
+    data = 0
+    res = ''
     try:
         strin = sys.stdin.read()
         strin.rstrip('\n')
         res = jjson.loads(strin)
-        data = await compareState(res)
     except:
         print("Input not valid JSON. Try again")
+
+    try:
+        data = await compareState(res)
+    except:
+        print("Patching process failed.")
+
     if not data:
         print(1)
         return 1
