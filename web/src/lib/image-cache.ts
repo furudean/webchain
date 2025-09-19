@@ -48,8 +48,7 @@ async function load_cache_index(): Promise<void> {
 	cache_loading_promise = (async () => {
 		const index_content = await safe_read_file(CACHE_INDEX_FILE)
 		if (!index_content) {
-			// index file doesn't exist or is corrupted, start fresh
-			cache_loading_promise = null
+			console.log("cache index file not found, starting with empty cache")
 			return
 		}
 
