@@ -47,10 +47,7 @@ async function load_cache_index(): Promise<void> {
 
 	cache_loading_promise = (async () => {
 		const index_content = await safe_read_file(CACHE_INDEX_FILE)
-		if (!index_content) {
-			console.log("cache index file not found, starting with empty cache")
-			return
-		}
+		if (!index_content) return
 
 		const cache_data: Record<string, CachedItem> = JSON.parse(index_content)
 		const now = Date.now()
