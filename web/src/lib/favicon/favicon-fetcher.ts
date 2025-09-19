@@ -1,9 +1,11 @@
-import type { CachedItem } from "./types"
-import { FAVICON_CACHE_DURATION } from "./types"
 import { write_cache_file } from "./storage"
 import { parse_page_for_icons } from "./icon-discovery"
+import { FAVICON_CACHE_DURATION, type CachedItem } from "."
 
-const favicon_fetch_promises = new Map<string, Promise<CachedItem | null>>()
+const favicon_fetch_promises = new Map<
+	string,
+	Promise<{ data: ArrayBuffer; item: CachedItem } | null>
+>()
 const request_headers = new Headers({
 	"User-Agent":
 		"webchain-favicon-fetcher/DRAFT (+https://webchain.milkmedicine.net)",
@@ -14,13 +16,16 @@ const request_headers = new Headers({
 export async function fetch_and_cache_favicon(
 	url_param: string,
 	fetch: typeof globalThis.fetch
-): Promise<CachedItem | null> {
+): Promise<{ data: ArrayBuffer; item: CachedItem } | null> {
 	const existing_promise = favicon_fetch_promises.get(url_param)
 	if (existing_promise) {
 		return existing_promise
 	}
 
-	const fetch_promise = (async (): Promise<CachedItem | null> => {
+	const fetch_promise = (async (): Promise<{
+		data: ArrayBuffer
+		item: CachedItem
+	} | null> => {
 		try {
 			const page_response = await fetch(url_param, {
 				redirect: "follow",
@@ -58,13 +63,15 @@ export async function fetch_and_cache_favicon(
 			const content_type =
 				best_icon.headers.get("Content-Type") || "image/x-icon"
 
-			return await write_cache_file({
+			const cache_item = await write_cache_file({
 				key: url_param,
 				data: buffer,
 				content_type,
 				file_url: best_icon.url,
 				expires: Date.now() + FAVICON_CACHE_DURATION
 			})
+
+			return { data: buffer, item: cache_item }
 		} catch (error) {
 			console.error(`error fetching favicon for ${url_param}:`, error)
 			return null

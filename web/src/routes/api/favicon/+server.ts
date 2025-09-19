@@ -4,13 +4,11 @@ import {
 	get_cached_file,
 	cache_empty_favicon,
 	is_stale_but_valid,
+	fetch_and_cache_favicon,
+	refresh_favicon_in_background,
 	type CachedItem
 } from "$lib/favicon"
-import { is_valid_url } from "$lib/favicon/icon-discovery"
-import {
-	fetch_and_cache_favicon,
-	refresh_favicon_in_background
-} from "$lib/favicon/favicon-fetcher"
+import { is_valid_url } from "$lib/url"
 
 function response_headers(
 	item: CachedItem,
@@ -41,13 +39,16 @@ function response_headers(
 	return Object.fromEntries(headers.entries())
 }
 
-function empty_response_cache(url: string): Response {
+function create_empty_response(
+	url: string,
+	cache_status: string = "MISS"
+): Response {
 	const item = cache_empty_favicon(url)
 	return new Response(null, {
 		status: 204,
 		headers: {
-			"Cache-Control": "public",
-			Expires: new Date(item.expires).toUTCString()
+			...response_headers(item),
+			"x-disk-cache": cache_status
 		}
 	})
 }
@@ -70,11 +71,13 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		const if_none_match = request.headers.get("if-none-match")
 		const is_stale = is_stale_but_valid(item)
 
+		// trigger background refresh for stale content once
+		if (is_stale) {
+			refresh_favicon_in_background(url_param, fetch).catch(console.error)
+		}
+
 		// handle conditional requests
 		if (item.etag && if_none_match === item.etag) {
-			if (is_stale) {
-				refresh_favicon_in_background(url_param, fetch).catch(console.error)
-			}
 			return new Response(null, {
 				status: 304,
 				headers: {
@@ -82,19 +85,18 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 					"Cache-Control": is_stale
 						? "public, max-age=0, stale-while-revalidate=3600"
 						: "public",
-					"x-disk-cache": "HIT"
+					"x-disk-cache": is_stale ? "STALE" : "HIT"
 				}
 			})
 		}
 
-		// trigger background refresh for stale content
-		if (is_stale) {
-			refresh_favicon_in_background(url_param, fetch).catch(console.error)
+		// return cached content (data or empty)
+		if (!data) {
+			return create_empty_response(url_param, is_stale ? "STALE" : "HIT")
 		}
 
-		// return cached content (data or empty)
-		return new Response(data || null, {
-			status: data ? 200 : 204,
+		return new Response(data, {
+			status: 200,
 			headers: {
 				...response_headers(item, is_stale),
 				"x-disk-cache": is_stale ? "STALE" : "HIT"
@@ -103,21 +105,15 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 	}
 
 	// not in cache, fetch it
-	const cache_item = await fetch_and_cache_favicon(url_param, fetch)
-	if (!cache_item) {
-		return empty_response_cache(url_param)
+	const fetch_result = await fetch_and_cache_favicon(url_param, fetch)
+	if (!fetch_result) {
+		return create_empty_response(url_param)
 	}
 
-	// Return the newly cached item directly
-	const fresh_cache_hit = await get_cached_file(url_param)
-	if (!fresh_cache_hit?.data) {
-		return empty_response_cache(url_param)
-	}
-
-	return new Response(fresh_cache_hit.data, {
+	return new Response(fetch_result.data, {
 		status: 200,
 		headers: {
-			...response_headers(cache_item),
+			...response_headers(fetch_result.item),
 			"x-disk-cache": "MISS"
 		}
 	})

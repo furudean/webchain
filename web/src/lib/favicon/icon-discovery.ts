@@ -1,25 +1,6 @@
 import { parse } from "node-html-parser"
 import type { HTMLElement } from "node-html-parser"
-
-function safe_parse_url(href: string, base: string | URL): URL | null {
-	try {
-		return new URL(href, base)
-	} catch {
-		return null
-	}
-}
-
-export function is_valid_url(str: string): boolean {
-	let url: URL | undefined
-
-	try {
-		url = new URL(str)
-	} catch {
-		return false
-	}
-
-	return url.protocol === "http:" || url.protocol === "https:"
-}
+import { is_valid_url, safe_parse_url } from "$lib/url"
 
 export async function get_icon_urls(
 	base: URL | string,
