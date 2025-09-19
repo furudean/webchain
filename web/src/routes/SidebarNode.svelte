@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Node } from "$lib/node"
-	import { hovered_node, graph, set_highlighted_node } from "$lib/node_state"
+	import { hovered_node, graph, set_highlighted_node } from "$lib/node-state"
 	import type Graph from "./Graph.svelte"
 
 	let {

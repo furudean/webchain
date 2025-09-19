@@ -9,7 +9,7 @@
 		hovered_node,
 		graph as graph_store,
 		set_highlighted_node
-	} from "$lib/node_state"
+	} from "$lib/node-state"
 	import { page } from "$app/state"
 	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
 	import { getCameraStateToFitViewportToNodes } from "@sigma/utils"

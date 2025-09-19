@@ -2,13 +2,15 @@ import { text } from "@sveltejs/kit"
 import type { RequestHandler } from "./$types"
 import {
 	get_cached_file,
-	fetch_and_cache_favicon,
-	refresh_favicon_in_background,
 	cache_empty_favicon,
 	is_stale_but_valid,
-	is_valid_url,
 	type CachedItem
-} from "$lib/image-cache"
+} from "$lib/favicon"
+import { is_valid_url } from "$lib/favicon/icon-discovery"
+import {
+	fetch_and_cache_favicon,
+	refresh_favicon_in_background
+} from "$lib/favicon/favicon-fetcher"
 
 function response_headers(
 	item: CachedItem,

@@ -1,0 +1,209 @@
+import path from "node:path"
+import fs from "node:fs/promises"
+import { createHash } from "crypto"
+import {
+	safe_read_file,
+	safe_unlink,
+	safe_access,
+	safe_read_buffer
+} from "../fs"
+import type { CachedItem } from "./types"
+import {
+	FAVICON_CACHE_DURATION,
+	EMPTY_FAVICON_CACHE_DURATION,
+	STALE_THRESHOLD
+} from "./types"
+
+export const CACHE_DIR = path.resolve(
+	process.env.FAVICON_CACHE_DIR || path.join(process.cwd(), ".favicon_cache")
+)
+export const CACHE_INDEX_FILE = path.join(CACHE_DIR, "index.json")
+export const FAVICON_CACHE = new Map<string, CachedItem>()
+
+let cache_loading_promise: Promise<void> | null = null
+
+function to_array_buffer(buffer: Buffer): ArrayBuffer {
+	const array_buffer = new ArrayBuffer(buffer.length)
+	const view = new Uint8Array(array_buffer)
+	for (let i = 0; i < buffer.length; ++i) {
+		view[i] = buffer[i]
+	}
+	return array_buffer
+}
+
+function generate_etag(data: ArrayBufferLike): string {
+	return (
+		'"' +
+		createHash("sha256")
+			.update(new Uint8Array(data))
+			.digest("hex")
+			.slice(0, 16) +
+		'"'
+	)
+}
+
+export function is_stale_but_valid(item: CachedItem): boolean {
+	const now = Date.now()
+	return item.expires < now && now - item.expires < STALE_THRESHOLD
+}
+
+async function load_cache_index(): Promise<void> {
+	if (cache_loading_promise) {
+		return cache_loading_promise
+	}
+
+	cache_loading_promise = (async () => {
+		const index_content = await safe_read_file(CACHE_INDEX_FILE)
+		if (!index_content) return
+
+		const cache_data: Record<string, CachedItem> = JSON.parse(index_content)
+		const now = Date.now()
+
+		for (const [key, item] of Object.entries(cache_data)) {
+			if (item.expires <= now) {
+				if (item.path) {
+					const fullpath = path.join(CACHE_DIR, item.path)
+					await safe_unlink(fullpath)
+				}
+				continue
+			}
+
+			if (!item.path) {
+				FAVICON_CACHE.set(key, item)
+				continue
+			}
+
+			const fullpath = path.join(CACHE_DIR, item.path)
+			const file_exists = await safe_access(fullpath)
+			if (file_exists) {
+				FAVICON_CACHE.set(key, item)
+			}
+		}
+
+		console.log(`loaded favicon cache with ${FAVICON_CACHE.size} entries`)
+	})()
+
+	return cache_loading_promise
+}
+
+async function save_cache_index(): Promise<void> {
+	await fs.mkdir(CACHE_DIR, { recursive: true })
+	const cache_data = Object.fromEntries(FAVICON_CACHE.entries())
+	await fs.writeFile(CACHE_INDEX_FILE, JSON.stringify(cache_data, null, "\t"))
+}
+
+export async function cleanup_expired_cache(): Promise<void> {
+	await load_cache_index()
+
+	const now = Date.now()
+	let cleaned_count = 0
+
+	for (const [key, item] of FAVICON_CACHE.entries()) {
+		if (item.expires + STALE_THRESHOLD < now) {
+			FAVICON_CACHE.delete(key)
+
+			if (item.path) {
+				const fullpath = path.join(CACHE_DIR, item.path)
+				await safe_unlink(fullpath)
+			}
+
+			cleaned_count++
+		}
+	}
+
+	if (cleaned_count > 0) {
+		console.log(`cleaned up ${cleaned_count} expired cache entries`)
+		await save_cache_index()
+	}
+}
+
+export async function write_cache_file({
+	key,
+	data,
+	content_type,
+	file_url,
+	expires = undefined
+}: {
+	key: string
+	data: ArrayBufferLike
+	content_type: string
+	file_url: string
+	expires?: number
+}): Promise<CachedItem> {
+	await load_cache_index()
+
+	const filename = encodeURIComponent(key)
+	const fullpath = path.join(CACHE_DIR, filename)
+
+	await fs.mkdir(CACHE_DIR, { recursive: true })
+	await fs.writeFile(fullpath, Buffer.from(data))
+
+	const item = {
+		path: filename,
+		timestamp: Date.now(),
+		expires: expires ?? Date.now() + FAVICON_CACHE_DURATION,
+		original_url: file_url,
+		content_type,
+		etag: generate_etag(data)
+	}
+
+	FAVICON_CACHE.set(key, item)
+	await save_cache_index()
+
+	return item
+}
+
+export async function get_cached_file(key: string): Promise<
+	| {
+			data: ArrayBuffer | undefined
+			item: CachedItem
+	  }
+	| undefined
+> {
+	await load_cache_index()
+
+	const cached = FAVICON_CACHE.get(key)
+
+	if (cached) {
+		if (cached.expires < Date.now()) {
+			FAVICON_CACHE.delete(key)
+			if (cached.path) {
+				const fullpath = path.join(CACHE_DIR, cached.path)
+				await safe_unlink(fullpath)
+			}
+			return undefined
+		}
+
+		if (cached?.path) {
+			const fullpath = path.join(CACHE_DIR, cached.path)
+			const buffer = await safe_read_buffer(fullpath)
+			if (buffer) {
+				return {
+					data: to_array_buffer(buffer),
+					item: cached
+				}
+			} else {
+				FAVICON_CACHE.delete(key)
+			}
+		} else {
+			return {
+				data: undefined,
+				item: cached
+			}
+		}
+	}
+
+	return undefined
+}
+
+export function cache_empty_favicon(url: string): CachedItem {
+	const item = {
+		timestamp: Date.now(),
+		expires: Date.now() + EMPTY_FAVICON_CACHE_DURATION
+	}
+	FAVICON_CACHE.set(url, item)
+
+	save_cache_index().catch(console.error)
+
+	return item
+}
