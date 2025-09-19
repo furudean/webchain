@@ -13,6 +13,7 @@ import click
 
 from scraper.crawl import crawl
 from scraper.read import read_chain_into_table, compareState
+from scraper.serialize import serialize
 from scraper.state import StateTable
 
 
@@ -39,27 +40,26 @@ def webchain():
 async def tree(url: str):
     try:
         crawled = await crawl(url)
-        for node in crawled.nodes:
-            print('    ' * node.depth + node.at + (' (offline)' if not node.indexed else ''))
-    except ValueError as e:
+    except Exception as e:
         print(f'error: {e}')
         sys.exit(1)
+
+    for node in crawled.nodes:
+        print('    ' * node.depth + node.at + (' (offline)' if not node.indexed else ''))
 
 
 @webchain.command
 @click.argument('url', required=True)
 @asyncio_click
 async def json(url: str):
-    crawled = await crawl(url)
+    try:
+        crawled = await crawl(url)
+    except Exception as e:
+        print(f'error: {e}')
+        sys.exit(1)
 
-    data = {
-        'nodes': [dataclasses.asdict(node) for node in crawled.nodes],
-        'nominations_limit': crawled.nominations_limit,
-        'start': crawled.start,
-        'end': crawled.end
-    }
-
-    print(jjson.dumps(data, indent='\t'))
+    serialized = serialize(crawled)
+    print(serialized)
 
 # checks for updates to the state encapsulated in res
 # data will be the updated state, if there is an update, or will be 0 else.
