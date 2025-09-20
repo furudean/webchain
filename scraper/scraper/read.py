@@ -73,7 +73,7 @@ async def compareState(dict1:dict, dict2:dict):
             if len(result)>3:
                 for i in result[4]:
                     mark_not_indexed.append(i)
-            i.last_updated = datetime.now().isoformat()
+            i.last_updated = NewTable.end
             # if something changed even once, we know time to make a new state
             CHANGEFLAG = 1
             # print(f"CHANGE DETECTED AT NODE\n{i}")
