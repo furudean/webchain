@@ -36,19 +36,26 @@ def crawled_node_to_node(to_convert: CrawledNode) -> Node:
 
 # This is currently a simple version of this. it answers the question: "do we need to make a new history entry?". the answer is YES if nodes have been added, deleted, changed, or are offline
 # In the future, I would like to improve this so that we are logging WHAT changes are being made
-async def compareState(old:dict):
+async def compareState(dict1:dict, dict2:dict):
     CHANGEFLAG = 0
+        OldTable = StateTable()
+        NewTable = StateTable()
 
-    OldTable = StateTable()
-    OldTable.fromData(old)
+
+    if dict1.end >= dict2.end:
+        OldTable.fromData(dict2)
+        NewTable.fromData(dict1)
+    else:
+        OldTable.fromData(dict1)
+        NewTable.fromData(dict2)
 
     # crawl chain anew, save into table
     # could rewrite this to load NewTable from some .json if necessary
-    start = time.time()
-    NewTable = await read_chain_into_table('https://webchain.milkmedicine.net')
-    end = time.time()
-    NewTable.setStart(datetime.fromtimestamp(start, tz=timezone.utc).isoformat())
-    NewTable.setEnd(datetime.fromtimestamp(end, tz=timezone.utc).isoformat())
+    # start = time.time()
+    # NewTable = await read_chain_into_table('https://webchain.milkmedicine.net')
+    # end = time.time()
+    # NewTable.setStart(datetime.fromtimestamp(start, tz=timezone.utc).isoformat())
+    # NewTable.setEnd(datetime.fromtimestamp(end, tz=timezone.utc).isoformat())
 
     # check if nodes have been added or deleted
     if len(NewTable.nodes) != len(OldTable.nodes):

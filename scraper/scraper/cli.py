@@ -65,25 +65,30 @@ async def json(url: str):
 # data will be the updated state, if there is an update, or will be 0 else.
 # if data == 0, return 1 to interrupt bash
 @webchain.command
+@click.argument('path1', required=True, type=click.Path())
+@click.argument('path2', required=True, type=click.Path())
 @asyncio_click
-async def patch() -> str|int:
+async def patch(path1, path2) -> str|int:
     data = 0
     res = ''
     try:
-        strin = sys.stdin.read()
-        strin.rstrip('\n')
-        res = jjson.loads(strin)
+        # strin = sys.stdin.read()
+        # strin.rstrip('\n')
+        res1 = jjson.loads(path1)
+        res2 = jjson.loads(path2)
     except:
-        print("Input not valid JSON. Try again")
+        if not res1:
+            print(f"{res1} not valid JSON. Try again")
+        else:
+            print(f"{res2} not valid JSON. Try again")
 
     try:
-        data = await compareState(res)
+        data = await compareState(res1, res2)
     except:
         print("Patching process failed.")
 
     if not data:
-        print(1)
-        return 1
+        sys.exit(1)
     try:
         ret = jjson.dumps(data, indent='\t')
         print(ret)
