@@ -21,7 +21,6 @@ class HtmlMetadata:
 
 @dataclass
 class CrawledNode:
-    hash: str
     at: str
     children: list[str]
     parent: str | None
@@ -142,12 +141,6 @@ def get_nominations_limit(html: str, default: int | None = None) -> int | None:
         return default
 
 
-def hash_string(s: str, length: int) -> str:
-    h = shake_128(usedforsecurity=False)
-    h.update(s.encode('utf-8'))
-    return h.hexdigest(length)
-
-
 def to_iso_timestamp(x: float) -> str:
     return datetime.fromtimestamp(x, tz=timezone.utc).isoformat()
 
@@ -208,7 +201,6 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             html_metadata = get_html_metadata(html)
 
         node = CrawledNode(
-            hash=hash_string(at, length=8),
             at=at,
             children=nominations or [],
             parent=parent,

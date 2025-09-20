@@ -5,7 +5,6 @@ export interface HtmlMetadata {
 }
 
 export interface CrawledNode {
-	hash: string
 	at: string
 	children: string[]
 	parent: string | null
