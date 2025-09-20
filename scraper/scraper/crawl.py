@@ -2,7 +2,6 @@ import itertools
 from urllib.parse import urlparse
 from dataclasses import dataclass
 import asyncio
-from hashlib import shake_128
 from datetime import datetime, timezone
 from time import time
 
