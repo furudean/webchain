@@ -65,11 +65,15 @@ async def compareState(dict1:dict, dict2:dict):
     changed_nodes = []
     mark_not_indexed = []
     for i in NewTable.nodes:
+        if i.first_seen is None:
+            i.first_seen = NewTable.end
+            i.last_updated = NewTable.end
         result = nodeCompare(i, OldTable)
         if result != [0,0,0]:
             if len(result)>3:
                 for i in result[4]:
                     mark_not_indexed.append(i)
+            i.last_updated = datetime.now().isoformat()
             # if something changed even once, we know time to make a new state
             CHANGEFLAG = 1
             # print(f"CHANGE DETECTED AT NODE\n{i}")
@@ -78,6 +82,7 @@ async def compareState(dict1:dict, dict2:dict):
     for i in mark_not_indexed:
         mark = NewTable[NewTable.find(i)]
         mark.indexed = False
+
 
     if CHANGEFLAG:
         return NewTable.log()
