@@ -38,8 +38,8 @@ def crawled_node_to_node(to_convert: CrawledNode) -> Node:
 # In the future, I would like to improve this so that we are logging WHAT changes are being made
 async def compareState(dict1:dict, dict2:dict):
     CHANGEFLAG = 0
-        OldTable = StateTable()
-        NewTable = StateTable()
+    OldTable = StateTable()
+    NewTable = StateTable()
 
 
     if dict1.end >= dict2.end:
