@@ -8,7 +8,6 @@ import {
 	safe_read_buffer
 } from "$lib/fs"
 import {
-	FAVICON_CACHE_DURATION,
 	EMPTY_FAVICON_CACHE_DURATION,
 	STALE_THRESHOLD,
 	type CachedItem
@@ -30,19 +29,20 @@ function to_array_buffer(buffer: Buffer): ArrayBuffer {
 }
 
 function generate_etag(data: ArrayBufferLike): string {
-	return (
-		'"' +
-		createHash("sha256")
-			.update(new Uint8Array(data))
-			.digest("hex")
-			.slice(0, 16) +
-		'"'
-	)
+	const hash = createHash("sha256")
+		.update(new Uint8Array(data))
+		.digest("hex")
+		.slice(0, 16)
+	const quote = '"'
+
+	return quote + hash + quote
 }
 
 export function is_stale_but_valid(item: CachedItem): boolean {
 	const now = Date.now()
-	return item.expires < now && now - item.expires < STALE_THRESHOLD
+	return (
+		item?.stale_after != null && item.stale_after < now && item.expires > now
+	)
 }
 
 async function load_cache_index(): Promise<void> {
@@ -50,7 +50,7 @@ async function load_cache_index(): Promise<void> {
 		return cache_loading_promise
 	}
 
-	cache_loading_promise = (async () => {
+	async function load(): Promise<void> {
 		const index_content = await safe_read_file(CACHE_INDEX_FILE)
 		if (!index_content) return
 
@@ -79,7 +79,9 @@ async function load_cache_index(): Promise<void> {
 		}
 
 		console.log(`loaded favicon cache with ${FAVICON_CACHE.size} entries`)
-	})()
+	}
+
+	cache_loading_promise = load()
 
 	return cache_loading_promise
 }
@@ -111,10 +113,13 @@ export async function write_cache_file({
 	await fs.mkdir(CACHE_DIR, { recursive: true })
 	await fs.writeFile(fullpath, Buffer.from(data))
 
+	const timestamp = Date.now()
+
 	const item = {
 		path: filename,
-		timestamp: Date.now(),
+		timestamp,
 		expires,
+		stale_after: timestamp + STALE_THRESHOLD,
 		original_url: file_url,
 		content_type,
 		etag: generate_etag(data)

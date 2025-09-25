@@ -32,8 +32,10 @@ function response_headers(
 			"public, max-age=0, stale-while-revalidate=3600"
 		)
 	} else {
-		headers.set("Cache-Control", "public")
-		headers.set("Expires", new Date(item.expires).toUTCString())
+		headers.set("Cache-Control", "public, max-age=3600") // Add explicit max-age
+		if (item.expires) {
+			headers.set("Expires", new Date(item.expires).toUTCString())
+		}
 	}
 
 	return Object.fromEntries(headers.entries())
@@ -71,6 +73,14 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		const if_none_match = request.headers.get("if-none-match")
 		const is_stale = is_stale_but_valid(item)
 
+		// console.debug(`favicon cache hit for ${url_param}:`, {
+		// 	is_stale,
+		// 	expires: item.expires,
+		// 	now: Date.now(),
+		// 	expires_in: item.expires ? item.expires - Date.now() : null,
+		// 	stale_in: item.stale_after ? item.stale_after - Date.now() : null
+		// })
+
 		// trigger background refresh for stale content once
 		if (is_stale) {
 			refresh_favicon_in_background(url_param, fetch).catch(console.error)
@@ -78,6 +88,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 
 		// handle conditional requests
 		if (item.etag && if_none_match === item.etag) {
+			// not modified
 			return new Response(null, {
 				status: 304,
 				headers: {
@@ -90,8 +101,8 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 			})
 		}
 
-		// return cached content (data or empty)
 		if (!data) {
+			// return cached content (data or empty)
 			return create_empty_response(url_param, is_stale ? "STALE" : "HIT")
 		}
 

@@ -94,6 +94,6 @@ export async function refresh_favicon_in_background(
 		await fetch_and_cache_favicon(url_param, fetch)
 		console.log(`background refresh completed for ${url_param}`)
 	} catch (error) {
-		console.error(`background refresh error for ${url_param}:`, error)
+		console.error(`background refresh failed for ${url_param}:`, error)
 	}
 }
