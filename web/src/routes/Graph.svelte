@@ -29,8 +29,10 @@
 	let graph_element: HTMLElement
 
 	function update_camera(camera: Camera): void {
-		const size = `${100 / camera.ratio}px`
+		const size = `${40 / camera.ratio}px`
 		graph_element.style.backgroundSize = `${size} ${size}`
+		const transparency = Math.max(0.05, 0.6 / camera.ratio)
+		graph_element.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
 
 		const pos_x = `${50 - (camera.x * 100) / camera.ratio}%`
 		const pos_y = `${50 + (camera.y * 100) / camera.ratio}%`
@@ -344,12 +346,8 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
-		background-image:
-			linear-gradient(to right, hsl(209, 100%, 97%) 1px, transparent 1px),
-			linear-gradient(to bottom, hsl(209, 100%, 90%) 1px, transparent 1px);
+		background-image: #eee;
 		background-repeat: none;
-		/* background-size: 83.3333px 83.3333px;
-		background-position: 8.33333% 91.6667%; */
 	}
 
 	.graph:active {
