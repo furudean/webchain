@@ -6,7 +6,9 @@ import {
 	is_stale_but_valid,
 	fetch_and_cache_favicon,
 	refresh_favicon_in_background,
-	type CachedItem
+	type CachedItem,
+	FAVICON_CACHE_DURATION,
+	STALE_THRESHOLD
 } from "$lib/favicon"
 import { is_valid_url } from "$lib/url"
 import { gzipSync, deflateSync } from "node:zlib"
@@ -27,10 +29,10 @@ function response_headers(item: CachedItem, is_stale?: boolean): Headers {
 	if (is_stale) {
 		headers.set(
 			"Cache-Control",
-			"public, max-age=0, stale-while-revalidate=3600"
+			`public, max-age=0, stale-while-revalidate=${STALE_THRESHOLD}`
 		)
 	} else {
-		headers.set("Cache-Control", "public, max-age=3600") // Add explicit max-age
+		headers.set("Cache-Control", `public, max-age=${FAVICON_CACHE_DURATION}`)
 		if (item.expires) {
 			headers.set("Expires", new Date(item.expires).toUTCString())
 		}
