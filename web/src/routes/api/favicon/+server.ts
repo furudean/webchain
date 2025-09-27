@@ -9,12 +9,10 @@ import {
 	type CachedItem
 } from "$lib/favicon"
 import { is_valid_url } from "$lib/url"
+import { gzipSync, deflateSync } from "node:zlib"
 
-function response_headers(
-	item: CachedItem,
-	is_stale?: boolean
-): Record<string, string> {
-	const headers = new URLSearchParams()
+function response_headers(item: CachedItem, is_stale?: boolean): Headers {
+	const headers = new Headers()
 
 	if (item.content_type) {
 		headers.set("Content-Type", item.content_type)
@@ -38,7 +36,7 @@ function response_headers(
 		}
 	}
 
-	return Object.fromEntries(headers.entries())
+	return headers
 }
 
 function create_empty_response(
@@ -55,6 +53,54 @@ function create_empty_response(
 	})
 }
 
+async function compress_if_accepted(
+	data: Uint8Array | Buffer,
+	request: Request
+): Promise<{ body: Uint8Array | Buffer; encoding?: string }> {
+	const acceptEncoding = request.headers.get("accept-encoding") || ""
+	if (/\bgzip\b/.test(acceptEncoding)) {
+		return {
+			body: gzipSync(data),
+			encoding: "gzip"
+		}
+	}
+	if (/\bdeflate\b/.test(acceptEncoding)) {
+		return {
+			body: deflateSync(data),
+			encoding: "deflate"
+		}
+	}
+	return { body: data }
+}
+
+async function compressed_response({
+	data,
+	item,
+	request,
+	is_stale
+}: {
+	data: ArrayBuffer | Uint8Array | Buffer
+	item: CachedItem
+	request: Request
+	is_stale?: boolean
+}): Promise<Response> {
+	const binary = data instanceof ArrayBuffer ? new Uint8Array(data) : data
+	const { body, encoding } = await compress_if_accepted(binary, request)
+	const headers = response_headers(item, is_stale)
+	headers.set("x-disk-cache", is_stale ? "STALE" : "HIT")
+	if (encoding) {
+		headers.set("Content-Encoding", encoding)
+	}
+	const response_body =
+		body instanceof Uint8Array || Buffer.isBuffer(body)
+			? Buffer.from(body)
+			: body
+	return new Response(response_body, {
+		status: 200,
+		headers
+	})
+}
+
 export const GET: RequestHandler = async ({ url, fetch, request }) => {
 	const url_param = url.searchParams.get("url")
 
@@ -66,29 +112,17 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		return text("invalid url parameter", { status: 400 })
 	}
 
-	// handle disk cache with stale-while-revalidate
 	const cache_hit = await get_cached_file(url_param)
 	if (cache_hit) {
 		const { data, item } = cache_hit
 		const if_none_match = request.headers.get("if-none-match")
 		const is_stale = is_stale_but_valid(item)
 
-		// console.debug(`favicon cache hit for ${url_param}:`, {
-		// 	is_stale,
-		// 	expires: item.expires,
-		// 	now: Date.now(),
-		// 	expires_in: item.expires ? item.expires - Date.now() : null,
-		// 	stale_in: item.stale_after ? item.stale_after - Date.now() : null
-		// })
-
-		// trigger background refresh for stale content once
 		if (is_stale) {
 			refresh_favicon_in_background(url_param, fetch).catch(console.error)
 		}
 
-		// handle conditional requests
 		if (item.etag && if_none_match === item.etag) {
-			// not modified
 			return new Response(null, {
 				status: 304,
 				headers: {
@@ -102,30 +136,26 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		}
 
 		if (!data) {
-			// return cached content (data or empty)
 			return create_empty_response(url_param, is_stale ? "STALE" : "HIT")
 		}
 
-		return new Response(data, {
-			status: 200,
-			headers: {
-				...response_headers(item, is_stale),
-				"x-disk-cache": is_stale ? "STALE" : "HIT"
-			}
+		return await compressed_response({
+			data,
+			item,
+			request,
+			is_stale
 		})
 	}
 
-	// not in cache, fetch it
 	const fetch_result = await fetch_and_cache_favicon(url_param, fetch)
 	if (!fetch_result) {
 		return create_empty_response(url_param)
 	}
 
-	return new Response(fetch_result.data, {
-		status: 200,
-		headers: {
-			...response_headers(fetch_result.item),
-			"x-disk-cache": "MISS"
-		}
+	return await compressed_response({
+		data: fetch_result.data,
+		item: fetch_result.item,
+		request,
+		is_stale: false
 	})
 }
