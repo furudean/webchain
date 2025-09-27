@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Node } from "$lib/node"
+	import type { DisplayNode } from "$lib/node"
 	import { page } from "$app/state"
 	import Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
@@ -9,7 +9,7 @@
 		nominations_limit,
 		graph_component
 	}: {
-		nodes: Node[]
+		nodes: DisplayNode[]
 		nominations_limit: number | null
 		graph_component: Graph
 	} = $props()

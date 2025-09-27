@@ -13,7 +13,7 @@ export interface CrawledNode {
 	html_metadata: HtmlMetadata | null
 }
 
-export interface Node extends CrawledNode {
+export interface DisplayNode extends CrawledNode {
 	url: URL
 	generated_color: string
 	label: string

@@ -1,8 +1,8 @@
 import type GraphType from "graphology"
-import type { Node } from "$lib/node"
+import type { DisplayNode } from "$lib/node"
 
 export function build_graph(
-	hashmap: Map<string, Node>,
+	hashmap: Map<string, DisplayNode>,
 	positions: Map<string, { x: number; y: number }>,
 	Graph: typeof GraphType
 ): GraphType {

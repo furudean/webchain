@@ -4,7 +4,7 @@
 	import type { AnimateOptions } from "sigma/utils"
 	import type GraphType from "graphology"
 	import { calculate_tree_layout, build_graph } from "$lib/graph"
-	import type { Node } from "$lib/node"
+	import type { DisplayNode } from "$lib/node"
 	import {
 		hovered_node,
 		graph as graph_store,
@@ -14,7 +14,7 @@
 	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
 	import { getCameraStateToFitViewportToNodes } from "@sigma/utils"
 
-	let { nodes }: { nodes: Node[] } = $props()
+	let { nodes }: { nodes: DisplayNode[] } = $props()
 
 	const highlighted_node = $derived(page.state.node)
 	const display_node = $derived($hovered_node || highlighted_node)

@@ -1,11 +1,11 @@
 import type { PageServerLoad } from "./$types"
-import type { CrawledNode, Node } from "$lib/node"
+import type { CrawledNode, DisplayNode } from "$lib/node"
 import { string_to_color } from "$lib/color"
 
 export const load: PageServerLoad = async ({
 	fetch
 }): Promise<{
-	nodes: Node[]
+	nodes: DisplayNode[]
 	nominations_limit: number | null
 	start: Date | null
 	end: Date | null
