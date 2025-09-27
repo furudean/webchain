@@ -27,10 +27,25 @@ export async function fetch_and_cache_favicon(
 		item: CachedItem
 	} | null> => {
 		try {
-			const page_response = await fetch(url_param, {
-				redirect: "follow",
-				headers: request_headers
-			})
+			const controller = new AbortController()
+			const timeout = setTimeout(() => controller.abort(), 10_000)
+
+			let page_response: Response
+			try {
+				page_response = await fetch(url_param, {
+					redirect: "follow",
+					headers: request_headers,
+					signal: controller.signal
+				})
+			} catch (err) {
+				if ((err as Error).name === "AbortError") {
+					console.log(`fetch for ${url_param} timed out`)
+					return null
+				}
+				throw err
+			} finally {
+				clearTimeout(timeout)
+			}
 
 			if (!page_response.ok) {
 				console.log(
