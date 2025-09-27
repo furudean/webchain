@@ -31,7 +31,7 @@
 	function update_camera(camera: Camera): void {
 		const size = `${40 / camera.ratio}px`
 		graph_element.style.backgroundSize = `${size} ${size}`
-		const transparency = Math.max(0.05, 0.6 / camera.ratio)
+		const transparency = Math.max(0.05, 0.3 / camera.ratio)
 		graph_element.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
 
 		const pos_x = `${50 - (camera.x * 100) / camera.ratio}%`
