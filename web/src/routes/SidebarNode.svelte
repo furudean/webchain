@@ -44,7 +44,6 @@
 	class:highlighted={node.at === highlighted_node}
 	class:hovered={node.at === $hovered_node}
 	style:margin-left="{node.depth}ch"
-	aria-describedby="{node.hash}-desc"
 >
 	<details
 		open={node.at === highlighted_node}
@@ -53,7 +52,6 @@
 	>
 		<summary
 			class="node-header"
-			id="{node.hash}-desc"
 			onmouseenter={hover_in}
 			onmouseleave={hover_out}
 			onfocusin={hover_in}
