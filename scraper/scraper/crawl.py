@@ -7,6 +7,7 @@ from time import time
 
 from bs4 import BeautifulSoup, Tag
 from bs4.element import PageElement
+from ordered_set import OrderedSet
 
 from scraper.http import get_session, load_page_html
 
@@ -22,6 +23,9 @@ class HtmlMetadata:
 class CrawledNode:
     at: str
     children: list[str]
+    """valid nominations"""
+    references: list[str]
+    """nominations that were already a part of the graph or exceeded the nominations limit"""
     parent: str | None
     depth: int
     indexed: bool
@@ -55,14 +59,13 @@ def is_valid_nomination(tag: Tag) -> bool:
     return False
 
 
-def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> list[str] | None:
+def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
     """
-    extract webchain nominations from html, but only if it's a valid webchain node.
+    extract valid webchain nominations from html
     """
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
 
-    if seen is None:
-        seen = set()
+    hrefs: OrderedSet[str] = OrderedSet([])
 
     # look for the webchain declaration link in the html. we're permissive, so
     # we search the entire document, not just the head.
@@ -78,16 +81,16 @@ def get_node_nominations(html: str, root: str, seen: set[str] | None = None) -> 
         or webchain_href is None
         or normalize_url(webchain_href) != normalize_url(root)
     ):
-        return None
+        return hrefs
 
     nominations = soup.find_all(is_valid_nomination)
 
-    hrefs = [
-        str(tag.get('href'))
-        for tag in nominations
-        if isinstance(tag, Tag)
-        and tag.get('href') not in seen  # any previously seen urls are already a part of the graph
-    ]
+    for tag in nominations:
+        if not isinstance(tag, Tag):
+            continue
+        href = tag.get('href')
+        if isinstance(href, str):
+            hrefs.add(href)
 
     return hrefs
 
@@ -173,13 +176,11 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
     async def process_node(at: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
         nonlocal nominations_limit
 
-        if at in seen:
-            return []
-
         seen.add(at)
         html = await load_page_html(at, referrer=parent, session=session)
-        nominations = None
-        html_metadata = None
+        nominations: list[str] = []
+        references: list[str] = []
+        html_metadata: HtmlMetadata | None = None
 
         if depth == 0:
             if html is None:
@@ -193,15 +194,19 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
                 )
 
         if html:
-            nominations = get_node_nominations(html, root_url, seen)
-            if nominations is not None and nominations_limit != 0:
-                nominations = nominations[:nominations_limit]
+            node_nominations = get_raw_nominations(html, root_url)
+            nominations = list(node_nominations.difference(seen))
+            extra_nominations = nominations[nominations_limit:]
+            nominations = nominations[:nominations_limit]
+
+            references = list(node_nominations.intersection(seen).union(extra_nominations))
 
             html_metadata = get_html_metadata(html)
 
         node = CrawledNode(
             at=at,
-            children=nominations or [],
+            children=nominations,
+            references=references,
             parent=parent,
             depth=depth,
             indexed=html is not None,

@@ -32,6 +32,7 @@ async def load_page_html(
         if referrer is not None:
             headers['Referer'] = referrer
 
+        logger.debug(f'get {url}')
         async with session.get(
             url, timeout=aiohttp.ClientTimeout(total=5), headers=headers
         ) as response:

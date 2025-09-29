@@ -12,6 +12,7 @@ dependencies = [
 	"beautifulsoup4",
 	"click~=8.2.1",
 	"lxml~=6.0",
+	"ordered-set>=4.1.0",
 	"tenacity~=9.1.2",
 ]
 
