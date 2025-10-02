@@ -3,20 +3,14 @@ from scraper.crawl import CrawlResponse, CrawledNode
 
 # This is currently a simple version of this. it answers the question: "do we need to make a new history entry?". the answer is YES if nodes have been added, deleted, changed, or are offline
 # In the future, I would like to improve this so that we are logging WHAT changes are being made
-async def compareState(resp1: CrawlResponse, resp2: CrawlResponse) -> CrawlResponse | None:
+async def compareState(
+    old_response: CrawlResponse, new_response: CrawlResponse
+) -> CrawlResponse | None:
     """
     Compare two CrawlResponse objects and detect changes.
     Returns a log (list of changed nodes) if changes are detected, otherwise None.
     """
     CHANGEFLAG = 0
-
-    # Determine which response is older/newer based on 'end' timestamp
-    if resp1.end >= resp2.end:
-        old_response = resp2
-        new_response = resp1
-    else:
-        old_response = resp1
-        new_response = resp2
 
     # check if nodes have been added or deleted
     if len(new_response.nodes) != len(old_response.nodes):
@@ -35,12 +29,14 @@ async def compareState(resp1: CrawlResponse, resp2: CrawlResponse) -> CrawlRespo
         if i in mark_not_indexed:
             continue
         else:
-            if i.first_seen is None:
-                i.first_seen = new_response.end
-                i.last_updated = new_response.end
             old_node_index = find_node(old_response.nodes, i.at)
             old_node = old_response.nodes[old_node_index] if old_node_index != -1 else -1
             result = nodeCompare(i, old_node)
+            # Only set first_seen if None (do not overwrite)
+            if i.first_seen is None:
+                i.first_seen = new_response.end
+
+            # Update last_updated only if node has changed
             if result != [0, 0, 0] and result != [0, 0, 0, []]:
                 if len(result) > 3:
                     for x in result[3]:
@@ -101,10 +97,10 @@ def nodeCompare(new_node: CrawledNode, old_node: CrawledNode) -> list[int]:
         if new_node.indexed == False:
             retList.append(new_node.children)
             # if old_node.indexed == True:
-                # i.e is it offline / unreachable now but wasnt in past
-                # retList[2] = 1
+            # i.e is it offline / unreachable now but wasnt in past
+            # retList[2] = 1
         # i.e is it offline / unreachable in past but online now
         # if new_node.indexed == True and old_node.indexed == False:
-            # retList[2] = 2
+        # retList[2] = 2
 
         return retList
