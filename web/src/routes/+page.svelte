@@ -49,7 +49,7 @@
 	></Sidebar>
 
 	{#if data.start && data.end}
-		<a href="/crawler/data.json">
+		<a href="/crawler/current.json">
 			last crawled <time datetime={data.start.toISOString()}
 				>{new Date(data.start)
 					.toLocaleString("en-US", {
