@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({
 	start: Date | null
 	end: Date | null
 }> => {
-	const request = await fetch("/crawler/data.json")
+	const request = await fetch("/crawler/current.json")
 
 	if (!request.ok) {
 		throw new Error("Failed to fetch data")
