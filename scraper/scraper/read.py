@@ -41,8 +41,7 @@ async def compareState(dict1:dict, dict2:dict):
     OldTable = StateTable()
     NewTable = StateTable()
 
-
-    if dict1.end >= dict2.end:
+    if dict1["end"] >= dict2["end"]:
         OldTable.fromData(dict2)
         NewTable.fromData(dict1)
     else:
@@ -71,7 +70,7 @@ async def compareState(dict1:dict, dict2:dict):
         result = nodeCompare(i, OldTable)
         if result != [0,0,0]:
             if len(result)>3:
-                for i in result[4]:
+                for i in result[3]:
                     mark_not_indexed.append(i)
             i.last_updated = NewTable.end
             # if something changed even once, we know time to make a new state
@@ -138,7 +137,7 @@ def nodeCompare(new_node:Node, oldTable: StateTable):
             retList[1] = 1
 
         if new_node.indexed == False:
-            retList[4] = new_node.children
+            retList.append(new_node.children)
             if old_node.indexed == True:
                 # i.e is it offline / unreachable now but wasnt in past
                 retList[2] = 1
