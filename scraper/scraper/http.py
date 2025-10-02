@@ -1,7 +1,7 @@
 import logging
 
 import aiohttp
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 logger = logging.getLogger()
 
@@ -18,8 +18,8 @@ class InvalidContentType(Exception):
 
 
 @retry(
-    wait=wait_exponential(),
-    stop=stop_after_attempt(5),
+    wait=wait_fixed(2),
+    stop=stop_after_attempt(0),
     retry_error_callback=lambda state: None,  # return None if retries fail
 )
 async def load_page_html(

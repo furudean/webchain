@@ -30,6 +30,8 @@ class CrawledNode:
     depth: int
     indexed: bool
     html_metadata: HtmlMetadata | None
+    first_seen: str | None = None
+    last_updated: str | None = None
 
 
 def validate_uri(x: str) -> bool:

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import json as jjson
 import time
 
+
 async def read_chain_into_table(root: str) -> StateTable:
     T = StateTable()
 
@@ -17,14 +18,15 @@ async def read_chain_into_table(root: str) -> StateTable:
         T.insert(i)
     return T
 
+
 def crawled_node_to_node(to_convert: CrawledNode) -> Node:
     # Convert HTMLMetadata class instance to dict
     metadata_dict = {}
 
     if to_convert.html_metadata is not None:
-        metadata_dict.update({"title" : to_convert.html_metadata.title})
-        metadata_dict.update({"description" : to_convert.html_metadata.description })
-        metadata_dict.update({"theme_color" : to_convert.html_metadata.theme_color})
+        metadata_dict.update({'title': to_convert.html_metadata.title})
+        metadata_dict.update({'description': to_convert.html_metadata.description})
+        metadata_dict.update({'theme_color': to_convert.html_metadata.theme_color})
 
     # Make sure all children are unique
     child_list = []
@@ -36,12 +38,12 @@ def crawled_node_to_node(to_convert: CrawledNode) -> Node:
 
 # This is currently a simple version of this. it answers the question: "do we need to make a new history entry?". the answer is YES if nodes have been added, deleted, changed, or are offline
 # In the future, I would like to improve this so that we are logging WHAT changes are being made
-async def compareState(dict1:dict, dict2:dict):
+async def compareState(dict1: dict, dict2: dict):
     CHANGEFLAG = 0
     OldTable = StateTable()
     NewTable = StateTable()
 
-    if dict1["end"] >= dict2["end"]:
+    if dict1['end'] >= dict2['end']:
         OldTable.fromData(dict2)
         NewTable.fromData(dict1)
     else:
@@ -64,24 +66,29 @@ async def compareState(dict1:dict, dict2:dict):
     changed_nodes = []
     mark_not_indexed = []
     for i in NewTable.nodes:
-        if i.first_seen is None:
-            i.first_seen = NewTable.end
-            i.last_updated = NewTable.end
-        result = nodeCompare(i, OldTable)
-        if result != [0,0,0]:
-            if len(result)>3:
-                for i in result[3]:
-                    mark_not_indexed.append(i)
-            i.last_updated = NewTable.end
-            # if something changed even once, we know time to make a new state
-            CHANGEFLAG = 1
-            # print(f"CHANGE DETECTED AT NODE\n{i}")
-            changed_nodes.append(i)
+        if i in mark_not_indexed:
+            continue
+        else:
+            if i.first_seen is None:
+                i.first_seen = NewTable.end
+                i.last_updated = NewTable.end
+            old_node_index = OldTable.find(i.at)
+            old_node = OldTable.nodes[old_node_index]
+            result = nodeCompare(i, old_node)
+            if result != [0, 0, 0] and result != [0, 0, 0, []]:
+                if len(result) > 3:
+                    for i in result[3]:
+                        mark_not_indexed.append(i)
+                i.last_updated = NewTable.end
+                # if something changed even once, we know time to make a new state
+                CHANGEFLAG = 1
+                # print(f'CHANGE DETECTED AT NODE\n{i}\n')
+                # print(f'result for {i} was {result}\n')
+                changed_nodes.append(i)
 
     for i in mark_not_indexed:
         mark = NewTable[NewTable.find(i)]
         mark.indexed = False
-
 
     if CHANGEFLAG:
         return NewTable.log()
@@ -110,16 +117,14 @@ async def compareState(dict1:dict, dict2:dict):
 #   is 1 if the crawled node was online and is now offline
 #   is 2 if the crawled node was offline and is now online again
 # EXCEPT if the crawled node is not in the old table, then it is a new node and retList is [-1,-1,-1]
-def nodeCompare(new_node:Node, oldTable: StateTable):
-    retList = [0,0,0]
-    old_node_index = oldTable.find(new_node.url)
-    old_node = oldTable.nodes[old_node_index]
+def nodeCompare(new_node: CrawledNode, old_node: CrawledNode):
+    retList = [0, 0, 0]
     # print(f"new: {new_node}")
     # This means node did not exist in old table (i.e new node).
     #
     if old_node == -1:
         # print ("old: NOT FOUND")
-        return [-1,-1,-1]
+        return [-1, -1, -1]
     # else Node DID exist in old table, confirm that parents/children are same, and that indexed = true in new one.
     else:
         # print(f"old: {old_node}")
@@ -127,7 +132,7 @@ def nodeCompare(new_node:Node, oldTable: StateTable):
         for i in new_node.children:
             if i not in old_node.children:
                 # print(f"{i} not in list {old_node.children}")
-                #returns position of child thats changed
+                # returns position of child thats changed
                 ChangedChildren.append(new_node.children.index(i))
                 retList[0] = ChangedChildren
             else:
@@ -142,29 +147,30 @@ def nodeCompare(new_node:Node, oldTable: StateTable):
                 # i.e is it offline / unreachable now but wasnt in past
                 retList[2] = 1
         # i.e is it offline / unreachable in past but online now
-        if (new_node.indexed == True and old_node.indexed == False):
+        if new_node.indexed == True and old_node.indexed == False:
             retList[2] = 2
 
         return retList
 
 
-def Serialize(T:StateTable, filename:str|None = None) -> str:
+def Serialize(T: StateTable, filename: str | None = None) -> str:
     if filename:
         location = filename
-        with open(f'../web/static/crawler/{location}','w') as f:
-            jjson.dump(T.log(),f)
+        with open(f'../web/static/crawler/{location}', 'w') as f:
+            jjson.dump(T.log(), f)
     else:
         location = 'table.json'
-        with open(f'../web/static/crawler/{location}','w') as f:
-            jjson.dump(T.log(),f)
+        with open(f'../web/static/crawler/{location}', 'w') as f:
+            jjson.dump(T.log(), f)
     return location
 
-def Deserialize(filename: str|None = None) -> StateTable:
+
+def Deserialize(filename: str | None = None) -> StateTable:
     T = StateTable()
     if filename:
-        with open(f'../web/static/crawler/{filename}.json','r') as f:
+        with open(f'../web/static/crawler/{filename}.json', 'r') as f:
             T.fromData(jjson.load(f))
     else:
-        with open(f'../web/static/crawler/table.json','r') as f:
+        with open(f'../web/static/crawler/table.json', 'r') as f:
             T.fromData(jjson.load(f))
     return T
