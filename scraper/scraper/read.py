@@ -98,13 +98,13 @@ def nodeCompare(new_node: CrawledNode, old_node: CrawledNode) -> list[int]:
         if new_node.parent != old_node.parent:
             retList[1] = 1
 
-        if new_node.indexed == False:
-            retList.append(new_node.children)
-            if old_node.indexed == True:
-                # i.e is it offline / unreachable now but wasnt in past
-                retList[2] = 1
-        # i.e is it offline / unreachable in past but online now
-        if new_node.indexed == True and old_node.indexed == False:
-            retList[2] = 2
+        # if new_node.indexed == False:
+        #     retList.append(new_node.children)
+        #     if old_node.indexed == True:
+        #         # i.e is it offline / unreachable now but wasnt in past
+        #         retList[2] = 1
+        # # i.e is it offline / unreachable in past but online now
+        # if new_node.indexed == True and old_node.indexed == False:
+        #     retList[2] = 2
 
         return retList
