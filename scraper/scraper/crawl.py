@@ -1,6 +1,5 @@
 import itertools
 from urllib.parse import urlparse
-from dataclasses import dataclass
 import asyncio
 from datetime import datetime, timezone
 from time import time
@@ -10,28 +9,7 @@ from bs4.element import PageElement
 from ordered_set import OrderedSet
 
 from scraper.http import get_session, load_page_html
-
-
-@dataclass
-class HtmlMetadata:
-    title: str | None
-    description: str | None
-    theme_color: str | None
-
-
-@dataclass
-class CrawledNode:
-    at: str
-    children: list[str]
-    """valid nominations"""
-    references: list[str]
-    """nominations that were already a part of the graph or exceeded the nominations limit"""
-    parent: str | None
-    depth: int
-    indexed: bool
-    html_metadata: HtmlMetadata | None
-    first_seen: str | None = None
-    last_updated: str | None = None
+from scraper.contracts import CrawlResponse, CrawledNode
 
 
 def validate_uri(x: str) -> bool:
@@ -104,26 +82,6 @@ def handle_meta_element(node: Tag | PageElement | None) -> str | None:
     return None
 
 
-def get_html_metadata(html: str) -> HtmlMetadata | None:
-    soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
-
-    if not soup.head:
-        return None
-
-    metadata = HtmlMetadata(title=None, description=None, theme_color=None)
-
-    title_element = soup.head.title
-    metadata.title = title_element.string if title_element else None
-    metadata.description = handle_meta_element(
-        soup.head.find('meta', attrs={'name': 'description'})
-    )
-    metadata.theme_color = handle_meta_element(
-        soup.head.find('meta', attrs={'name': 'theme-color'})
-    )
-
-    return metadata
-
-
 def get_nominations_limit(html: str, default: int | None = None) -> int | None:
     soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
 
@@ -147,14 +105,6 @@ def get_nominations_limit(html: str, default: int | None = None) -> int | None:
 
 def to_iso_timestamp(x: float) -> str:
     return datetime.fromtimestamp(x, tz=timezone.utc).isoformat()
-
-
-@dataclass
-class CrawlResponse:
-    nodes: list[CrawledNode]
-    nominations_limit: int
-    start: str
-    end: str
 
 
 async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
@@ -182,7 +132,6 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
         html = await load_page_html(at, referrer=parent, session=session)
         nominations: list[str] = []
         references: list[str] = []
-        html_metadata: HtmlMetadata | None = None
 
         if depth == 0:
             if html is None:
@@ -203,8 +152,6 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
             references = list(node_nominations.intersection(seen).union(extra_nominations))
 
-            html_metadata = get_html_metadata(html)
-
         node = CrawledNode(
             at=at,
             children=nominations,
@@ -212,7 +159,6 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             parent=parent,
             depth=depth,
             indexed=html is not None,
-            html_metadata=html_metadata,
         )
         nodes = [node]
 

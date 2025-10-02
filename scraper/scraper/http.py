@@ -18,8 +18,8 @@ class InvalidContentType(Exception):
 
 
 @retry(
-    wait=wait_fixed(2),
-    stop=stop_after_attempt(0),
+    wait=wait_fixed(3),
+    stop=stop_after_attempt(3),
     retry_error_callback=lambda state: None,  # return None if retries fail
 )
 async def load_page_html(

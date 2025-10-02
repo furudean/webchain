@@ -2,13 +2,13 @@ import asyncio
 import io
 import os
 import sys
-import json as jjson
 from functools import wraps
 import logging
 import click
 
 from scraper.crawl import crawl
 from scraper.read import compareState
+from scraper.metadata import enrich_with_metadata
 from scraper.serialize import deserialize, serialize
 
 
@@ -84,3 +84,18 @@ async def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
 
     ret = serialize(data, indent='\t')
     print(ret)
+
+
+@webchain.command
+@click.argument('file', required=True, type=click.File())
+@asyncio_click
+async def enrich(file: io.TextIOWrapper) -> None:
+    try:
+        webchain = deserialize(file.read())
+    except Exception as e:
+        print(f'error: {e}')
+        sys.exit(1)
+
+    enriched = await enrich_with_metadata(webchain)
+    serialized = serialize(enriched)
+    print(serialized)
