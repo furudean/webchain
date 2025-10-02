@@ -1,111 +1,68 @@
-from scraper.crawl import crawl, CrawledNode, HtmlMetadata
-from scraper.node import Node
-from scraper.state import StateTable
-from datetime import datetime, timezone
-import json as jjson
-import time
-
-
-async def read_chain_into_table(root: str) -> StateTable:
-    T = StateTable()
-
-    crawled = await crawl(root)
-    saved_nodes = []
-    for i in crawled.nodes:
-        saved_nodes.append(crawled_node_to_node(i))
-
-    for i in saved_nodes:
-        T.insert(i)
-    return T
-
-
-def crawled_node_to_node(to_convert: CrawledNode) -> Node:
-    # Convert HTMLMetadata class instance to dict
-    metadata_dict = {}
-
-    if to_convert.html_metadata is not None:
-        metadata_dict.update({'title': to_convert.html_metadata.title})
-        metadata_dict.update({'description': to_convert.html_metadata.description})
-        metadata_dict.update({'theme_color': to_convert.html_metadata.theme_color})
-
-    # Make sure all children are unique
-    child_list = []
-    for x in to_convert.children:
-        if x not in child_list:
-            child_list.append(x)
-    return Node(to_convert.at, to_convert.parent, child_list, to_convert.indexed, metadata_dict)
+from scraper.crawl import CrawlResponse, CrawledNode
 
 
 # This is currently a simple version of this. it answers the question: "do we need to make a new history entry?". the answer is YES if nodes have been added, deleted, changed, or are offline
 # In the future, I would like to improve this so that we are logging WHAT changes are being made
-async def compareState(dict1: dict, dict2: dict):
+async def compareState(resp1: CrawlResponse, resp2: CrawlResponse) -> CrawlResponse | None:
+    """
+    Compare two CrawlResponse objects and detect changes.
+    Returns a log (list of changed nodes) if changes are detected, otherwise None.
+    """
     CHANGEFLAG = 0
-    OldTable = StateTable()
-    NewTable = StateTable()
 
-    if dict1['end'] >= dict2['end']:
-        OldTable.fromData(dict2)
-        NewTable.fromData(dict1)
+    # Determine which response is older/newer based on 'end' timestamp
+    if resp1.end >= resp2.end:
+        old_response = resp2
+        new_response = resp1
     else:
-        OldTable.fromData(dict1)
-        NewTable.fromData(dict2)
-
-    # crawl chain anew, save into table
-    # could rewrite this to load NewTable from some .json if necessary
-    # start = time.time()
-    # NewTable = await read_chain_into_table('https://webchain.milkmedicine.net')
-    # end = time.time()
-    # NewTable.setStart(datetime.fromtimestamp(start, tz=timezone.utc).isoformat())
-    # NewTable.setEnd(datetime.fromtimestamp(end, tz=timezone.utc).isoformat())
+        old_response = resp1
+        new_response = resp2
 
     # check if nodes have been added or deleted
-    if len(NewTable.nodes) != len(OldTable.nodes):
+    if len(new_response.nodes) != len(old_response.nodes):
         CHANGEFLAG = 1
 
-    # compare new nodes to old table
+    # Helper to find node by 'at' in a node list
+    def find_node(nodes, at):
+        for idx, node in enumerate(nodes):
+            if node.at == at:
+                return idx
+        return -1
+
     changed_nodes = []
     mark_not_indexed = []
-    for i in NewTable.nodes:
+    for i in new_response.nodes:
         if i in mark_not_indexed:
             continue
         else:
             if i.first_seen is None:
-                i.first_seen = NewTable.end
-                i.last_updated = NewTable.end
-            old_node_index = OldTable.find(i.at)
-            old_node = OldTable.nodes[old_node_index]
+                i.first_seen = new_response.end
+                i.last_updated = new_response.end
+            old_node_index = find_node(old_response.nodes, i.at)
+            old_node = old_response.nodes[old_node_index] if old_node_index != -1 else -1
             result = nodeCompare(i, old_node)
             if result != [0, 0, 0] and result != [0, 0, 0, []]:
                 if len(result) > 3:
-                    for i in result[3]:
-                        mark_not_indexed.append(i)
-                i.last_updated = NewTable.end
-                # if something changed even once, we know time to make a new state
+                    for x in result[3]:
+                        mark_not_indexed.append(x)
+                i.last_updated = new_response.end
                 CHANGEFLAG = 1
-                # print(f'CHANGE DETECTED AT NODE\n{i}\n')
-                # print(f'result for {i} was {result}\n')
                 changed_nodes.append(i)
 
     for i in mark_not_indexed:
-        mark = NewTable[NewTable.find(i)]
-        mark.indexed = False
+        idx = find_node(new_response.nodes, i.at)
+        if idx != -1:
+            new_response.nodes[idx].indexed = False
 
     if CHANGEFLAG:
-        return NewTable.log()
+        return CrawlResponse(
+            start=new_response.start,
+            end=new_response.end,
+            nodes=new_response.nodes,
+            nominations_limit=new_response.nominations_limit,
+        )
 
-        # # Return Newtable for patch to print
-        # # save it as current
-        # Serialize(NewTable, "current.json")
-
-        # # log old table as timestamped ver
-        # # to do: process name better
-        # # ds = datetime.fromisoformat(OldTable.end)
-        # # print(f"ds: {ds}")
-
-        # Serialize(OldTable, f"{OldTable.end}.json")
-
-    if not CHANGEFLAG:
-        return 0
+    return None
 
 
 # nodeCompare
@@ -117,7 +74,7 @@ async def compareState(dict1: dict, dict2: dict):
 #   is 1 if the crawled node was online and is now offline
 #   is 2 if the crawled node was offline and is now online again
 # EXCEPT if the crawled node is not in the old table, then it is a new node and retList is [-1,-1,-1]
-def nodeCompare(new_node: CrawledNode, old_node: CrawledNode):
+def nodeCompare(new_node: CrawledNode, old_node: CrawledNode) -> list[int]:
     retList = [0, 0, 0]
     # print(f"new: {new_node}")
     # This means node did not exist in old table (i.e new node).
@@ -151,26 +108,3 @@ def nodeCompare(new_node: CrawledNode, old_node: CrawledNode):
             retList[2] = 2
 
         return retList
-
-
-def Serialize(T: StateTable, filename: str | None = None) -> str:
-    if filename:
-        location = filename
-        with open(f'../web/static/crawler/{location}', 'w') as f:
-            jjson.dump(T.log(), f)
-    else:
-        location = 'table.json'
-        with open(f'../web/static/crawler/{location}', 'w') as f:
-            jjson.dump(T.log(), f)
-    return location
-
-
-def Deserialize(filename: str | None = None) -> StateTable:
-    T = StateTable()
-    if filename:
-        with open(f'../web/static/crawler/{filename}.json', 'r') as f:
-            T.fromData(jjson.load(f))
-    else:
-        with open(f'../web/static/crawler/table.json', 'r') as f:
-            T.fromData(jjson.load(f))
-    return T

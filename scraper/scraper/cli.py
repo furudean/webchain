@@ -8,9 +8,8 @@ import logging
 import click
 
 from scraper.crawl import crawl
-from scraper.read import read_chain_into_table, compareState
-from scraper.serialize import serialize
-from scraper.state import StateTable
+from scraper.read import compareState
+from scraper.serialize import deserialize, serialize
 
 
 def asyncio_click(func):
@@ -65,16 +64,16 @@ async def json(url: str):
 @click.argument('path1', required=True, type=click.File())
 @click.argument('path2', required=True, type=click.File())
 @asyncio_click
-async def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> str | int:
+async def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
     data = 0
 
     try:
-        res1 = jjson.loads(path1.read())
+        res1 = deserialize(path1.read())
     except:
         print(f'{path1} not valid JSON. Try again')
 
     try:
-        res2 = jjson.loads(path2.read())
+        res2 = deserialize(path2.read())
     except:
         print(f'{path2} not valid JSON. Try again')
 
@@ -83,5 +82,5 @@ async def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> str | int:
     if not data:
         sys.exit(1)
 
-    ret = jjson.dumps(data, indent='\t')
+    ret = serialize(data, indent='\t')
     print(ret)
