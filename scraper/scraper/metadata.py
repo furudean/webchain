@@ -29,7 +29,7 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
 
 
 async def fetch_and_update_metadata(
-    node: CrawledNode, session: aiohttp.ClientSession
+    node: CrawledNode | CrawledNodeWithMetadata, session: aiohttp.ClientSession
 ) -> CrawledNodeWithMetadata:
     html_metadata: HtmlMetadata | None = None
 
@@ -39,7 +39,11 @@ async def fetch_and_update_metadata(
         if html:
             html_metadata = get_html_metadata(html)
 
-    return CrawledNodeWithMetadata(**dataclasses.asdict(node), html_metadata=html_metadata)
+    return CrawledNodeWithMetadata(
+        **dataclasses.asdict(node),
+        # keep old metadata if fetching failed
+        html_metadata=html_metadata if html_metadata else getattr(node, 'html_metadata', None),
+    )
 
 
 async def enrich_with_metadata(crawl_response: CrawlResponse) -> CrawlResponse:
