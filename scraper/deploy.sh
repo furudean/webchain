@@ -9,5 +9,6 @@ scp dist/webchain_scraper-0.0.0-py3-none-any.whl webchain.milkmedicine.net:/root
 
 ssh webchain.milkmedicine.net "
 	uv tool install webchain_scraper-0.0.0-py3-none-any.whl --force && \
+	rm webchain_scraper-0.0.0-py3-none-any.whl && \
 	/root/crawl.sh
 "
