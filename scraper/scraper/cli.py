@@ -53,7 +53,7 @@ async def json(url: str):
         print(f'error: {e}')
         sys.exit(1)
 
-    serialized = serialize(crawled)
+    serialized = serialize(crawled, indent='\t')
     print(serialized)
 
 
