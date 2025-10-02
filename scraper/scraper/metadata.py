@@ -5,7 +5,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from scraper.http import get_session, load_page_html
 from scraper.crawl import CrawlResponse, handle_meta_element
-from scraper.contracts import CrawledNode, CrawledNodeWithMetadata, HtmlMetadata
+from scraper.contracts import CrawledNode, HtmlMetadata
 
 
 def get_html_metadata(html: str) -> HtmlMetadata | None:
@@ -29,21 +29,17 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
 
 
 async def fetch_and_update_metadata(
-    node: CrawledNode | CrawledNodeWithMetadata, session: aiohttp.ClientSession
-) -> CrawledNodeWithMetadata:
-    html_metadata: HtmlMetadata | None = None
+    node: CrawledNode | CrawledNode, session: aiohttp.ClientSession
+) -> CrawledNode:
+    node_dict = dataclasses.asdict(node)
 
     if node.indexed:
         html = await load_page_html(node.at, referrer=node.parent, session=session)
 
         if html:
-            html_metadata = get_html_metadata(html)
+            node_dict['html_metadata'] = get_html_metadata(html)
 
-    return CrawledNodeWithMetadata(
-        **dataclasses.asdict(node),
-        # keep old metadata if fetching failed
-        html_metadata=html_metadata if html_metadata else getattr(node, 'html_metadata', None),
-    )
+    return CrawledNode(**node_dict)
 
 
 async def enrich_with_metadata(crawl_response: CrawlResponse) -> CrawlResponse:

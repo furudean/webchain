@@ -2,6 +2,13 @@ from dataclasses import dataclass
 
 
 @dataclass
+class HtmlMetadata:
+    title: str | None
+    description: str | None
+    theme_color: str | None
+
+
+@dataclass
 class CrawledNode:
     at: str
     children: list[str]
@@ -11,23 +18,14 @@ class CrawledNode:
     parent: str | None
     depth: int
     indexed: bool
-
-
-@dataclass
-class HtmlMetadata:
-    title: str | None
-    description: str | None
-    theme_color: str | None
-
-
-@dataclass
-class CrawledNodeWithMetadata(CrawledNode):
+    first_seen: str | None = None
+    last_updated: str | None = None
     html_metadata: HtmlMetadata | None = None
 
 
 @dataclass
 class CrawlResponse:
-    nodes: list[CrawledNode] | list[CrawledNodeWithMetadata]
+    nodes: list[CrawledNode]
     nominations_limit: int
     start: str
     end: str

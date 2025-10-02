@@ -16,16 +16,11 @@ def serialize(crawled: CrawlResponse, **kwargs) -> str:
 
 def deserialize(data: str) -> CrawlResponse:
     obj = json.loads(data)
-    nodes = []
-    for node in obj['nodes']:
-        # Only pass arguments that exist in CrawledNode's __init__
-        valid_keys = {field.name for field in dataclasses.fields(CrawledNode)}
-        filtered_node = {k: v for k, v in node.items() if k in valid_keys}
-        nodes.append(CrawledNode(**filtered_node))
+    nodes = [CrawledNode(**node) for node in obj['nodes']]
 
     return CrawlResponse(
         nodes=nodes,
-        nominations_limit=obj.get('nominations_limit'),
-        start=obj.get('start'),
-        end=obj.get('end'),
+        nominations_limit=obj['nominations_limit'],
+        start=obj['start'],
+        end=obj['end'],
     )
