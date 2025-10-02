@@ -1,4 +1,7 @@
 from scraper.crawl import CrawlResponse, CrawledNode
+import logging
+
+logger = logging.getLogger()
 
 
 # This is currently a simple version of this. it answers the question: "do we need to make a new history entry?". the answer is YES if nodes have been added, deleted, changed, or are offline
@@ -12,13 +15,12 @@ async def compareState(
     """
     CHANGEFLAG = 0
 
-    if (response_1.end >= response_2.end):
+    if response_1.end >= response_2.end:
         old_response = response_2
         new_response = response_1
     else:
         old_response = response_1
         new_response = response_2
-
 
     # check if nodes have been added or deleted
     if len(new_response.nodes) != len(old_response.nodes):
@@ -51,7 +53,7 @@ async def compareState(
                         mark_not_indexed.append(x)
                 i.last_updated = new_response.end
                 CHANGEFLAG = 1
-                print(f"Change detected at {i}")
+                logger.info(f'Change detected at {i}')
                 changed_nodes.append(i)
 
     for i in mark_not_indexed:
