@@ -28,21 +28,19 @@ async def compareState(
     for i in new_response.nodes:
         if not i.first_seen:
             i.first_seen = new_response.end
-        # Use 'at' for comparison instead of object equality
-        if any(i.at == x.at for x in mark_not_indexed):
+        if i in mark_not_indexed:
             continue
         else:
             old_node_index = find_node(old_response.nodes, i.at)
             old_node = old_response.nodes[old_node_index] if old_node_index != -1 else -1
             result = nodeCompare(i, old_node)
+            # Only set first_seen if None (do not overwrite)
+
             # Update last_updated only if node has changed
             if result != [0, 0, 0] and result != [0, 0, 0, []]:
                 if len(result) > 3:
-                    # Mark children by 'at' for later processing
                     for x in result[3]:
-                        child_idx = find_node(new_response.nodes, x)
-                        if child_idx != -1:
-                            mark_not_indexed.append(new_response.nodes[child_idx])
+                        mark_not_indexed.append(x)
                 i.last_updated = new_response.end
                 CHANGEFLAG = 1
                 changed_nodes.append(i)
@@ -74,20 +72,35 @@ async def compareState(
 # EXCEPT if the crawled node is not in the old table, then it is a new node and retList is [-1,-1,-1]
 def nodeCompare(new_node: CrawledNode, old_node: CrawledNode) -> list[int]:
     retList = [0, 0, 0]
+    # print(f"new: {new_node}")
+    # This means node did not exist in old table (i.e new node).
+    #
     if old_node == -1:
+        # print ("old: NOT FOUND")
         return [-1, -1, -1]
+    # else Node DID exist in old table, confirm that parents/children are same, and that indexed = true in new one.
     else:
+        # print(f"old: {old_node}")
         ChangedChildren = []
         for i in new_node.children:
             if i not in old_node.children:
-                ChangedChildren.append(i)  # Use child 'at' value
-        retList[0] = ChangedChildren if ChangedChildren else 0
+                # print(f"{i} not in list {old_node.children}")
+                # returns position of child thats changed
+                ChangedChildren.append(new_node.children.index(i))
+                retList[0] = ChangedChildren
+            else:
+                retList[0] = 0
+        # this could happen if the site is dropped by original parent but picked up by different one
         if new_node.parent != old_node.parent:
             retList[1] = 1
-        # Remove online/offline detection
-        # (do not compare new_node.indexed vs old_node.indexed)
-        # Detect other field changes (add more checks as needed)
-        # Example: if new_node.some_field != old_node.some_field: retList.append('field_changed')
-        if ChangedChildren:
-            retList.append(ChangedChildren)
+
+        if new_node.indexed == False:
+            retList.append(new_node.children)
+            # if old_node.indexed == True:
+            # i.e is it offline / unreachable now but wasnt in past
+            # retList[2] = 1
+        # i.e is it offline / unreachable in past but online now
+        # if new_node.indexed == True and old_node.indexed == False:
+        # retList[2] = 2
+
         return retList
