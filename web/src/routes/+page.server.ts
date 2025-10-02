@@ -10,24 +10,24 @@ export const load: PageServerLoad = async ({
 	start: Date | null
 	end: Date | null
 }> => {
-	const request = await fetch("/crawler/current.json")
+	const crawl_request = await fetch("/crawler/current.json")
+	const heartbeat_request = await fetch("/crawler/heartbeat.json")
 
-	if (!request.ok) {
+	if (!crawl_request.ok || !crawl_request.ok) {
 		throw new Error("Failed to fetch data")
 	}
 
 	try {
 		const {
 			nodes,
-			nominations_limit,
-			start,
-			end
+			nominations_limit
 		}: {
 			nodes: CrawledNode[]
 			nominations_limit: number
 			start: string
 			end: string
-		} = await request.json()
+		} = await crawl_request.json()
+		const { start, end } = await heartbeat_request.json()
 
 		const no_www = /^www\./i
 
