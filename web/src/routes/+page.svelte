@@ -17,10 +17,10 @@
 
 		if (!current_node) return
 
-		const params = new URLSearchParams()
-		params.set("node", current_node.url_param)
+		const new_url = new URL(page.url)
+		new_url.searchParams.set("node", current_node.url_param)
 
-		goto("?" + params.toString(), {
+		goto("?" + new_url.searchParams.toString(), {
 			state: {
 				node: current_node.at
 			},
