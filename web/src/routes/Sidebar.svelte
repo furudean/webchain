@@ -141,7 +141,7 @@
 		</p>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
-			node in the graph (please use url-safe encoding).
+			node in the webchain (please use url-safe encoding).
 		</p>
 	</details>
 
