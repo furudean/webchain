@@ -48,7 +48,7 @@
 		if (!renderer) return
 		nodes = typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
 		const camera_state = getCameraStateToFitViewportToNodes(renderer, nodes)
-		camera_state.ratio *= 1.1 // add some padding
+		camera_state.ratio *= 1.2 // add some padding
 		await renderer.getCamera()?.animate(camera_state, options)
 	}
 
@@ -99,40 +99,45 @@
 			},
 			labelSize: 10,
 			labelFont: "system-ui, sans-serif",
-			labelDensity: 0.7,
-			labelGridCellSize: 70,
+
 			labelRenderedSizeThreshold: 12,
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
-			stagePadding: 125,
-			// nodeReducer: (node, data) => {
-			// 	const res = { ...data }
-			// 	if (display_node) {
-			// 		if (
-			// 			node !== display_node &&
-			// 			!graph!.neighbors(display_node).includes(node)
-			// 		) {
-			// 			// Grey out other nodes
-			// 			res.color = "#d3d3d3"
-			// 			res.image = undefined
-			// 		}
-			// 	}
-			// 	return res
-			// },
-			edgeReducer: (edge, data) => {
+			nodeReducer: (node, data) => {
 				const res = { ...data }
-				if (display_node) {
-					const source = graph?.source(edge) // Get the source of the edge
-					const target = graph?.target(edge) // Get the target of the edge
+				if (highlighted_node || $hovered_node) {
+					const highlighted =
+						node === highlighted_node || node === $hovered_node
+					const is_neighbor = graph!
+						.neighbors(highlighted_node || $hovered_node)
+						.includes(node)
 
-					// Highlight edges connected to the display_node
-					if (target === display_node) {
-						res.color = nodes.find((n) => n.at === source)?.generated_color // Highlight neighbor edges
-					} else if (source === display_node) {
-						res.color = display_node_data!.generated_color // Highlight neighbor edges
+					if (!highlighted && !is_neighbor) {
+						// Grey out other nodes
+						res.color = "#d3d3d3"
+						res.image = undefined
 					}
 				}
+				return res
+			},
+			edgeReducer: (edge, data) => {
+				const res = { ...data }
+				if (highlighted_node || $hovered_node) {
+					const source = graph?.source(edge)
+					const target = graph?.target(edge)
+					const via_highlight =
+						source === highlighted_node || target === highlighted_node
+					const via_hover = source === $hovered_node || target === $hovered_node
 
+					if (via_highlight || via_hover) {
+						// set edge color to the color of the connected node
+						res.color = nodes.find(
+							(n) => n.at === (source || target)
+						)?.generated_color
+					} else {
+						res.color = "#eee" // Grey out other edges
+					}
+				}
 				return res
 			}
 		})
@@ -228,6 +233,9 @@
 		})
 		renderer.on("doubleClickStage", (e) => {
 			e.preventSigmaDefault()
+		})
+		renderer.on("resize", () => {
+			update_tooltip()
 		})
 
 		const camera = renderer.getCamera()
