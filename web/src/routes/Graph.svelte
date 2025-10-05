@@ -104,7 +104,39 @@
 			labelRenderedSizeThreshold: 12,
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
-			stagePadding: 125
+			stagePadding: 125,
+			nodeReducer: (node, data) => {
+				const res = { ...data }
+				if (display_node) {
+					if (
+						node !== display_node &&
+						!graph!.neighbors(display_node).includes(node)
+					) {
+						// Grey out other nodes
+						res.color = "#d3d3d3"
+						res.image = undefined
+					}
+				}
+				return res
+			},
+			edgeReducer: (edge, data) => {
+				const res = { ...data }
+				if (display_node) {
+					const source = graph?.source(edge) // Get the source of the edge
+					const target = graph?.target(edge) // Get the target of the edge
+
+					// Highlight edges connected to the display_node
+					if (target === display_node) {
+						res.color = nodes.find((n) => n.at === source)?.generated_color // Highlight neighbor edges
+					} else if (source === display_node) {
+						res.color = display_node_data!.generated_color // Highlight neighbor edges
+					} else {
+						res.color = "#d3d3d3" // Grey out other edges
+					}
+				}
+
+				return res
+			}
 		})
 
 		let dragged_node: string | null = null
@@ -229,6 +261,10 @@
 		for (const node of graph.nodes()) {
 			graph.setNodeAttribute(node, "highlighted", node === highlighted_node)
 		}
+
+		// Refresh the renderer and update the tooltip when display_node changes
+		renderer?.refresh()
+		update_tooltip()
 	})
 
 	let tooltip_style = $state({
@@ -255,12 +291,6 @@
 			transform: `translate(-50%, -50%) scale(${scale})`
 		}
 	}
-
-	$effect(() => {
-		if (!graph || !display_node) return
-
-		update_tooltip()
-	})
 </script>
 
 <div class="graph-container">
