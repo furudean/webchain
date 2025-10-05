@@ -130,7 +130,11 @@
 		</p>
 		<pre>
 &lt;a href="{page.url.href}"&gt;
-  &lt;img src="https://webchain.milkmedicine.net/button.png" height="31" width="88"&gt;
+	&lt;img
+		src="https://webchain.milkmedicine.net/button.png"
+		height="31"
+		width="88"
+	/&gt;
 &lt;/a&gt;
 		</pre>
 		<p>
