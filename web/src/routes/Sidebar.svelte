@@ -51,7 +51,7 @@
 			<li>
 				This page is the starting point of the <em>milkmedicine webchain</em>,
 				which is itself a webchain node. It nominates several other websites,
-				which you can see below.
+				which you may see below.
 			</li>
 			<li>
 				Nominated websites may add their nominations by adding markup to their
@@ -63,7 +63,7 @@
 			</li>
 		</ol>
 		<p>
-			Source code can be found <a
+			Source code may be found <a
 				href="https://github.com/furudean/webchain"
 				rel="external">on GitHub</a
 			>.
