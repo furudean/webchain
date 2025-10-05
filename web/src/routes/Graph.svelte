@@ -18,12 +18,13 @@
 
 	const highlighted_node = $derived(page.state.node)
 	const display_node = $derived($hovered_node || highlighted_node)
+	const display_node_data = $derived.by(() =>
+		display_node ? nodes.find((n) => n.at === display_node) : undefined
+	)
 
 	let graph: GraphType | undefined = $state()
 	let renderer: Sigma | undefined = $state()
 	let layout: ForceSupervisorType | undefined = $state()
-	let last_x: number | undefined = $state()
-	let last_y: number | undefined = $state()
 
 	let zoom_frame: number | null = null
 	let graph_element: HTMLElement
@@ -37,6 +38,7 @@
 		const pos_x = `${50 - (camera.x * 100) / camera.ratio}%`
 		const pos_y = `${50 + (camera.y * 100) / camera.ratio}%`
 		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
+		update_tooltip()
 	}
 
 	export async function center_on_nodes(
@@ -166,8 +168,7 @@
 			graph.setNodeAttribute(dragged_node, "x", pos.x)
 			graph.setNodeAttribute(dragged_node, "y", pos.y)
 
-			last_x = pos.x
-			last_y = pos.y
+			update_tooltip()
 
 			event.preventSigmaDefault()
 			event.original.preventDefault()
@@ -229,17 +230,47 @@
 			graph.setNodeAttribute(node, "highlighted", node === highlighted_node)
 		}
 	})
+
+	let tooltip_style = $state({
+		top: "0px",
+		left: "0px",
+		transform: "translate(-50%, -50%)"
+	})
+
+	function update_tooltip() {
+		if (!graph || !display_node || !renderer) return
+
+		const attributes = graph.getNodeAttributes(display_node)
+		const { x, y } = renderer.graphToViewport({
+			x: attributes.x,
+			y: attributes.y
+		}) || { x: 0, y: 0 }
+
+		const camera = renderer.getCamera()
+		const scale = 1 / camera.ratio // Scale tooltip size inversely with zoom ratio
+
+		tooltip_style = {
+			top: `${y}px`,
+			left: `${x}px`,
+			transform: `translate(-50%, -50%) scale(${scale})`
+		}
+	}
+
+	$effect(() => {
+		if (!graph || !display_node) return
+
+		update_tooltip()
+	})
 </script>
 
 <div class="graph-container">
-	{#if display_node}
-		{#key last_x || last_y}
-			<pre aria-hidden="true">{JSON.stringify(
-					graph?.getNodeAttributes(display_node),
-					null,
-					2
-				)}</pre>
-		{/key}
+	{#if display_node && graph}
+		<div
+			class="tooltip"
+			style="top: {tooltip_style.top}; left: {tooltip_style.left}; transform: {tooltip_style.transform}"
+		>
+			<pre>{JSON.stringify(display_node_data, null, 2)}</pre>
+		</div>
 	{/if}
 	<div class="graph" bind:this={graph_element}></div>
 
@@ -302,6 +333,23 @@
 		display: flex;
 	}
 
+	.tooltip {
+		position: fixed;
+		/* padding: 0.5em; */
+		font-family: monospace;
+		font-size: 0.7rem;
+		pointer-events: none;
+		opacity: 0.25;
+		width: 60ch;
+		transform-origin: center;
+		transform: translate(-50%, -50%);
+	}
+
+	.tooltip pre {
+		margin: 0;
+		white-space: pre-wrap;
+	}
+
 	.camera-controls {
 		position: fixed;
 		right: 1em;
@@ -328,16 +376,6 @@
 
 	.camera-controls button:active {
 		background-color: #eee;
-	}
-
-	pre {
-		position: fixed;
-		top: -0.5em;
-		left: 0;
-		font-family: monospace;
-		font-size: 9.25vh;
-		opacity: 0.02;
-		margin: 0;
 	}
 
 	.graph {
