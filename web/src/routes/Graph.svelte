@@ -105,20 +105,20 @@
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
 			stagePadding: 125,
-			nodeReducer: (node, data) => {
-				const res = { ...data }
-				if (display_node) {
-					if (
-						node !== display_node &&
-						!graph!.neighbors(display_node).includes(node)
-					) {
-						// Grey out other nodes
-						res.color = "#d3d3d3"
-						res.image = undefined
-					}
-				}
-				return res
-			},
+			// nodeReducer: (node, data) => {
+			// 	const res = { ...data }
+			// 	if (display_node) {
+			// 		if (
+			// 			node !== display_node &&
+			// 			!graph!.neighbors(display_node).includes(node)
+			// 		) {
+			// 			// Grey out other nodes
+			// 			res.color = "#d3d3d3"
+			// 			res.image = undefined
+			// 		}
+			// 	}
+			// 	return res
+			// },
 			edgeReducer: (edge, data) => {
 				const res = { ...data }
 				if (display_node) {
@@ -130,8 +130,6 @@
 						res.color = nodes.find((n) => n.at === source)?.generated_color // Highlight neighbor edges
 					} else if (source === display_node) {
 						res.color = display_node_data!.generated_color // Highlight neighbor edges
-					} else {
-						res.color = "#d3d3d3" // Grey out other edges
 					}
 				}
 
