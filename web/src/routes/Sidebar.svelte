@@ -125,6 +125,26 @@
 		</p>
 	</details>
 
+	<details class="qna" name="qna">
+		<summary>for members</summary>
+		<p>
+			If you want to link to this webchain from your site, an old-web style
+			button can be used like so:
+		</p>
+		<pre>
+&lt;a href="{page.url.href}"&gt;
+  &lt;img src="https://webchain.milkmedicine.net/button.png"&gt;
+&lt;/a&gt;
+		</pre>
+		<p>
+			<img src="button.png" class="button" alt="" />
+		</p>
+		<p>
+			The <code>?node</code> query parameter can be used to highlight a specific
+			node in the graph (please use url-safe encoding).
+		</p>
+	</details>
+
 	<ul class="nodes">
 		<h2>members</h2>
 		<p>
@@ -219,7 +239,6 @@
 		padding-left: 0.5rem;
 		border-left: 2px solid currentColor;
 		font-style: italic;
-		color: #555;
 	}
 
 	.qna ol li {
@@ -233,5 +252,16 @@
 
 	.nodes {
 		margin-top: 1rem;
+	}
+
+	pre {
+		overflow-x: auto;
+	}
+
+	.button {
+		image-rendering: pixelated;
+		image-rendering: crisp-edges;
+		max-width: 100%;
+		height: auto;
 	}
 </style>
