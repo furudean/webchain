@@ -45,13 +45,6 @@ li {
 	margin-bottom: 1rem 0;
 }
 
-.table-of-contents {
-	list-style: none;
-	border: double currentColor;
-	display: inline-block;
-	padding: 0.5rem;
-}
-
 pre {
 	overflow-x: auto;
 	tab-size: 2;

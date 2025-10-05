@@ -17,8 +17,6 @@ don't abuse the system. If a member or its dependents are found to be abusive,
 they can be removed from the webchain by members terminating their nomination
 higher up the chain.
 
-[[toc]]
-
 ## Rules
 
 1. The tree starts with a single node, for example: https://mychain.org.

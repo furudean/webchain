@@ -33,7 +33,6 @@
 		"markdown-it": "^14.1.0",
 		"markdown-it-anchor": "^9.2.0",
 		"markdown-it-footnote": "^4.0.0",
-		"markdown-it-table-of-contents": "^1.1.0",
 		"node-html-parser": "^7.0.1",
 		"oklab.ts": "^2.2.7",
 		"prettier": "^3.4.2",
