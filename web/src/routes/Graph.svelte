@@ -339,7 +339,7 @@
 		font-family: monospace;
 		font-size: 0.7rem;
 		pointer-events: none;
-		opacity: 0.25;
+		opacity: 0.2;
 		width: 60ch;
 		transform-origin: center;
 		transform: translate(-50%, -50%);
