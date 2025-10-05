@@ -11,12 +11,20 @@
 
 	onMount(() => {
 		const url_param = page.url.searchParams.get("node")
-		const current_node = data.nodes.find((n) => n.url_param === url_param)
+		const current_node = data.nodes.find(
+			(n) => n.url_param === url_param || n.at === url_param
+		)
 
-		goto("", {
+		if (!current_node) return
+
+		const params = new URLSearchParams()
+		params.set("node", current_node.url_param)
+
+		goto("?" + params.toString(), {
 			state: {
-				node: current_node?.at
-			}
+				node: current_node.at
+			},
+			replaceState: true
 		})
 	})
 </script>
