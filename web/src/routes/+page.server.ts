@@ -42,7 +42,9 @@ export const load: PageServerLoad = async ({
 					url,
 					label:
 						url.hostname.replace(no_www, "") + url.pathname.replace(/\/$/, ""),
-					url_param: url.hostname + url.pathname.replace(/\/$/, "_")
+					url_param: url.hostname + url.pathname.replace(/\/$/, "_"),
+					first_seen: node.first_seen ? new Date(node.first_seen) : null,
+					last_updated: node.last_updated ? new Date(node.last_updated) : null
 				}
 			}),
 			nominations_limit,

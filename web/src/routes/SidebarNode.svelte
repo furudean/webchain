@@ -111,6 +111,18 @@
 			{#if node.html_metadata?.description}
 				<p>{node.html_metadata.description}</p>
 			{/if}
+			{#if node.first_seen}
+				<p class="date">
+					first seen
+					{new Intl.DateTimeFormat("en-US", {
+						year: "numeric",
+						month: "short",
+						day: "numeric"
+					})
+						.format(node.first_seen)
+						.toLowerCase()}
+				</p>
+			{/if}
 		</div>
 	</details>
 </li>
@@ -187,7 +199,6 @@
 		max-width: 35ch;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		font-style: italic;
 	}
 
 	.node-content a {
@@ -201,5 +212,11 @@
 
 	.node-content a:visited {
 		color: purple;
+	}
+
+	.date {
+		font-size: 0.85em;
+		opacity: 0.8;
+		font-style: italic;
 	}
 </style>
