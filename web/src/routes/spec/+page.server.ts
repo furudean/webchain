@@ -5,6 +5,8 @@ import toc from "markdown-it-table-of-contents"
 import type { PageServerLoad } from "../$types"
 import spec from "../../../../SPEC.md?raw"
 
+export const prerender = true
+
 const md = MarkdownIt({
 	html: true,
 	typographer: true
