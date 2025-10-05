@@ -23,3 +23,36 @@ h2 {
 	margin-top: 2rem;
 	margin-bottom: 0;
 }
+
+p {
+	line-height: 1.5;
+}
+
+blockquote {
+	margin: 0;
+	padding-left: 0.5rem;
+	border-left: 2px solid currentColor;
+	font-style: italic;
+}
+
+ul {
+	margin: 0;
+	padding: 0;
+	padding-left: 1rem;
+}
+
+li {
+	margin-bottom: 1rem 0;
+}
+
+.table-of-contents {
+	list-style: none;
+	border: double currentColor;
+	display: inline-block;
+	padding: 0.5rem;
+}
+
+pre {
+	overflow-x: auto;
+	tab-size: 2;
+}

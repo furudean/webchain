@@ -37,10 +37,7 @@
 	<details class="qna" name="qna">
 		<summary>what?</summary>
 		<p>
-			A <a
-				href="https://github.com/furudean/webchain/blob/main/SPEC.md"
-				rel="external">webchain</a
-			>
+			A <a href="/spec">webchain</a>
 			is a distributed
 			<a href="https://en.wikipedia.org/wiki/Webring" rel="external">webring</a
 			>, where each member site can nominate other websites, creating a walkable
@@ -231,13 +228,6 @@
 
 	.qna summary {
 		padding: 0.5rem 0;
-		font-style: italic;
-	}
-
-	.qna blockquote {
-		margin: 0;
-		padding-left: 0.5rem;
-		border-left: 2px solid currentColor;
 		font-style: italic;
 	}
 

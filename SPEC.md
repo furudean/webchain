@@ -17,6 +17,8 @@ don't abuse the system. If a member or its dependents are found to be abusive,
 they can be removed from the webchain by members terminating their nomination
 higher up the chain.
 
+[[toc]]
+
 ## Rules
 
 1. The tree starts with a single node, for example: https://mychain.org.
@@ -35,27 +37,28 @@ higher up the chain.
    representation, but its subtree is not traversable until it comes online
    again.
 
-[^1]: The value of `n` is left unspecified. The webchain admin may choose a suitable
+[^1]:
+    The value of `n` is left unspecified. The webchain admin may choose a suitable
     value based on the desired growth rate and trust level of the chain.
-	 A common choice might be `n = 3`.
+    A common choice might be `n = 3`.
 
 ## Example node
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
+	<head>
+		<meta charset="UTF-8" />
 
-	<!-- The root of the webchain this node is part of -->
-	<link rel="webchain" href="https://mychain.org">
-	<!-- Nominations made by this node -->
-	<link rel="webchain-nomination" href="https://www.example.org">
-	<link rel="webchain-nomination" href="https://www.wikipedia.org">
-</head>
-<body>
-	example webchain document with two nominations
-</body>
+		<!-- The root of the webchain this node is part of -->
+		<link rel="webchain" href="https://mychain.org" />
+		<!-- Nominations made by this node -->
+		<link rel="webchain-nomination" href="https://www.example.org" />
+		<link rel="webchain-nomination" href="https://www.wikipedia.org" />
+	</head>
+	<body>
+		example webchain document with two nominations
+	</body>
 </html>
 ```
 
@@ -72,7 +75,7 @@ Let's say you have a website, `https://www.example.org`, and you want to join
 the webchain rooted at `https://mychain.org`.
 
 1. Find the webchain root (e.g., `https://mychain.org`) and
-	visit it to understand the community and its purpose
+   visit it to understand the community and its purpose
 2. Request nomination by contacting existing members with open slots, asking
    for a nomination.
 3. An existing member can admit you to the webchain by adding
@@ -115,7 +118,6 @@ to the webchain root node or other representations available.
 
 If all parts work well together, a fun and dangerous social experiment will
 emerge.
-
 
 ## Concerns
 
