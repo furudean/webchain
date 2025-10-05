@@ -129,7 +129,7 @@
 		<summary>for members</summary>
 		<p>
 			If you want to link to this webchain from your site, an old-web style
-			button can be used like so:
+			button is available:
 		</p>
 		<pre>
 &lt;a href="{page.url.href}"&gt;
