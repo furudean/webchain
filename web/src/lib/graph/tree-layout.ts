@@ -1,6 +1,6 @@
-import type { CrawledNode } from "$lib/node"
+import type { DisplayNode } from "$lib/node"
 
-export function calculate_tree_layout(hashmap: Map<string, CrawledNode>) {
+export function calculate_tree_layout(hashmap: Map<string, DisplayNode>) {
 	const positions = new Map<string, { x: number; y: number }>()
 
 	// Find root node (node with no parent)
