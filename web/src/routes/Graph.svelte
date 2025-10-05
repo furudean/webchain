@@ -149,9 +149,7 @@
 			isNodeFixed(_, attr) {
 				return attr.highlighted
 			},
-			settings: {
-				inertia: 0.6
-			}
+			settings: {}
 		})
 		if (!document.hidden) {
 			layout.start()

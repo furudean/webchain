@@ -32,7 +32,7 @@ export function build_graph(
 			)?.at
 			if (parent_id) {
 				graph.addEdge(parent_id, id, {
-					size: 4,
+					size: 3,
 					color: "#dedede",
 					type: "arrow"
 				})
