@@ -95,8 +95,8 @@
 			The <code>webchain</code> link points to root of the webchain the website
 			wants to be a part of, in this case that would be
 			<code>https://webchain.milkmedicine.net/</code>. The
-			<code>webchain-nomination</code> links point to up to other websites that this
-			node nominates.
+			<code>webchain-nomination</code> links point to up to {nominations_limit} other
+			websites that this node nominates.
 		</p>
 		<blockquote>
 			Note that a node must first be nominated by the webchain before it can add
