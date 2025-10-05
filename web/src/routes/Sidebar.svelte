@@ -130,11 +130,17 @@
 		</p>
 		<pre>
 &lt;a href="{page.url.href}"&gt;
-  &lt;img src="https://webchain.milkmedicine.net/button.png"&gt;
+  &lt;img src="https://webchain.milkmedicine.net/button.png" height="31" width="88"&gt;
 &lt;/a&gt;
 		</pre>
 		<p>
-			<img src="button.png" class="button" alt="" />
+			<img
+				src="button.png"
+				class="button"
+				height="31"
+				width="88"
+				alt="An old-web style button that links to the webchain"
+			/>
 		</p>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
