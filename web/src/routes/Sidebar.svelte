@@ -127,6 +127,16 @@
 		<p>
 			If you want to link to this webchain from your site, an old-web style
 			button is available:
+
+			<br /><br />
+
+			<img
+				src="button.png"
+				class="button"
+				height="31"
+				width="88"
+				alt="An old-web style button that links to the webchain"
+			/>
 		</p>
 		<pre>
 &lt;a href="{page.url.href}"&gt;
@@ -137,15 +147,7 @@
 	/&gt;
 &lt;/a&gt;
 		</pre>
-		<p>
-			<img
-				src="button.png"
-				class="button"
-				height="31"
-				width="88"
-				alt="An old-web style button that links to the webchain"
-			/>
-		</p>
+		<p></p>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
 			node in the webchain (please use url-safe encoding).
