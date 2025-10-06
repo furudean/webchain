@@ -45,7 +45,8 @@ async def compareState(
             # Only set first_seen if None (do not overwrite)
             if result == [-1,-1,-1]:
                 i.first_seen = new_response.end
-
+            if result[2] == -2:
+                i.first_seen = old_response.end
             # Update last_updated only if node has changed
             if result != [0, 0, 0] and result != [0, 0, 0, []]:
                 if len(result) > 3:
@@ -91,11 +92,11 @@ def nodeCompare(new_node: CrawledNode, old_node: CrawledNode) -> list[int]:
         return [-1, -1, -1]
     # else Node DID exist in old table, confirm that parents/children are same, and that indexed = true in new one.
     else:
-        # print(f"old: {old_node}")
+        if not old_node.first_seen:
+            retlist[2] = -2
         ChangedChildren = []
         for i in new_node.children:
             if i not in old_node.children:
-                # print(f"{i} not in list {old_node.children}")
                 # returns position of child thats changed
                 ChangedChildren.append(new_node.children.index(i))
                 retList[0] = ChangedChildren
@@ -107,11 +108,5 @@ def nodeCompare(new_node: CrawledNode, old_node: CrawledNode) -> list[int]:
 
         if new_node.indexed == False:
             retList.append(new_node.children)
-            # if old_node.indexed == True:
-            # i.e is it offline / unreachable now but wasnt in past
-            # retList[2] = 1
-        # i.e is it offline / unreachable in past but online now
-        # if new_node.indexed == True and old_node.indexed == False:
-        # retList[2] = 2
 
         return retList
