@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 import io
 import os
 import sys
@@ -39,8 +40,20 @@ async def tree(url: str):
         print(f'error: {e}')
         sys.exit(1)
 
+    print('')
+
     for node in crawled.nodes:
-        print('    ' * node.depth + node.at + (' (offline)' if not node.indexed else ''))
+        print('    ' * node.depth + node.at + (' (not crawled)' if not node.indexed else ''))
+
+    if any(node.unqualified for node in crawled.nodes):
+        print('')
+        for node in crawled.nodes:
+            if node.unqualified:
+                print(f'{len(node.unqualified)} unqualified in {node.at} -> {node.unqualified}')
+
+    duration = datetime.fromisoformat(crawled.end) - datetime.fromisoformat(crawled.start)
+
+    print(f'\ncrawled {len(crawled.nodes)} nodes in {duration.total_seconds():.2f} seconds')
 
 
 @webchain.command
@@ -67,17 +80,17 @@ async def json(url: str):
 async def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
     data = 0
 
-    # try:
-    res1 = deserialize(path1.read())
-    # except:
-    #     print(f'{path1.name} not valid JSON')
-    #     sys.exit(1)
+    try:
+        res1 = deserialize(path1.read())
+    except:
+        print(f'{path1.name} not valid crawl json')
+        sys.exit(1)
 
-    # try:
-    res2 = deserialize(path2.read())
-    # except:
-    #     print(f'{path2.name} not valid JSON')
-    #     sys.exit(1)
+    try:
+        res2 = deserialize(path2.read())
+    except:
+        print(f'{path2.name} not valid crawl json')
+        sys.exit(1)
 
     data = await compareState(res1, res2)
 
@@ -99,5 +112,5 @@ async def enrich(file: io.TextIOWrapper) -> None:
         sys.exit(1)
 
     enriched = await enrich_with_metadata(webchain)
-    serialized = serialize(enriched)
+    serialized = serialize(enriched, indent='\t')
     print(serialized)

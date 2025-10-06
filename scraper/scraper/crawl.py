@@ -1,8 +1,10 @@
 import itertools
+import sys
 from urllib.parse import urlparse
 import asyncio
 from datetime import datetime, timezone
 from time import time
+from logging import getLogger
 
 from bs4 import BeautifulSoup, Tag
 from bs4.element import PageElement
@@ -10,6 +12,8 @@ from ordered_set import OrderedSet
 
 from scraper.http import get_session, load_page_html
 from scraper.contracts import CrawlResponse, CrawledNode
+
+logger = getLogger(__name__)
 
 
 def validate_uri(x: str) -> bool:
@@ -126,15 +130,15 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
     """
     seen: set[str] = set()
-    nominations_limit: int | None = None
+    nominations_limit: int | float | None = None
     start = time()
 
     async def process_node(at: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
         nonlocal nominations_limit
 
-        sat = without_trailing_slash(at)
-        seen.add(sat)
-        html = await load_page_html(sat, referrer=parent, session=session)
+        at = without_trailing_slash(at)
+        seen.add(at)
+        html = await load_page_html(at, referrer=parent, session=session)
         nominations: list[str] = []
         unqualified: list[str] = []
 
@@ -145,8 +149,8 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             nominations_limit = get_nominations_limit(html)
 
             if nominations_limit is None:
-                raise ValueError(
-                    f'starting url {root_url} does not specify a valid nominations limit'
+                logger.error(
+                    f'starting url {root_url} does not specify a nominations limit, using unlimited'
                 )
 
         if html:
@@ -159,7 +163,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             unqualified = list(node_nominations.intersection(seen).union(extra_nominations))
 
         node = CrawledNode(
-            at=sat,
+            at=at,
             children=nominations,
             unqualified=unqualified,
             parent=parent,
@@ -169,7 +173,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
         nodes = [node]
 
         if nominations and depth < recursion_limit:
-            tasks = [process_node(at=url, parent=sat, depth=depth + 1) for url in nominations]
+            tasks = [process_node(at=url, parent=at, depth=depth + 1) for url in nominations]
             results = await asyncio.gather(*tasks)
 
             nodes.extend(itertools.chain(*results))
@@ -183,7 +187,9 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
         return CrawlResponse(
             nodes=nodes,
-            nominations_limit=nominations_limit or 0,
+            nominations_limit=int(nominations_limit)
+            if nominations_limit is not None
+            else sys.maxsize * 2 + 1,
             start=to_iso_timestamp(start),
             end=to_iso_timestamp(end),
         )
