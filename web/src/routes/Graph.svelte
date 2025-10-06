@@ -114,7 +114,7 @@
 
 					if (!highlighted && !is_neighbor) {
 						// Grey out other nodes
-						res.color = "#d3d3d3"
+						res.color = "#eee"
 						res.image = undefined
 					}
 				}
