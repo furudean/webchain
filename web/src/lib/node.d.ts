@@ -7,7 +7,7 @@ export interface HtmlMetadata {
 export interface CrawledNode {
 	at: string
 	children: string[]
-	references: string[]
+	unqualified: string[]
 	parent: string | null
 	depth: number
 	indexed: boolean

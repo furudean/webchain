@@ -67,15 +67,17 @@ async def json(url: str):
 async def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
     data = 0
 
-    try:
-        res1 = deserialize(path1.read())
-    except:
-        print(f'{path1} not valid JSON. Try again')
+    # try:
+    res1 = deserialize(path1.read())
+    # except:
+    #     print(f'{path1.name} not valid JSON')
+    #     sys.exit(1)
 
-    try:
-        res2 = deserialize(path2.read())
-    except:
-        print(f'{path2} not valid JSON. Try again')
+    # try:
+    res2 = deserialize(path2.read())
+    # except:
+    #     print(f'{path2.name} not valid JSON')
+    #     sys.exit(1)
 
     data = await compareState(res1, res2)
 

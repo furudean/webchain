@@ -136,7 +136,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
         seen.add(sat)
         html = await load_page_html(sat, referrer=parent, session=session)
         nominations: list[str] = []
-        references: list[str] = []
+        unqualified: list[str] = []
 
         if depth == 0:
             if html is None:
@@ -156,13 +156,12 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             nominations = list(node_nominations.difference(seen))
             extra_nominations = nominations[nominations_limit:]
             nominations = nominations[:nominations_limit]
-
-            references = list(node_nominations.intersection(seen).union(extra_nominations))
+            unqualified = list(node_nominations.intersection(seen).union(extra_nominations))
 
         node = CrawledNode(
             at=sat,
             children=nominations,
-            references=references,
+            unqualified=unqualified,
             parent=parent,
             depth=depth,
             indexed=html is not None,

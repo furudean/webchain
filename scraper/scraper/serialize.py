@@ -16,7 +16,11 @@ def serialize(crawled: CrawlResponse, **kwargs) -> str:
 
 def deserialize(data: str) -> CrawlResponse:
     obj = json.loads(data)
-    nodes = [CrawledNode(**node) for node in obj['nodes']]
+    allowed_fields = {field.name for field in dataclasses.fields(CrawledNode)}
+    nodes = [
+        CrawledNode(**{k: v for k, v in node.items() if k in allowed_fields})
+        for node in obj['nodes']
+    ]
 
     return CrawlResponse(
         nodes=nodes,
