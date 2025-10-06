@@ -126,10 +126,9 @@
 		<summary>for members</summary>
 		<p>
 			If you want to link to this webchain from your site, an old-web style
-			button is available:
-
-			<br /><br />
-
+			button is provided below.
+		</p>
+		<p>
 			<img
 				src="button.png"
 				class="button"
@@ -138,6 +137,7 @@
 				alt="An old-web style button that links to the webchain"
 			/>
 		</p>
+		<p>You can use the following HTML snippet to include it on your site</p>
 		<pre>
 &lt;a href="{page.url.href}"&gt;
 	&lt;img
