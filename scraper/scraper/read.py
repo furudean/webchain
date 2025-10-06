@@ -47,6 +47,8 @@ async def compareState(
                 i.first_seen = new_response.end
             if result[2] == -2:
                 i.first_seen = old_response.end
+            if result[2] == -3:
+                i.first_seen = old_node.first_seen
             # Update last_updated only if node has changed
             if result != [0, 0, 0] and result != [0, 0, 0, []]:
                 if len(result) > 3:
@@ -93,7 +95,9 @@ def nodeCompare(new_node: CrawledNode, old_node: CrawledNode) -> list[int]:
     # else Node DID exist in old table, confirm that parents/children are same, and that indexed = true in new one.
     else:
         if not old_node.first_seen:
-            retlist[2] = -2
+            retList[2] = -2
+        else:
+            retList[2] = -3
         ChangedChildren = []
         for i in new_node.children:
             if i not in old_node.children:
