@@ -75,6 +75,10 @@ def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
     return hrefs
 
 
+def without_trailing_slash(url: str) -> str:
+    return url.rstrip('/')
+
+
 def handle_meta_element(node: Tag | PageElement | None) -> str | None:
     if isinstance(node, Tag) and node.get('content'):
         return str(node.get('content'))
@@ -128,7 +132,8 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
     async def process_node(at: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
         nonlocal nominations_limit
 
-        seen.add(at)
+        sat = without_trailing_slash(at)
+        seen.add(sat)
         html = await load_page_html(at, referrer=parent, session=session)
         nominations: list[str] = []
         references: list[str] = []
