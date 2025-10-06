@@ -73,8 +73,8 @@
 	<details class="qna" name="qna">
 		<summary>how?</summary>
 		<p>
-			To nominate the webchain, each member node adds markup to their HTML, for
-			example:
+			To nominate new nodes to the webchain, each member adds markup to its
+			HTML, for example:
 		</p>
 		<pre><code
 				>&lthtml&gt;
