@@ -9,7 +9,7 @@
 	let { data }: PageProps = $props()
 	let graph_component: Graph | undefined = $state()
 
-	onMount(() => {
+	onMount(async () => {
 		const url_param = page.url.searchParams.get("node")
 		const current_node = data.nodes.find(
 			(n) => n.url_param === url_param || n.at === url_param
@@ -20,12 +20,15 @@
 		const new_url = new URL(page.url)
 		new_url.searchParams.set("node", current_node.url_param)
 
-		goto("?" + new_url.searchParams.toString(), {
+		await goto("?" + new_url.searchParams.toString(), {
 			state: {
 				node: current_node.at
 			},
 			replaceState: true
 		})
+		const nodes = [current_node.at, ...current_node.children]
+		if (current_node.parent) nodes.push(current_node.parent)
+		graph_component?.center_on_nodes(nodes)
 	})
 </script>
 
