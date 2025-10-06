@@ -189,7 +189,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             nodes=nodes,
             nominations_limit=int(nominations_limit)
             if nominations_limit is not None
-            else sys.maxsize * 2 + 1,
+            else (sys.maxsize * 2 + 1),
             start=to_iso_timestamp(start),
             end=to_iso_timestamp(end),
         )
