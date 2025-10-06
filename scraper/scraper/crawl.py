@@ -134,7 +134,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
         sat = without_trailing_slash(at)
         seen.add(sat)
-        html = await load_page_html(at, referrer=parent, session=session)
+        html = await load_page_html(sat, referrer=parent, session=session)
         nominations: list[str] = []
         references: list[str] = []
 
@@ -150,7 +150,9 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
                 )
 
         if html:
-            node_nominations = get_raw_nominations(html, root_url)
+            node_nominations = OrderedSet(
+                map(without_trailing_slash, get_raw_nominations(html, root_url))
+            )
             nominations = list(node_nominations.difference(seen))
             extra_nominations = nominations[nominations_limit:]
             nominations = nominations[:nominations_limit]
@@ -158,7 +160,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             references = list(node_nominations.intersection(seen).union(extra_nominations))
 
         node = CrawledNode(
-            at=at,
+            at=sat,
             children=nominations,
             references=references,
             parent=parent,
@@ -168,7 +170,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
         nodes = [node]
 
         if nominations and depth < recursion_limit:
-            tasks = [process_node(at=url, parent=at, depth=depth + 1) for url in nominations]
+            tasks = [process_node(at=url, parent=sat, depth=depth + 1) for url in nominations]
             results = await asyncio.gather(*tasks)
 
             nodes.extend(itertools.chain(*results))
