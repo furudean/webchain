@@ -44,19 +44,12 @@ async def load_page_html(
             html = await response.text()
             logger.debug(f'got {url}')
         return html
-    except (
-        aiohttp.ServerConnectionError,
-        aiohttp.ServerTimeoutError,
-    ) as e:
-        # server returned no response at all. candidate for retry
-        logger.info(f'server connection error for url {url}: ' + type(e).__name__)
-        raise
     except aiohttp.InvalidURL as e:
-        # some kind of low-level connection error (refused connection, etc)
         # we assume these are permanent and do not retry
-        logger.info(f'could not connect to {url}: ' + type(e).__name__)
+        logger.info(f'invalid url {url}: ' + type(e).__name__)
         return None
     except (aiohttp.TooManyRedirects, aiohttp.RedirectClientError) as e:
+        # seems like trouble
         logger.info(f'bad redirects for url {url}: ' + type(e).__name__)
         return None
     except aiohttp.ClientResponseError as e:
@@ -70,5 +63,6 @@ async def load_page_html(
         logger.info(f'non-html content-type for url {url}: {content_type}')
         return None
     except aiohttp.ClientError as e:
+        # all other errors retry
         logger.info(f'{url}: ' + type(e).__name__)
         raise
