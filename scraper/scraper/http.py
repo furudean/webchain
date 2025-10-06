@@ -70,5 +70,5 @@ async def load_page_html(
         logger.info(f'non-html content-type for url {url}: {content_type}')
         return None
     except aiohttp.ClientError as e:
-        logger.warning(f'{url}: ' + type(e).__name__)
+        logger.info(f'{url}: ' + type(e).__name__)
         raise
