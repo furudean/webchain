@@ -26,7 +26,7 @@
 	})
 </script>
 
-<aside>
+<aside class:open={highlighted_node} aria-label="Sidebar">
 	<h1>
 		<span class="square" aria-hidden="true"></span> the<br />milkmedicine<br
 		/>webchain
@@ -196,6 +196,22 @@
 		margin-bottom: 20vh;
 	}
 
+	@media (max-width: 35rem) {
+		aside {
+			border-right: 1px solid rgba(0, 0, 0, 0.25);
+			background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+			backdrop-filter: blur(1.5px);
+			transform: translateX(-90%);
+			transition: transform 200ms ease-in-out;
+			max-width: calc(100vw - 6rem);
+		}
+		aside.open,
+		aside:hover {
+			transform: translateX(0%);
+		}
+	}
+
+	/* aside.open, */
 	aside:hover {
 		/* background: white; */
 		border-right: 1px solid rgba(0, 0, 0, 0.25);
