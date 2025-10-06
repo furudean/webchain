@@ -36,8 +36,6 @@ async def compareState(
     changed_nodes = []
     mark_not_indexed = []
     for i in new_response.nodes:
-        if not i.first_seen:
-            i.first_seen = new_response.end
         if i in mark_not_indexed:
             continue
         else:
@@ -45,6 +43,8 @@ async def compareState(
             old_node = old_response.nodes[old_node_index] if old_node_index != -1 else -1
             result = nodeCompare(i, old_node)
             # Only set first_seen if None (do not overwrite)
+            if result != [-1,-1,-1]:
+                i.first_seen = new_response.end
 
             # Update last_updated only if node has changed
             if result != [0, 0, 0] and result != [0, 0, 0, []]:
