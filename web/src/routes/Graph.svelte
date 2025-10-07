@@ -30,24 +30,26 @@
 	let graph_element: HTMLElement
 
 	function update_camera(camera: Camera): void {
-		const size = `${40 / camera.ratio}px`
-		graph_element.style.backgroundSize = `${size} ${size}`
-		const transparency = Math.max(0.05, 0.5 / camera.ratio)
-		graph_element.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
+		requestAnimationFrame(() => {
+			const size = `${40 / camera.ratio}px`
+			graph_element.style.backgroundSize = `${size} ${size}`
+			const transparency = Math.max(0.05, 0.5 / camera.ratio)
+			graph_element.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
 
-		// Use graphToViewport to set pos_x and pos_y
-		let pos_x = "50%"
-		let pos_y = "50%"
-		if (renderer && graph) {
-			const center = { x: camera.x, y: camera.y }
-			const viewport = renderer.graphToViewport(center)
-			if (viewport) {
-				pos_x = `${viewport.x}px`
-				pos_y = `${viewport.y}px`
+			// Use graphToViewport to set pos_x and pos_y
+			let pos_x = "50%"
+			let pos_y = "50%"
+			if (renderer && graph) {
+				const center = { x: camera.x, y: camera.y }
+				const viewport = renderer.graphToViewport(center)
+				if (viewport) {
+					pos_x = `${viewport.x}px`
+					pos_y = `${viewport.y}px`
+				}
 			}
-		}
-		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
-		update_tooltip()
+			graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
+			update_tooltip()
+		})
 	}
 
 	export async function center_on_nodes(
@@ -298,11 +300,13 @@
 		const camera = renderer.getCamera()
 		const scale = 1 / camera.ratio // Scale tooltip size inversely with zoom ratio
 
-		tooltip_style = {
-			top: `${y}px`,
-			left: `${x}px`,
-			transform: `translate(-50%, -50%) scale(${scale})`
-		}
+		requestAnimationFrame(() => {
+			tooltip_style = {
+				top: `${y}px`,
+				left: `${x}px`,
+				transform: `translate(-50%, -50%) scale(${scale})`
+			}
+		})
 	}
 </script>
 
