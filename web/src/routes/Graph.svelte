@@ -35,8 +35,17 @@
 		const transparency = Math.max(0.05, 0.5 / camera.ratio)
 		graph_element.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
 
-		const pos_x = `${50 - (camera.x * 100) / camera.ratio}%`
-		const pos_y = `${50 + (camera.y * 100) / camera.ratio}%`
+		// Use graphToViewport to set pos_x and pos_y
+		let pos_x = "50%"
+		let pos_y = "50%"
+		if (renderer && graph) {
+			const center = { x: camera.x, y: camera.y }
+			const viewport = renderer.graphToViewport(center)
+			if (viewport) {
+				pos_x = `${viewport.x}px`
+				pos_y = `${viewport.y}px`
+			}
+		}
 		graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
 		update_tooltip()
 	}
