@@ -63,6 +63,14 @@
 			</li>
 		</ol>
 		<p>
+			A crawler visits each node, reads its nominations, and then visits those
+			nodes in turn, recursively, building up a graph of all reachable nodes.
+		</p>
+		<p>
+			The crawler runs periodically, so new nodes and nominations will appear on
+			this page over time.
+		</p>
+		<p>
 			Source code may be found <a
 				href="https://github.com/furudean/webchain"
 				rel="external">on GitHub</a
@@ -80,7 +88,7 @@
 				>&lthtml&gt;
 &lt;head&gt;
   &lt;link rel="webchain"
-    href="https://example.com" /&gt;
+    href="{page.url.href}" /&gt;
   &lt;link rel="webchain-nomination"
     href="https://another.example.com" /&gt;
   &lt;link rel="webchain-nomination"
@@ -94,21 +102,13 @@
 		<p>
 			The <code>webchain</code> link points to root of the webchain the website
 			wants to be a part of, in this case that would be
-			<code>https://webchain.milkmedicine.net/</code>. The
+			<code>{page.url.href}</code>. The
 			<code>webchain-nomination</code> links point to up to {nominations_limit} other
 			websites that this node nominates.
 		</p>
-		<blockquote>
+		<p>
 			Note that a node must first be nominated by the webchain before it can add
 			others.
-		</blockquote>
-		<p>
-			A crawler visits each node, reads its nominations, and then visits those
-			nodes in turn, recursively, building up a graph of all reachable nodes.
-		</p>
-		<p>
-			The crawler runs periodically, so new nodes and nominations will appear on
-			this page over time.
 		</p>
 	</details>
 
@@ -141,7 +141,7 @@
 		<pre>
 &lt;a href="{page.url.href}"&gt;
 	&lt;img
-		src="https://webchain.milkmedicine.net/button.png"
+		src="{new URL("/button.png", page.url.href).href}"
 		height="31"
 		width="88"
 	/&gt;
