@@ -188,7 +188,6 @@
 			dragged_node = e.node
 			hovered_node.set(e.node)
 			set_highlighted_node(e.node, hashmap.get(e.node)?.url_param)
-			if (!renderer.getCustomBBox()) renderer.setCustomBBox(renderer.getBBox())
 			graph_element.style.cursor = "grabbing"
 		})
 
@@ -208,7 +207,7 @@
 			event.original.stopPropagation()
 		})
 
-		renderer.on("upNode", () => {
+		renderer.on("upNode", (e) => {
 			is_dragging = false
 			dragged_node = null
 			graph_element.style.cursor = "grab"
