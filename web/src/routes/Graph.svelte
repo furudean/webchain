@@ -13,6 +13,7 @@
 	import { page } from "$app/state"
 	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
 	import { getCameraStateToFitViewportToNodes } from "@sigma/utils"
+	import { browser } from "$app/environment"
 
 	let { nodes }: { nodes: DisplayNode[] } = $props()
 
@@ -90,7 +91,22 @@
 		}
 	}
 
+	function is_webgl_supported(): boolean {
+		// return false
+		if (!browser) return false
+		try {
+			const canvas = document.createElement("canvas")
+			return !!(
+				canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
+			)
+		} catch {
+			return false
+		}
+	}
+
 	async function init_graph(): Promise<void> {
+		if (!is_webgl_supported()) return
+
 		const { default: Sigma } = await import("sigma")
 		const { default: Graph } = await import("graphology")
 		const { NodeImageProgram } = await import("@sigma/node-image")
@@ -262,7 +278,9 @@
 	}
 
 	onMount(() => {
-		init_graph().catch(console.error)
+		if (is_webgl_supported()) {
+			init_graph().catch(console.error)
+		}
 
 		return () => {
 			layout?.kill()
@@ -311,7 +329,13 @@
 </script>
 
 <div class="graph-container">
-	{#if display_node && graph}
+	{#if browser && !is_webgl_supported()}
+		<div class="env-warning">graph requires webgl to be enabled</div>
+	{/if}
+	<noscript>
+		<div class="env-warning">graph requires javascript to be enbled</div>
+	</noscript>
+	{#if display_node}
 		<div
 			class="tooltip"
 			style="top: {tooltip_style.top}; left: {tooltip_style.left}; transform: {tooltip_style.transform}"
@@ -319,57 +343,65 @@
 			<pre>{JSON.stringify(display_node_data, null, 2)}</pre>
 		</div>
 	{/if}
+
 	<div class="graph" bind:this={graph_element}></div>
 
-	<div class="camera-controls">
-		<button
-			onclick={() => {
-				center_on_nodes()
-			}}
-			title="Reset camera view"
-			aria-label="Reset camera view"
-		>
-			<svg
-				width="20"
-				height="20"
-				viewBox="0 0 20 20"
-				aria-hidden="true"
-				focusable="false"
+	{#if renderer}
+		<div class="camera-controls">
+			<button
+				onclick={() => {
+					center_on_nodes()
+				}}
+				title="Reset camera view"
+				aria-label="Reset camera view"
 			>
-				<path d="M6 8V6H8" stroke="currentColor" stroke-width="1" fill="none" />
-				<path
-					d="M14 8V6H12"
-					stroke="currentColor"
-					stroke-width="1"
-					fill="none"
-				/>
-				<path
-					d="M14 12V14H12"
-					stroke="currentColor"
-					stroke-width="1"
-					fill="none"
-				/>
-				<path
-					d="M6 12V14H8"
-					stroke="currentColor"
-					stroke-width="1"
-					fill="none"
-				/>
-			</svg>
-		</button>
-		<button
-			onpointerdown={() => start_zoom(1)}
-			onpointerup={stop_zoom}
-			onpointerleave={stop_zoom}
-			title="Zoom in">+</button
-		>
-		<button
-			onpointerdown={() => start_zoom(-1)}
-			onpointerup={stop_zoom}
-			onpointerleave={stop_zoom}
-			title="Zoom out">-</button
-		>
-	</div>
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 20 20"
+					aria-hidden="true"
+					focusable="false"
+				>
+					<path
+						d="M6 8V6H8"
+						stroke="currentColor"
+						stroke-width="1"
+						fill="none"
+					/>
+					<path
+						d="M14 8V6H12"
+						stroke="currentColor"
+						stroke-width="1"
+						fill="none"
+					/>
+					<path
+						d="M14 12V14H12"
+						stroke="currentColor"
+						stroke-width="1"
+						fill="none"
+					/>
+					<path
+						d="M6 12V14H8"
+						stroke="currentColor"
+						stroke-width="1"
+						fill="none"
+					/>
+				</svg>
+			</button>
+			<button
+				onpointerdown={() => start_zoom(1)}
+				onpointerup={stop_zoom}
+				onpointerleave={stop_zoom}
+				title="Zoom in">+</button
+			>
+			<button
+				onpointerdown={() => start_zoom(-1)}
+				onpointerup={stop_zoom}
+				onpointerleave={stop_zoom}
+				title="Zoom out">-</button
+			>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -437,6 +469,15 @@
 
 	.graph:active {
 		cursor: move;
+	}
+
+	.env-warning {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-family: monospace, sans-serif;
+		opacity: 0.5;
 	}
 
 	/* @media (prefers-color-scheme: dark) {
