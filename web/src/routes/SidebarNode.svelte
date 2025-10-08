@@ -183,6 +183,7 @@
 		line-height: 1.5;
 		display: flex;
 		gap: 0.25em;
+		word-break: break-all;
 	}
 
 	.node-content {
