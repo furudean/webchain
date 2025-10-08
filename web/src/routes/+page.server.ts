@@ -32,10 +32,11 @@ export const load: PageServerLoad = async ({
 		const no_www = /^www\./i
 
 		return {
-			nodes: nodes.map((node) => {
+			nodes: nodes.map((node, index): DisplayNode => {
 				const url = new URL(node.at)
 				return {
 					...node,
+					index,
 					generated_color: node.indexed
 						? node.html_metadata?.theme_color || string_to_color(node.at)
 						: "#b7b7b7ff",

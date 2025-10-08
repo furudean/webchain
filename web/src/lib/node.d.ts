@@ -17,6 +17,7 @@ export interface CrawledNode {
 }
 
 export interface DisplayNode extends CrawledNode {
+	index: number
 	url: URL
 	generated_color: string
 	label: string

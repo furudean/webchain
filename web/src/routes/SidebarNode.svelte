@@ -5,21 +5,26 @@
 	import SidebarNode from "./SidebarNode.svelte"
 
 	let {
-		index,
+		at,
 		nodes,
 		highlighted_node,
 		nominations_limit,
 		graph_component
 	}: {
-		index: number
+		at: string
 		nodes: DisplayNode[]
 		highlighted_node: string | undefined
 		nominations_limit: number | null
 		graph_component: Graph
 	} = $props()
 
-	const node = nodes[index]
-	let node_element: HTMLElement | undefined = $state()
+	const node = $derived.by(() => {
+		const node = nodes.find((n) => n.at === at)
+		if (!node) {
+			throw new Error(`node with at="${at}" not found`)
+		}
+		return node
+	})
 
 	function hover_in() {
 		if ($graph?.hasNode(node.at)) {
@@ -52,10 +57,9 @@
 <li>
 	<details
 		open={node.at === highlighted_node}
-		name="nodes"
+		name="node"
 		class:hovered={node.at === $hovered_node}
 		class:highlighted={node.at === highlighted_node}
-		bind:this={node_element}
 	>
 		<summary
 			class="node-header"
@@ -76,15 +80,13 @@
 				if (event.key === "ArrowDown") {
 					event.preventDefault()
 					const nodes = document.querySelectorAll(".nodes summary")
-					const currentIndex = Array.from(nodes).indexOf(event.currentTarget)
-					const next = nodes[currentIndex + 1]
+					const next = nodes[node.index + 1]
 					if (next) (next as HTMLElement).focus()
 				}
 				if (event.key === "ArrowUp") {
 					event.preventDefault()
 					const nodes = document.querySelectorAll(".nodes summary")
-					const currentIndex = Array.from(nodes).indexOf(event.currentTarget)
-					const prev = nodes[currentIndex - 1]
+					const prev = nodes[node.index - 1]
 					if (prev) (prev as HTMLElement).focus()
 				}
 			}}
@@ -138,9 +140,9 @@
 </li>
 {#if node.children.length > 0}
 	<ul>
-		{#each node.children as child_at}
+		{#each node.children as child_at, i}
 			<SidebarNode
-				index={nodes.findIndex((n) => n.at === child_at)}
+				at={child_at}
 				{nodes}
 				{highlighted_node}
 				{nominations_limit}

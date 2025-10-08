@@ -17,11 +17,11 @@
 	} = $props()
 
 	const highlighted_node = $derived(page.state.node)
-	let sidebar_nodes_element: HTMLElement
+	let sidebar_nodes_element = $state<HTMLElement | null>(null)
 
 	$effect(() => {
 		if (highlighted_node) {
-			sidebar_nodes_element.querySelector(`details[open]`)?.scrollIntoView()
+			sidebar_nodes_element?.querySelector(`details[open]`)?.scrollIntoView()
 		}
 	})
 </script>
@@ -158,15 +158,17 @@
 	<p>
 		{new Intl.NumberFormat("en-US").format(nodes.length)} sites in this webchain
 	</p>
-	<ul class="nodes" bind:this={sidebar_nodes_element}>
-		<SidebarNode
-			index={0}
-			{nodes}
-			{highlighted_node}
-			{nominations_limit}
-			{graph_component}
-		/>
-	</ul>
+	{#if nodes.length > 0}
+		<ul class="nodes" bind:this={sidebar_nodes_element}>
+			<SidebarNode
+				at={nodes[0].at}
+				{nodes}
+				{highlighted_node}
+				{nominations_limit}
+				{graph_component}
+			/>
+		</ul>
+	{/if}
 
 	{#if crawl_date}
 		<a href="/crawler/current.json" class="crawl-info">
