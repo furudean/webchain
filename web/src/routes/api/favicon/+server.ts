@@ -12,6 +12,7 @@ import {
 } from "$lib/favicon"
 import { is_valid_url } from "$lib/url"
 import { gzipSync, deflateSync } from "node:zlib"
+import pixel from "./1x1.png?arraybuffer"
 
 function response_headers(item: CachedItem, is_stale?: boolean): Headers {
 	const headers = new Headers()
@@ -41,24 +42,34 @@ function response_headers(item: CachedItem, is_stale?: boolean): Headers {
 	return headers
 }
 
-function create_empty_response(
+async function create_empty_response(
 	url: string,
-	cache_status: string = "MISS"
-): Response {
+	disk_cache_status: string = "MISS",
+	request?: Request
+): Promise<Response> {
 	const item = cache_empty_favicon(url)
-	return new Response(null, {
-		status: 204,
-		headers: {
-			...response_headers(item),
-			"x-disk-cache": cache_status
-		}
+	const { body, encoding } = request
+		? await compress_if_accepted(pixel, request)
+		: { body: pixel }
+
+	const headers = response_headers(item)
+	headers.set("content-type", "image/png")
+	headers.set("x-disk-cache", disk_cache_status)
+	if (encoding) {
+		headers.set("Content-Encoding", encoding)
+	}
+
+	const response_body = body instanceof Uint8Array ? Buffer.from(body) : body
+	return new Response(response_body, {
+		status: 200,
+		headers
 	})
 }
 
 async function compress_if_accepted(
-	data: Uint8Array | Buffer,
+	data: Uint8Array | Buffer | ArrayBuffer,
 	request: Request
-): Promise<{ body: Uint8Array | Buffer; encoding?: string }> {
+): Promise<{ body: Uint8Array | Buffer | ArrayBuffer; encoding?: string }> {
 	const acceptEncoding = request.headers.get("accept-encoding") || ""
 	if (/\bgzip\b/.test(acceptEncoding)) {
 		return {
@@ -130,7 +141,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 				headers: {
 					ETag: item.etag,
 					"Cache-Control": is_stale
-						? "public, max-age=0, stale-while-revalidate=3600"
+						? `public, max-age=0, stale-while-revalidate=${STALE_THRESHOLD}`
 						: "public",
 					"x-disk-cache": is_stale ? "STALE" : "HIT"
 				}
@@ -138,7 +149,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		}
 
 		if (!data) {
-			return create_empty_response(url_param, is_stale ? "STALE" : "HIT")
+			return await create_empty_response(url_param, is_stale ? "STALE" : "HIT")
 		}
 
 		return await compressed_response({
@@ -151,7 +162,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 
 	const fetch_result = await fetch_and_cache_favicon(url_param, fetch)
 	if (!fetch_result) {
-		return create_empty_response(url_param)
+		return await create_empty_response(url_param)
 	}
 
 	return await compressed_response({

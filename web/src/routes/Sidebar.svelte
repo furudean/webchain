@@ -3,7 +3,6 @@
 	import { page } from "$app/state"
 	import Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
-	import { tick } from "svelte"
 
 	let {
 		nodes = [],

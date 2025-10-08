@@ -10,6 +10,11 @@ declare global {
 		}
 		// interface Platform {}
 	}
+
+	declare module "*?arraybuffer" {
+		const value: ArrayBuffer
+		export default value
+	}
 }
 
 export {}
