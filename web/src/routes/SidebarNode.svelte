@@ -2,21 +2,23 @@
 	import type { DisplayNode } from "$lib/node"
 	import { hovered_node, graph, set_highlighted_node } from "$lib/node-state"
 	import type Graph from "./Graph.svelte"
+	import SidebarNode from "./SidebarNode.svelte"
 
 	let {
-		node,
 		index,
+		nodes,
 		highlighted_node,
 		nominations_limit,
 		graph_component
 	}: {
-		node: DisplayNode
 		index: number
+		nodes: DisplayNode[]
 		highlighted_node: string | undefined
 		nominations_limit: number | null
 		graph_component: Graph
 	} = $props()
 
+	const node = nodes[index]
 	let node_element: HTMLElement | undefined = $state()
 
 	function hover_in() {
@@ -33,21 +35,26 @@
 		hovered_node.set(undefined)
 	}
 
-	export function scrollIntoView() {
-		if (node_element) {
-			node_element.scrollIntoView({ behavior: "auto", block: "center" })
-		}
-	}
+	const date_fmt = new Intl.DateTimeFormat("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric"
+	})
+	const date_time_fmt = new Intl.DateTimeFormat("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit"
+	})
 </script>
 
-<li
-	class:highlighted={node.at === highlighted_node}
-	class:hovered={node.at === $hovered_node}
-	style:margin-left="{node.depth}ch"
->
+<li>
 	<details
 		open={node.at === highlighted_node}
 		name="nodes"
+		class:hovered={node.at === $hovered_node}
+		class:highlighted={node.at === highlighted_node}
 		bind:this={node_element}
 	>
 		<summary
@@ -68,12 +75,16 @@
 			onkeydown={(event) => {
 				if (event.key === "ArrowDown") {
 					event.preventDefault()
-					const next = document.querySelectorAll(".nodes summary")[index + 1]
+					const nodes = document.querySelectorAll(".nodes summary")
+					const currentIndex = Array.from(nodes).indexOf(event.currentTarget)
+					const next = nodes[currentIndex + 1]
 					if (next) (next as HTMLElement).focus()
 				}
 				if (event.key === "ArrowUp") {
 					event.preventDefault()
-					const prev = document.querySelectorAll(".nodes summary")[index - 1]
+					const nodes = document.querySelectorAll(".nodes summary")
+					const currentIndex = Array.from(nodes).indexOf(event.currentTarget)
+					const prev = nodes[currentIndex - 1]
 					if (prev) (prev as HTMLElement).focus()
 				}
 			}}
@@ -112,20 +123,32 @@
 				<p>{node.html_metadata.description}</p>
 			{/if}
 			{#if node.first_seen}
-				<p class="date">
+				<p
+					class="date"
+					title={date_time_fmt.format(node.first_seen).toLowerCase()}
+				>
 					first seen
-					{new Intl.DateTimeFormat("en-US", {
-						year: "numeric",
-						month: "short",
-						day: "numeric"
-					})
-						.format(node.first_seen)
-						.toLowerCase()}
+					<time datetime={node.first_seen.toISOString()}>
+						{date_fmt.format(node.first_seen).toLowerCase()}
+					</time>
 				</p>
 			{/if}
 		</div>
 	</details>
 </li>
+{#if node.children.length > 0}
+	<ul>
+		{#each node.children as child_at}
+			<SidebarNode
+				index={nodes.findIndex((n) => n.at === child_at)}
+				{nodes}
+				{highlighted_node}
+				{nominations_limit}
+				{graph_component}
+			/>
+		{/each}
+	</ul>
+{/if}
 
 <style>
 	li {
@@ -137,12 +160,16 @@
 		flex: 1;
 	}
 
-	li:is(.hovered, :hover):not(.highlighted) {
+	details:is(.hovered, :hover):not(.highlighted) {
 		background-color: #8e8e8e36;
 	}
 
-	li:has(summary:focus-visible) {
+	details:has(summary:focus-visible) {
 		border-left: 2px solid blue;
+	}
+
+	ul {
+		padding-left: 1ch;
 	}
 
 	.label {

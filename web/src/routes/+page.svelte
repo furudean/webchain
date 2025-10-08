@@ -57,39 +57,12 @@
 		nodes={data.nodes}
 		{graph_component}
 		nominations_limit={data.nominations_limit}
+		crawl_date={data.end}
 	></Sidebar>
-
-	{#if data.start && data.end}
-		<a href="/crawler/current.json">
-			last crawled <time datetime={data.start.toISOString()}
-				>{new Date(data.start)
-					.toLocaleString("en-US", {
-						dateStyle: "short",
-						timeStyle: "short"
-					})
-					.toLowerCase()}</time
-			>, taking {Math.round((data.end.getTime() - data.start.getTime()) / 1000)}
-			seconds
-		</a>
-	{/if}
 </div>
 
 <style>
 	.container {
 		position: relative;
-		/* display: grid; */
-		/* grid-template-areas: "sidebar graph";
-		grid-template-columns: 1fr 2fr;
-		width: 100%;
-		min-height: 100vh; */
-	}
-
-	a {
-		position: fixed;
-		bottom: 0;
-		right: 0;
-		font-size: 0.8rem;
-		color: #666;
-		padding: 0.4em;
 	}
 </style>

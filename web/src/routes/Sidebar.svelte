@@ -5,24 +5,24 @@
 	import SidebarNode from "./SidebarNode.svelte"
 
 	let {
-		nodes,
-		nominations_limit,
+		nodes = [],
+		nominations_limit = -1,
+		crawl_date,
 		graph_component
 	}: {
 		nodes: DisplayNode[]
 		nominations_limit: number | null
+		crawl_date: Date | null
 		graph_component: Graph
 	} = $props()
 
 	const highlighted_node = $derived(page.state.node)
-
-	let node_components: Record<string, SidebarNode> = $state({})
+	let sidebar_nodes_element: HTMLElement
 
 	$effect(() => {
-		if (highlighted_node === undefined) return
-		const current_component = node_components[highlighted_node]
-		if (!current_component) return
-		current_component.scrollIntoView()
+		if (highlighted_node) {
+			sidebar_nodes_element.querySelector(`details[open]`)?.scrollIntoView()
+		}
 	})
 </script>
 
@@ -154,22 +154,32 @@
 		</p>
 	</details>
 
-	<ul class="nodes">
-		<h2>members</h2>
-		<p>
-			{new Intl.NumberFormat("en-US").format(nodes.length)} sites in this webchain
-		</p>
-		{#each nodes as node, i (node.at)}
-			<SidebarNode
-				bind:this={node_components[node.at]}
-				{node}
-				index={i}
-				{highlighted_node}
-				{nominations_limit}
-				{graph_component}
-			/>
-		{/each}
+	<h2>members</h2>
+	<p>
+		{new Intl.NumberFormat("en-US").format(nodes.length)} sites in this webchain
+	</p>
+	<ul class="nodes" bind:this={sidebar_nodes_element}>
+		<SidebarNode
+			index={0}
+			{nodes}
+			{highlighted_node}
+			{nominations_limit}
+			{graph_component}
+		/>
 	</ul>
+
+	{#if crawl_date}
+		<a href="/crawler/current.json" class="crawl-info">
+			last crawled <time datetime={crawl_date.toISOString()}
+				>{new Date(crawl_date)
+					.toLocaleString("en-US", {
+						dateStyle: "short",
+						timeStyle: "short"
+					})
+					.toLowerCase()}</time
+			>, seconds
+		</a>
+	{/if}
 </aside>
 
 <style>
@@ -190,10 +200,6 @@
 		background: blue;
 		margin-right: 0.1em;
 		vertical-align: sub;
-	}
-
-	aside > :last-child {
-		margin-bottom: 20vh;
 	}
 
 	@media (max-width: 35rem) {
@@ -281,5 +287,12 @@
 		image-rendering: crisp-edges;
 		max-width: 100%;
 		height: auto;
+	}
+
+	.crawl-info {
+		display: block;
+		font-size: 0.8rem;
+		color: #666;
+		margin: 2rem 0;
 	}
 </style>

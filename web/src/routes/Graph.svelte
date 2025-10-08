@@ -29,13 +29,14 @@
 
 	let zoom_frame: number | null = null
 	let graph_element: HTMLElement
+	let graph_container: HTMLElement
 
 	function update_camera(camera: Camera): void {
 		requestAnimationFrame(() => {
 			const size = `${40 / camera.ratio}px`
-			graph_element.style.backgroundSize = `${size} ${size}`
+			graph_container.style.backgroundSize = `${size} ${size}`
 			const transparency = Math.max(0.05, 0.5 / camera.ratio)
-			graph_element.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
+			graph_container.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
 
 			// Use graphToViewport to set pos_x and pos_y
 			let pos_x = "50%"
@@ -48,7 +49,7 @@
 					pos_y = `${viewport.y}px`
 				}
 			}
-			graph_element.style.backgroundPosition = `${pos_x} ${pos_y}`
+			graph_container.style.backgroundPosition = `${pos_x} ${pos_y}`
 			update_tooltip()
 		})
 	}
@@ -328,12 +329,12 @@
 	}
 </script>
 
-<div class="graph-container">
+<div class="graph-container" bind:this={graph_container}>
 	{#if browser && !is_webgl_supported()}
 		<div class="env-warning">graph requires webgl to be enabled</div>
 	{/if}
 	<noscript>
-		<div class="env-warning">graph requires javascript to be enbled</div>
+		<div class="env-warning">graph requires javascript to be enabled</div>
 	</noscript>
 	{#if display_node}
 		<div
@@ -406,10 +407,13 @@
 
 <style>
 	.graph-container {
-		grid-area: graph;
 		overflow: hidden;
-		position: relative;
+		position: fixed;
+		inset: 0;
 		display: flex;
+		background-image: #eee;
+		background-repeat: none;
+		will-change: background-size, background-position, background-image;
 	}
 
 	.tooltip {
@@ -418,7 +422,11 @@
 		font-family: monospace;
 		font-size: 0.7rem;
 		pointer-events: none;
-		opacity: 0.2;
+		color: #c6c6c6;
+		text-shadow:
+			0 0 2px white,
+			0 0 2px white,
+			0 0 2px white;
 		width: 60ch;
 		transform-origin: center;
 		transform: translate(-50%, -50%);
@@ -432,7 +440,7 @@
 	.camera-controls {
 		position: fixed;
 		right: 1em;
-		bottom: 1.9em;
+		bottom: 1em;
 		z-index: 10;
 		display: flex;
 		flex-direction: column;
@@ -463,8 +471,6 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
-		background-image: #eee;
-		background-repeat: none;
 	}
 
 	.graph:active {
