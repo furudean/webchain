@@ -179,7 +179,7 @@
 						timeStyle: "short"
 					})
 					.toLowerCase()}</time
-			>, seconds
+			>
 		</a>
 	{/if}
 </aside>
