@@ -140,7 +140,7 @@
 </li>
 {#if node.children.length > 0}
 	<ul>
-		{#each node.children as child_at, i}
+		{#each node.children as child_at (node.index)}
 			<SidebarNode
 				at={child_at}
 				{nodes}
