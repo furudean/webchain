@@ -179,7 +179,7 @@
 		flex: 1;
 		align-items: center;
 		gap: 0.5ch;
-		padding: 0 0.4em;
+		padding: 0.15em 0.4em 0.15em 0.4em;
 	}
 
 	.label .slots {
@@ -209,7 +209,6 @@
 	.node-header {
 		all: unset;
 		color: currentColor;
-		line-height: 1.5;
 		display: flex;
 		gap: 0.25em;
 		word-break: break-all;

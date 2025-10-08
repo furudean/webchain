@@ -3,6 +3,7 @@
 	import { page } from "$app/state"
 	import Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
+	import { tick } from "svelte"
 
 	let {
 		nodes = [],
@@ -21,7 +22,13 @@
 
 	$effect(() => {
 		if (highlighted_node) {
-			sidebar_nodes_element?.querySelector(`details[open]`)?.scrollIntoView()
+			const open_node = sidebar_nodes_element?.querySelector(
+				`details[open]`
+			) as HTMLElement | null
+			open_node?.scrollIntoView({ block: "nearest" })
+			open_node?.querySelector("summary")?.focus({
+				preventScroll: true
+			})
 		}
 	})
 </script>
@@ -35,7 +42,7 @@
 	<p>a distributed webring for friends and enemies</p>
 
 	<details class="qna" name="qna">
-		<summary>what?</summary>
+		<summary tabindex="0">what?</summary>
 		<p>
 			A <a href="/spec">webchain</a>
 			is a distributed
