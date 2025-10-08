@@ -94,8 +94,7 @@
 			<div class="label" data-indexed={node.indexed}>
 				<img
 					src="/api/favicon?url={encodeURIComponent(node.at)}"
-					alt=""
-					aria-hidden="true"
+					alt="Favicon of {node.label}"
 					width="16"
 					height="16"
 					style:background-color={node.generated_color}
@@ -140,7 +139,7 @@
 </li>
 {#if node.children.length > 0}
 	<ul>
-		{#each node.children as child_at (node.index)}
+		{#each node.children as child_at}
 			<SidebarNode
 				at={child_at}
 				{nodes}
@@ -200,6 +199,8 @@
 	.label img {
 		display: block;
 		border-radius: 0.1rem;
+		border: 1px solid #ccc;
+		aspect-ratio: 1 / 1;
 	}
 
 	.label[data-indexed="false"] > * {
