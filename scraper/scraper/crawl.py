@@ -85,7 +85,8 @@ def without_trailing_slash(url: str) -> str:
 
 def handle_meta_element(node: Tag | PageElement | None) -> str | None:
     if isinstance(node, Tag) and node.get('content'):
-        return str(node.get('content'))
+        content = str(node.get('content'))
+        return content.replace('\n', ' ').strip()
 
     return None
 
