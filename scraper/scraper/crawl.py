@@ -130,7 +130,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
     """
     seen: set[str] = set()
-    nominations_limit: int | float | None = None
+    nominations_limit: int = sys.maxsize * 2 + 1
     start = time()
 
     async def process_node(at: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
@@ -146,7 +146,9 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             if html is None:
                 raise ValueError(f'starting url {root_url} is unreachable')
 
-            nominations_limit = get_nominations_limit(html)
+            fetched_nominations_limit = get_nominations_limit(html)
+            if fetched_nominations_limit is not None:
+                nominations_limit = fetched_nominations_limit
 
             if nominations_limit is None:
                 logger.error(
@@ -187,9 +189,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
         return CrawlResponse(
             nodes=nodes,
-            nominations_limit=int(nominations_limit)
-            if nominations_limit is not None
-            else (sys.maxsize * 2 + 1),
+            nominations_limit=nominations_limit,
             start=to_iso_timestamp(start),
             end=to_iso_timestamp(end),
         )
