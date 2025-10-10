@@ -19,9 +19,7 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
     title_element = soup.head.title
     metadata.title = title_element.string if title_element else None
     if not metadata.title:
-        metadata.title = handle_meta_element(
-            soup.head.find('meta', attrs={'property': 'og:description'})
-        )
+        metadata.title = handle_meta_element(soup.head.find('meta', attrs={'property': 'og:title'}))
 
     if metadata.title:
         metadata.title = metadata.title.replace('\n', ' ').strip()
