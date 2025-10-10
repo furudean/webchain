@@ -3,7 +3,7 @@
 	import type { Sigma, Camera } from "sigma"
 	import type { AnimateOptions } from "sigma/utils"
 	import type GraphType from "graphology"
-	import { calculate_tree_layout, build_graph } from "$lib/graph"
+	import { build_graph } from "$lib/graph"
 	import type { DisplayNode } from "$lib/node"
 	import {
 		hovered_node,
@@ -38,7 +38,6 @@
 			const transparency = Math.max(0.05, 0.5 / camera.ratio)
 			graph_container.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
 
-			// Use graphToViewport to set pos_x and pos_y
 			let pos_x = "50%"
 			let pos_y = "50%"
 			if (renderer && graph) {
@@ -117,8 +116,8 @@
 		)
 		const hashmap = new Map(Object.values(nodes).map((node) => [node.at, node]))
 
-		const positions = calculate_tree_layout(hashmap)
-		graph = build_graph(hashmap, positions, Graph)
+		graph = build_graph(hashmap, Graph)
+
 		graph_store.set(graph)
 		renderer = new Sigma(graph, graph_element, {
 			nodeProgramClasses: {

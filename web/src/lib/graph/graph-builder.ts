@@ -3,20 +3,18 @@ import type { DisplayNode } from "$lib/node"
 
 export function build_graph(
 	hashmap: Map<string, DisplayNode>,
-	positions: Map<string, { x: number; y: number }>,
+	// positions: Map<string, { x: number; y: number }>,
 	Graph: typeof GraphType
 ): GraphType {
 	const graph = new Graph()
 
 	// Add nodes
 	for (const [id, node] of hashmap.entries()) {
-		const pos = positions.get(id) || { x: 0, y: 0 }
-
 		graph.addNode(id, {
 			label: node.label,
 			size: 20,
-			x: pos.x,
-			y: pos.y,
+			x: Math.random(),
+			y: Math.random(),
 			type: node.depth === 0 ? "square" : "image",
 			image: `/api/favicon?url=${encodeURIComponent(node.at)}`,
 			url: node.at,
