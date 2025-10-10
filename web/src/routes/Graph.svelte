@@ -176,7 +176,13 @@
 			isNodeFixed(_, attr) {
 				return attr.highlighted
 			},
-			settings: {}
+			settings: {
+				attraction: 0.0005,
+				repulsion: 0.2,
+				gravity: 0.0001,
+				inertia: 0.6,
+				maxMove: 500
+			}
 		})
 		if (!document.hidden) {
 			layout.start()
