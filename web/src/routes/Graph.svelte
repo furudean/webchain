@@ -10,6 +10,7 @@
 	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
 	import { getCameraStateToFitViewportToNodes } from "@sigma/utils"
 	import { browser } from "$app/environment"
+	import Spinner from "$lib/Spinner.svelte"
 
 	let { nodes }: { nodes: DisplayNode[] } = $props()
 
@@ -22,6 +23,7 @@
 	let graph: GraphType | undefined = $state()
 	let renderer: Sigma | undefined = $state()
 	let layout: ForceSupervisorType | undefined = $state()
+	let graph_promise: Promise<void> | undefined = $state()
 
 	let zoom_frame: number | null = null
 	let graph_element: HTMLElement
@@ -120,7 +122,7 @@
 				square: NodeSquareProgram
 			},
 			labelSize: 10,
-			labelFont: "system-ui, sans-serif",
+			labelFont: '"Fantasque Sans Mono", sans-serif',
 
 			labelRenderedSizeThreshold: 12,
 			maxCameraRatio: 8,
@@ -280,7 +282,7 @@
 
 	onMount(() => {
 		if (is_webgl_supported()) {
-			init_graph().catch(console.error)
+			graph_promise = init_graph().catch(console.error)
 		}
 
 		return () => {
@@ -330,12 +332,23 @@
 </script>
 
 <div class="graph-container" bind:this={graph_container}>
-	{#if browser && !is_webgl_supported()}
-		<div class="env-warning">graph requires webgl to be enabled</div>
+	{#if browser}
+		{#if !is_webgl_supported()}
+			<div class="env-warning">graph requires webgl to be enabled</div>
+		{:else}
+			{#await graph_promise}
+				<div class="env-warning">
+					<Spinner></Spinner> loading graph...
+				</div>
+			{:catch error}
+				<div class="env-warning">failed to load graph: {error.message}</div>
+			{/await}
+		{/if}
 	{/if}
 	<noscript>
 		<div class="env-warning">graph requires javascript to be enabled</div>
 	</noscript>
+
 	{#if display_node}
 		<div
 			class="tooltip"
@@ -349,7 +362,7 @@
 
 	<div class="graph" bind:this={graph_element}></div>
 
-	{#if renderer}
+	{#await graph_promise}
 		<div class="camera-controls">
 			<button
 				onclick={() => {
@@ -404,7 +417,7 @@
 				title="Zoom out">-</button
 			>
 		</div>
-	{/if}
+	{/await}
 </div>
 
 <style>
@@ -421,7 +434,7 @@
 	.tooltip {
 		position: fixed;
 		/* padding: 0.5em; */
-		font-family: monospace;
+		font-family: "Fantasque Sans Mono", monospace;
 		font-size: 0.7rem;
 		pointer-events: none;
 		color: #c6c6c6;
@@ -484,7 +497,7 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		font-family: monospace, sans-serif;
+		font-family: "Fantasque Sans Mono", monospace;
 		opacity: 0.5;
 	}
 

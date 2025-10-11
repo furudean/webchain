@@ -163,11 +163,12 @@
 		align-items: center;
 		gap: 0.5ch;
 		padding: 0.15em 0.4em 0.15em 0.4em;
+		line-height: 1;
 	}
 
 	.label .slots {
 		font-size: 0.75em;
-		font-family: monospace;
+		font-family: "Fantasque Sans Mono", monospace;
 		vertical-align: middle;
 		color: currentColor;
 		user-select: none;
