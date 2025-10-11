@@ -80,7 +80,7 @@ the webchain rooted at `https://mychain.org`.
    `<link rel="webchain-nomination" href="https://www.example.org">` tag to
    their page.
 
-The user is now part of the webchain. They may now nominate others by adding
+The page is now part of the webchain. They may now nominate others by adding
 markup to their own page.
 
 ## Crawling
@@ -111,7 +111,7 @@ rest of the chain. A web page or application should be created to visualize the
 chain and allow users to navigate it.
 
 Discoverability may be an issue, as visitors of any given node will have to know
-the webchain exists to browse it. Users should thus be encouraged to link back
+the webchain exists to browse it. Members should thus be encouraged to link back
 to the webchain root node or other representations available.
 
 If all parts work well together, a fun and dangerous social experiment will
