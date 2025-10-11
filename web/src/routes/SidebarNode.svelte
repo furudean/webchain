@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { DisplayNode } from "$lib/node"
-	import { hovered_node, graph, set_highlighted_node } from "$lib/node-state"
+	import { hovered_node, set_highlighted_node } from "$lib/node-state"
 	import type Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
+	import { date_fmt, date_time_fmt } from "$lib/date"
 
 	let {
 		at,
@@ -27,31 +28,14 @@
 	})
 
 	function hover_in() {
-		if ($graph?.hasNode(node.at)) {
-			$graph.setNodeAttribute(node.at, "highlighted", true)
-		}
 		hovered_node.set(node.at)
 	}
 
 	function hover_out() {
-		if ($graph?.hasNode(node.at) && node.at !== highlighted_node) {
-			$graph.setNodeAttribute(node.at, "highlighted", false)
+		if ($hovered_node === node.at) {
+			hovered_node.set(undefined)
 		}
-		hovered_node.set(undefined)
 	}
-
-	const date_fmt = new Intl.DateTimeFormat("en-US", {
-		year: "numeric",
-		month: "short",
-		day: "numeric"
-	})
-	const date_time_fmt = new Intl.DateTimeFormat("en-US", {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-		hour: "2-digit",
-		minute: "2-digit"
-	})
 </script>
 
 <li>

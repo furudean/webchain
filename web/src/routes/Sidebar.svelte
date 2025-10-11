@@ -3,6 +3,7 @@
 	import { page } from "$app/state"
 	import Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
+	import { date_time_fmt } from "$lib/date"
 
 	let {
 		nodes = [],
@@ -181,12 +182,7 @@
 	{#if crawl_date}
 		<a href="/crawler/current.json" class="crawl-info">
 			last crawled <time datetime={crawl_date.toISOString()}
-				>{new Date(crawl_date)
-					.toLocaleString("en-US", {
-						dateStyle: "short",
-						timeStyle: "short"
-					})
-					.toLowerCase()}</time
+				>{date_time_fmt.format(crawl_date).toLowerCase()}</time
 			>
 		</a>
 	{/if}

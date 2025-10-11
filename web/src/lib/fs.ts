@@ -1,6 +1,5 @@
 import fs from "node:fs/promises"
 
-// silent file operations that don't throw
 export async function safe_read_file(filepath: string): Promise<string | null> {
 	try {
 		return await fs.readFile(filepath, "utf-8")

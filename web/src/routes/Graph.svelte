@@ -5,11 +5,7 @@
 	import type GraphType from "graphology"
 	import { build_graph } from "$lib/graph"
 	import type { DisplayNode } from "$lib/node"
-	import {
-		hovered_node,
-		graph as graph_store,
-		set_highlighted_node
-	} from "$lib/node-state"
+	import { hovered_node, set_highlighted_node } from "$lib/node-state"
 	import { page } from "$app/state"
 	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
 	import { getCameraStateToFitViewportToNodes } from "@sigma/utils"
@@ -118,7 +114,6 @@
 
 		graph = build_graph(hashmap, Graph)
 
-		graph_store.set(graph)
 		renderer = new Sigma(graph, graph_element, {
 			nodeProgramClasses: {
 				image: NodeImageProgram,
@@ -344,7 +339,9 @@
 	{#if display_node}
 		<div
 			class="tooltip"
-			style="top: {tooltip_style.top}; left: {tooltip_style.left}; transform: {tooltip_style.transform}"
+			style:top={tooltip_style.top}
+			style:left={tooltip_style.left}
+			style:transform={tooltip_style.transform}
 		>
 			<pre>{JSON.stringify(display_node_data, null, 2)}</pre>
 		</div>
@@ -432,7 +429,7 @@
 			0 0 2px white,
 			0 0 2px white,
 			0 0 2px white;
-		width: 60ch;
+		max-width: 60ch;
 		transform-origin: center;
 		transform: translate(-50%, -50%);
 	}
