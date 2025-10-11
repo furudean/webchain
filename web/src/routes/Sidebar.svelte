@@ -41,7 +41,7 @@
 	<p>a distributed webring for friends and enemies</p>
 
 	<details class="qna" name="qna">
-		<summary tabindex="0">what?</summary>
+		<summary>webchain?</summary>
 		<p>
 			A <a href="/spec">webchain</a>
 			is a distributed
@@ -85,36 +85,38 @@
 	</details>
 
 	<details class="qna" name="qna">
-		<summary>how?</summary>
+		<summary>nomination</summary>
 		<p>
-			To nominate new nodes to the webchain, each member adds markup to its
+			To nominate new pages to the webchain, a member can add markup to its
 			HTML, for example:
 		</p>
 		<pre><code
 				>&lthtml&gt;
 &lt;head&gt;
-  &lt;link rel="webchain"
-    href="{page.url.origin}" /&gt;
-  &lt;link rel="webchain-nomination"
-    href="https://another.example.com" /&gt;
-  &lt;link rel="webchain-nomination"
-    href="https://yetanother.example.com" /&gt;
+	&lt;link rel="webchain"
+		href="{page.url.origin}" /&gt;
+	&lt;link rel="webchain-nomination"
+		href="https://www.example.com" /&gt;
 &lt;/head&gt;
 &lt;body&gt;
-    ...
+	...
 &lt/body&gt;
 &lt/html&gt;</code
 			></pre>
 		<p>
-			The <code>webchain</code> link points to root of the webchain the website
-			wants to be a part of, in this case that would be
-			<code>{page.url.href}</code>. The
+			In this case, the page is nominating <code>https://www.example.com</code>
+			to be part of the webchain
+			<code>{page.url.origin}</code>.
+		</p>
+		<p>
+			The <code>webchain</code> link points to the webchain the website wants to
+			be a part of. The
 			<code>webchain-nomination</code> links point to up to {nominations_limit} other
 			websites that this node nominates.
 		</p>
 		<p>
-			Note that a node must first be nominated by the webchain before it can add
-			others.
+			A node must first be a member by the webchain via nomination before it can
+			add others.
 		</p>
 	</details>
 
