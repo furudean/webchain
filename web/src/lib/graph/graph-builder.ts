@@ -3,7 +3,6 @@ import type { DisplayNode } from "$lib/node"
 
 export function build_graph(
 	hashmap: Map<string, DisplayNode>,
-	// positions: Map<string, { x: number; y: number }>,
 	Graph: typeof GraphType
 ): GraphType {
 	const graph = new Graph()
