@@ -94,7 +94,7 @@
 				>&lthtml&gt;
 &lt;head&gt;
   &lt;link rel="webchain"
-    href="{page.url.href}" /&gt;
+    href="{page.url.origin}" /&gt;
   &lt;link rel="webchain-nomination"
     href="https://another.example.com" /&gt;
   &lt;link rel="webchain-nomination"
