@@ -105,7 +105,7 @@
 &lt/html&gt;</code
 			></pre>
 		<p>
-			In this case, the page is nominating <code>https://www.example.com</code>
+			This snippet nominates <code>https://www.example.com</code>
 			to be part of the webchain
 			<code>{page.url.origin}</code>.
 		</p>
