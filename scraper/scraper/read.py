@@ -29,6 +29,7 @@ async def compareState(
     # Helper to find node by 'at' in a node list
     def find_node(nodes, at):
         for idx, node in enumerate(nodes):
+            logger.info(f"FINDNODE: {idx} : {node}\n")
             if node.at == at:
                 return idx
         return -1
@@ -36,6 +37,8 @@ async def compareState(
     changed_nodes = []
     mark_not_indexed = []
     for i in new_response.nodes:
+        if i.indexed == False:
+            mark_not_indexed.append(i.at)
         if i in mark_not_indexed:
             continue
         else:
@@ -56,13 +59,22 @@ async def compareState(
                         mark_not_indexed.append(x)
                 i.last_updated = new_response.end
                 CHANGEFLAG = 1
-                logger.info(f'Change detected at {i}')
+                logger.info(f'Change detected at {i}\n')
                 changed_nodes.append(i)
 
     for i in mark_not_indexed:
         idx = find_node(new_response.nodes, i)
+        ## If parent, update data
         if idx != -1:
             new_response.nodes[idx].indexed = False
+            oidx = find_node(old_response.nodes, i)
+            if oidx != -1:
+                old_node = old_response.nodes[oidx]
+                new_response.nodes[idx].children = old_node.children
+                new_response.nodes[idx].unqualified = old_node.unqualified
+                for c in old_node.children:
+                    mark_not_indexed.append(c)
+        #If Subtree, carry over old data, mark as not indexed
         else:
             oidx = find_node(old_response.nodes, i)
             if oidx != -1:
@@ -71,6 +83,7 @@ async def compareState(
                     mark_not_indexed.append(c)
                 temp_node.indexed = False
                 new_response.nodes.append(temp_node)
+
 
     if CHANGEFLAG:
         return CrawlResponse(
