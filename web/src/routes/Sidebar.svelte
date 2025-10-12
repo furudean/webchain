@@ -273,8 +273,7 @@
 
 	.qna[open] {
 		border: 1px dashed currentColor;
-		background: #efefef;
-		margin: 1rem 0;
+		background: #f5f5f5;
 	}
 
 	.qna summary {
