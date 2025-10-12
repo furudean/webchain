@@ -75,7 +75,11 @@
 				}
 			}}
 		>
-			<div class="label" data-indexed={node.indexed}>
+			<div
+				class="label"
+				data-indexed={node.indexed}
+				data-open={node.at === highlighted_node}
+			>
 				<img
 					src="/api/favicon?url={encodeURIComponent(node.at)}"
 					alt="Favicon of {node.label}"
@@ -93,7 +97,7 @@
 							{#if node.indexed}
 								{node.children.length}/{nominations_limit}
 							{:else}
-								offline
+								not indexed
 							{/if}
 						</span>
 					{/if}
@@ -187,8 +191,8 @@
 		aspect-ratio: 1 / 1;
 	}
 
-	.label[data-indexed="false"] > * {
-		opacity: 0.65;
+	.label[data-indexed="false"][data-open="false"] > * {
+		opacity: 0.5;
 	}
 
 	.node-header {
