@@ -290,16 +290,19 @@
 		graph_promise = init_graph()
 		graph_promise.catch(console.error)
 
-		window
-			.matchMedia("(prefers-color-scheme: dark)")
-			.addEventListener("change", (event) => {
-				// make sure the graph colors are updated when the color scheme changes
-				renderer?.refresh()
-			})
+		const media_query = window.matchMedia("(prefers-color-scheme: dark)")
+
+		function handle_color_scheme_change() {
+			// make sure the graph colors are updated when the color scheme changes
+			renderer?.refresh()
+		}
+
+		media_query.addEventListener("change", handle_color_scheme_change)
 
 		return () => {
 			layout?.kill()
 			renderer?.kill()
+			media_query.removeEventListener("change", handle_color_scheme_change)
 		}
 	})
 
@@ -309,11 +312,14 @@
 		for (const node of graph.nodes()) {
 			graph.setNodeAttribute(node, "highlighted", node === highlighted_node)
 		}
+	})
 
-		// Refresh the renderer and update the tooltip when display_node changes
+	$effect(() => {
+		// refresh the renderer when display_node changes (hovered or highlighted)
 		renderer?.refresh()
 
 		if (display_node) {
+			if (tooltip_animation_frame !== null) return
 			const loop = () => {
 				update_tooltip()
 				tooltip_animation_frame = requestAnimationFrame(loop)
