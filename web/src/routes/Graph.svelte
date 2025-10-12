@@ -378,9 +378,7 @@
 			style:left={tooltip_style.left}
 			style:transform={tooltip_style.transform}
 		>
-			<pre>
-				<code>{JSON.stringify(display_node_data, null, 2)}</code>
-			</pre>
+			<pre><code>{JSON.stringify(display_node_data, null, 2)}</code></pre>
 		</div>
 	{/if}
 
