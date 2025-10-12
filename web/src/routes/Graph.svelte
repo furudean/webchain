@@ -62,31 +62,15 @@
 		await renderer.getCamera()?.animate(camera_state, options)
 	}
 
-	function zoom(direction: 1 | -1): void {
+	function animated_zoom(direction: 1 | -1): void {
 		const camera = renderer?.getCamera()
 		if (!camera) return
-		const factor = 1.025
-		camera.setState({
-			ratio: camera.ratio * (direction < 1 ? factor : 1 / factor)
+		const factor = 1.75
+		camera.animatedZoom({
+			factor: direction > 0 ? factor : 1 / factor,
+			duration: 150,
+			easing: "cubicInOut"
 		})
-	}
-
-	function zoom_loop(direction: 1 | -1): void {
-		zoom(direction)
-		zoom_frame = requestAnimationFrame(() => zoom_loop(direction))
-	}
-
-	function start_zoom(direction: 1 | -1): void {
-		if (zoom_frame === null) {
-			zoom(direction)
-			zoom_frame = requestAnimationFrame(() => zoom_loop(direction))
-		}
-	}
-	function stop_zoom(): void {
-		if (zoom_frame !== null) {
-			cancelAnimationFrame(zoom_frame)
-			zoom_frame = null
-		}
 	}
 
 	function is_webgl_supported(): boolean {
@@ -404,6 +388,7 @@
 		{#await graph_promise then}
 			<div class="camera-controls">
 				<button
+					type="button"
 					onclick={() => {
 						center_on_nodes()
 					}}
@@ -411,8 +396,8 @@
 					aria-label="Reset camera view"
 				>
 					<svg
-						width="20"
-						height="20"
+						width="100%"
+						height="100%"
 						viewBox="0 0 20 20"
 						aria-hidden="true"
 						focusable="false"
@@ -444,16 +429,18 @@
 					</svg>
 				</button>
 				<button
-					onpointerdown={() => start_zoom(1)}
-					onpointerup={stop_zoom}
-					onpointerleave={stop_zoom}
+					type="button"
+					onclick={() => {
+						animated_zoom(1)
+					}}
 					title="Zoom in">+</button
 				>
 				<button
-					onpointerdown={() => start_zoom(-1)}
-					onpointerup={stop_zoom}
-					onpointerleave={stop_zoom}
-					title="Zoom out">-</button
+					type="button"
+					onclick={() => {
+						animated_zoom(-1)
+					}}
+					title="Zoom out">−</button
 				>
 			</div>
 		{/await}
@@ -501,10 +488,11 @@
 		gap: 0.5em;
 	}
 	.camera-controls button {
-		all: unset;
-		width: 1.5em;
-		height: 1.5em;
+		width: 1.75m;
+		height: 1.75em;
 		font-size: 1em;
+		font-family: inherit;
+		padding: 0;
 		background-color: var(--color-bg);
 		border: 1px solid var(--color-border);
 		color: var(--color-text);
@@ -512,7 +500,6 @@
 		align-items: center;
 		justify-content: center;
 		user-select: none;
-		backdrop-filter: blur(2px);
 	}
 
 	.camera-controls button:active {
