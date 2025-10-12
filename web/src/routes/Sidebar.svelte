@@ -20,6 +20,16 @@
 	const highlighted_node = $derived(page.state.node)
 	let sidebar_nodes_element = $state<HTMLElement | null>(null)
 
+	const snippet = `
+	<a href="${page.url.href}" rel="external"><img
+		src="${new URL("/button.png", page.url.origin).href}"
+		style="image-rendering: pixelated;"
+		height="31"
+		width="88"
+	/></a>`
+		.replace(/\s+/g, " ")
+		.trim()
+
 	$effect(() => {
 		if (highlighted_node) {
 			const open_node = sidebar_nodes_element?.querySelector(
@@ -132,7 +142,7 @@
 	</details>
 
 	<details class="qna" name="qna">
-		<summary>for members</summary>
+		<summary>socialize</summary>
 		<p>
 			If you want to link to this webchain from your site, an old-web style
 			button is provided below.
@@ -146,16 +156,17 @@
 				alt="An old-web style button that links to the webchain"
 			/>
 		</p>
-		<p>You can use the following HTML snippet to include it on your site</p>
-		<pre>
-&lt;a href="{page.url.href}"&gt;
-	&lt;img
-		src="{new URL("/button.png", page.url.href).href}"
-		height="31"
-		width="88"
-	/&gt;
-&lt;/a&gt;
-		</pre>
+		<p>
+			You can use the following HTML snippet to include it on your site: <input
+				type="text"
+				readonly
+				value={snippet}
+				onclick={(e) => {
+					e.currentTarget.select()
+				}}
+			/>
+		</p>
+
 		<p></p>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
@@ -300,5 +311,15 @@
 		font-size: 0.8rem;
 		color: #666;
 		margin: 2rem 0;
+	}
+
+	input[type="text"] {
+		font-family: "Fantasque Sans Mono", monospace;
+		font-size: 0.9rem;
+		min-width: 15rem;
+		padding: 0.25em;
+		border: 1px solid #919191;
+		background: white;
+		box-sizing: border-box;
 	}
 </style>

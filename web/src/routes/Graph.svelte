@@ -356,7 +356,9 @@
 			style:left={tooltip_style.left}
 			style:transform={tooltip_style.transform}
 		>
-			<pre>{JSON.stringify(display_node_data, null, 2)}</pre>
+			<pre>
+				<code>{JSON.stringify(display_node_data, null, 2)}</code>
+			</pre>
 		</div>
 	{/if}
 
@@ -442,7 +444,7 @@
 			0 0 2px white,
 			0 0 2px white,
 			0 0 2px white;
-		max-width: 60ch;
+		width: 70ch;
 		transform-origin: center;
 		transform: translate(-50%, -50%);
 	}

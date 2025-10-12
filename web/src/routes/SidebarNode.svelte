@@ -145,6 +145,10 @@
 		flex: 1;
 	}
 
+	details {
+		max-width: 35ch;
+	}
+
 	details:is(.hovered, :hover):not(.highlighted) {
 		background-color: #8e8e8e36;
 	}
@@ -211,7 +215,6 @@
 	.node-content p {
 		margin: 0;
 		margin-top: 0.4rem;
-		max-width: 35ch;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
@@ -219,6 +222,7 @@
 	.node-content a {
 		color: blue;
 		font-weight: bold;
+		word-break: break-word;
 	}
 
 	.node-content a:hover {
