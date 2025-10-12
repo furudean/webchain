@@ -129,10 +129,12 @@
 				image: NodeImageProgram,
 				square: NodeSquareProgram
 			},
+
 			labelSize: 10,
 			labelFont: '"Fantasque Sans Mono", sans-serif',
 			labelColor: { attribute: "textColor" },
-			labelRenderedSizeThreshold: 12,
+			labelGridCellSize: 125,
+			labelRenderedSizeThreshold: 10,
 
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
@@ -144,19 +146,20 @@
 				res.textColor = css_var("--color-text")
 
 				if (highlighted_node || $hovered_node) {
-					const highlighted =
+					const is_highlighted =
 						node === highlighted_node || node === $hovered_node
 					const is_neighbor = graph!
 						.neighbors(highlighted_node || $hovered_node)
 						.includes(node)
 
-					if (!highlighted && !is_neighbor) {
+					if (!is_highlighted && !is_neighbor) {
 						// Grey out other nodes
 						res.color = faded_color
 						res.image = undefined
+						res.textColor = css_var("--color-shy")
 					}
 
-					if (highlighted) {
+					if (is_highlighted) {
 						// res.textColor = css_var("--color-bg")
 						res.textColor = "#222"
 					}
@@ -289,7 +292,7 @@
 		camera.addListener("updated", update_camera)
 		update_camera(camera)
 		camera.setState({
-			ratio: 3
+			ratio: renderer.getSetting("maxCameraRatio") ?? 0.75
 		})
 		setTimeout(() => {
 			center_on_nodes(undefined, {
@@ -477,7 +480,7 @@
 		font-family: "Fantasque Sans Mono", monospace;
 		font-size: 0.7rem;
 		pointer-events: none;
-		color: var(--color-border);
+		color: var(--color-graph-tooltip);
 		text-shadow:
 			0 0 2px var(--color-bg),
 			0 0 2px var(--color-bg),

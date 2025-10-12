@@ -39,6 +39,7 @@
 	--octal-color: 0;
 	--color-graph-edge: #dedede;
 	--color-graph-inactive: #e3e3e3ff;
+	--color-graph-tooltip: var(--color-border);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,15 +47,16 @@
 		--color-bg: #181a1b;
 		--color-text: #cdc5e1;
 		--color-border: #726d7cff;
-		--color-shy: #857c9aff;
+		--color-shy: #605d68ff;
 		--color-solid: #23272e;
 
 		--a-not-visited-color: #1b97ff;
 		--a-visited-color: #e068ff;
 
 		--octal-color: 150;
-		--color-graph-edge: var(--color-border);
+		--color-graph-edge: #726d7cff;
 		--color-graph-inactive: #2c2f33;
+		--color-graph-tooltip: #2c2f33;
 	}
 }
 
