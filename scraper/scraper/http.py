@@ -19,10 +19,19 @@ class InvalidContentType(Exception):
     pass
 
 
+def final_error_handler(retry_state: tenacity.RetryCallState):
+    exception = retry_state.outcome.exception() if retry_state.outcome else None
+    url = retry_state.args[0] if retry_state.args else '<unknown>'
+    if exception is not None:
+        logger.info(
+            f'{url} failed after {retry_state.attempt_number} retries: {type(exception).__name__} {exception}'
+        )
+
+
 @tenacity.retry(
     wait=tenacity.wait_exponential(),
     stop=tenacity.stop_after_attempt(3),
-    retry_error_callback=lambda state: None,  # return None if retries fail
+    retry_error_callback=final_error_handler,
 )
 async def load_page_html(
     url: str,
@@ -53,16 +62,16 @@ async def load_page_html(
         logger.info(f'bad redirects for url {url}: ' + type(e).__name__)
         return None
     except aiohttp.ClientResponseError as e:
-        logger.info(f'{e.status} {url}')
         if 400 <= e.status < 500:
             # client error, do not retry
+            logger.info(f'{e.status} {url}')
             return None
+        logger.debug(f'{url}: ' + type(e).__name__)
         # server error, candidate for retry
         raise
     except InvalidContentType:
         logger.info(f'non-html content-type for url {url}: {content_type}')
         return None
     except aiohttp.ClientError as e:
-        # all other errors retry
-        logger.info(f'{url}: ' + type(e).__name__)
+        logger.debug(f'{url}: ' + type(e).__name__)
         raise
