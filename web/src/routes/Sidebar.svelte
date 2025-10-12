@@ -247,7 +247,7 @@
 	}
 
 	details {
-		max-width: 45ch;
+		max-width: 40ch;
 	}
 
 	details > :nth-child(2) {

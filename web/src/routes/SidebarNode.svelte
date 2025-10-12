@@ -145,10 +145,6 @@
 		flex: 1;
 	}
 
-	details {
-		max-width: 35ch;
-	}
-
 	details:is(.hovered, :hover):not(.highlighted) {
 		background-color: #8e8e8e36;
 	}
@@ -210,6 +206,7 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
+		max-width: 35ch;
 	}
 
 	.node-content p {
