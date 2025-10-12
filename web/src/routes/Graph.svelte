@@ -112,7 +112,7 @@
 	}
 
 	async function init_graph(): Promise<void> {
-		if (!is_webgl_supported()) return
+		if (!is_webgl_supported()) throw new Error("webgl not supported")
 
 		const { default: Sigma } = await import("sigma")
 		const { default: Graph } = await import("graphology")
@@ -306,9 +306,8 @@
 	}
 
 	onMount(() => {
-		if (is_webgl_supported()) {
-			graph_promise = init_graph().catch(console.error)
-		}
+		graph_promise = init_graph()
+		graph_promise.catch(console.error)
 
 		window
 			.matchMedia("(prefers-color-scheme: dark)")
@@ -364,23 +363,6 @@
 </script>
 
 <div class="graph-container" bind:this={graph_container}>
-	{#if browser}
-		{#if !is_webgl_supported()}
-			<div class="env-warning">graph requires webgl to be enabled</div>
-		{:else}
-			{#await graph_promise}
-				<div class="env-warning">
-					<Spinner></Spinner> loading graph...
-				</div>
-			{:catch error}
-				<div class="env-warning">failed to load graph: {error.message}</div>
-			{/await}
-		{/if}
-	{/if}
-	<noscript>
-		<div class="env-warning">graph requires javascript to be enabled</div>
-	</noscript>
-
 	{#if display_node}
 		<div
 			class="tooltip"
@@ -394,64 +376,84 @@
 		</div>
 	{/if}
 
-	<div class="graph" bind:this={graph_element}></div>
+	<div id="graph" bind:this={graph_element} class:has-renderer={renderer}></div>
 
-	{#await graph_promise then}
-		<div class="camera-controls">
-			<button
-				onclick={() => {
-					center_on_nodes()
-				}}
-				title="Reset camera view"
-				aria-label="Reset camera view"
-			>
-				<svg
-					width="20"
-					height="20"
-					viewBox="0 0 20 20"
-					aria-hidden="true"
-					focusable="false"
+	{#if browser}
+		<!-- has javascript, in browser -->
+		{#await graph_promise}
+			<div class="env-warning">
+				<Spinner></Spinner> loading graph...
+			</div>
+		{:catch error}
+			{#if !is_webgl_supported()}
+				<div class="env-warning">graph requires webgl to be enabled</div>
+			{:else}
+				<div class="env-warning">failed to load graph: {error.message}</div>
+			{/if}
+		{/await}
+	{/if}
+	<noscript>
+		<div class="env-warning">graph requires javascript to be enabled</div>
+	</noscript>
+
+	{#if browser}
+		{#await graph_promise then}
+			<div class="camera-controls">
+				<button
+					onclick={() => {
+						center_on_nodes()
+					}}
+					title="Reset camera view"
+					aria-label="Reset camera view"
 				>
-					<path
-						d="M6 8V6H8"
-						stroke="currentColor"
-						stroke-width="1"
-						fill="none"
-					/>
-					<path
-						d="M14 8V6H12"
-						stroke="currentColor"
-						stroke-width="1"
-						fill="none"
-					/>
-					<path
-						d="M14 12V14H12"
-						stroke="currentColor"
-						stroke-width="1"
-						fill="none"
-					/>
-					<path
-						d="M6 12V14H8"
-						stroke="currentColor"
-						stroke-width="1"
-						fill="none"
-					/>
-				</svg>
-			</button>
-			<button
-				onpointerdown={() => start_zoom(1)}
-				onpointerup={stop_zoom}
-				onpointerleave={stop_zoom}
-				title="Zoom in">+</button
-			>
-			<button
-				onpointerdown={() => start_zoom(-1)}
-				onpointerup={stop_zoom}
-				onpointerleave={stop_zoom}
-				title="Zoom out">-</button
-			>
-		</div>
-	{/await}
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 20 20"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path
+							d="M6 8V6H8"
+							stroke="currentColor"
+							stroke-width="1"
+							fill="none"
+						/>
+						<path
+							d="M14 8V6H12"
+							stroke="currentColor"
+							stroke-width="1"
+							fill="none"
+						/>
+						<path
+							d="M14 12V14H12"
+							stroke="currentColor"
+							stroke-width="1"
+							fill="none"
+						/>
+						<path
+							d="M6 12V14H8"
+							stroke="currentColor"
+							stroke-width="1"
+							fill="none"
+						/>
+					</svg>
+				</button>
+				<button
+					onpointerdown={() => start_zoom(1)}
+					onpointerup={stop_zoom}
+					onpointerleave={stop_zoom}
+					title="Zoom in">+</button
+				>
+				<button
+					onpointerdown={() => start_zoom(-1)}
+					onpointerup={stop_zoom}
+					onpointerleave={stop_zoom}
+					title="Zoom out">-</button
+				>
+			</div>
+		{/await}
+	{/if}
 </div>
 
 <style>
@@ -513,7 +515,7 @@
 		background-color: var(--color-border);
 	}
 
-	.graph {
+	#graph {
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -521,7 +523,7 @@
 		height: 100vh;
 	}
 
-	.graph:active {
+	#graph.has-renderer:active {
 		cursor: move;
 	}
 
@@ -534,5 +536,6 @@
 		opacity: 0.5;
 		color: var(--color-text);
 		background: var(--color-bg);
+		max-width: 50ch;
 	}
 </style>
