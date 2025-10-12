@@ -48,7 +48,6 @@
 				}
 			}
 			graph_container.style.backgroundPosition = `${pos_x} ${pos_y}`
-			update_tooltip()
 		})
 	}
 
@@ -195,15 +194,15 @@
 		let is_dragging = false
 
 		layout = new ForceSupervisor(graph, {
-			isNodeFixed(_, attr) {
-				return attr.highlighted
+			isNodeFixed(node, attr) {
+				return dragged_node === node
 			},
 			settings: {
-				attraction: 0.0005,
-				repulsion: 0.2,
-				gravity: 0.0001,
-				inertia: 0.6,
-				maxMove: 500
+				// attraction: 0.0005,
+				// repulsion: 0.1,
+				// gravity: 0.0001,
+				// inertia: 0.6,
+				// maxMove: 200
 			}
 		})
 		if (!document.hidden) {
@@ -256,8 +255,6 @@
 			graph.setNodeAttribute(dragged_node, "x", pos.x)
 			graph.setNodeAttribute(dragged_node, "y", pos.y)
 
-			update_tooltip()
-
 			event.preventSigmaDefault()
 			event.original.preventDefault()
 			event.original.stopPropagation()
@@ -286,9 +283,6 @@
 		})
 		renderer.on("doubleClickStage", (e) => {
 			e.preventSigmaDefault()
-		})
-		renderer.on("resize", () => {
-			update_tooltip()
 		})
 
 		const camera = renderer.getCamera()
@@ -331,9 +325,20 @@
 
 		// Refresh the renderer and update the tooltip when display_node changes
 		renderer?.refresh()
-		update_tooltip()
+
+		if (display_node) {
+			const loop = () => {
+				update_tooltip()
+				tooltip_animation_frame = requestAnimationFrame(loop)
+			}
+			loop()
+		} else if (tooltip_animation_frame !== null) {
+			cancelAnimationFrame(tooltip_animation_frame)
+			tooltip_animation_frame = null
+		}
 	})
 
+	let tooltip_animation_frame: number | null = null
 	let tooltip_style = $state({
 		top: "0px",
 		left: "0px",
