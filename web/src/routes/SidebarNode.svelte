@@ -75,11 +75,7 @@
 				}
 			}}
 		>
-			<div
-				class="label"
-				data-indexed={node.indexed}
-				data-open={node.at === highlighted_node}
-			>
+			<div class="label" data-indexed={node.indexed}>
 				<img
 					src="/api/favicon?url={encodeURIComponent(node.at)}"
 					alt="Favicon of {node.label}"
@@ -149,7 +145,7 @@
 		flex: 1;
 	}
 
-	details:is(.hovered, :hover):not(.highlighted) {
+	details:not([open]):is(.hovered, :hover):not(.highlighted) {
 		background-color: var(--color-border);
 	}
 
@@ -191,7 +187,8 @@
 		aspect-ratio: 1 / 1;
 	}
 
-	.label[data-indexed="false"][data-open="false"] > * {
+	/* Only apply opacity when details is NOT open and node is not indexed */
+	li details:not([open]) .label[data-indexed="false"] > * {
 		opacity: 0.5;
 	}
 
