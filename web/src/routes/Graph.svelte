@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte"
-	import type { Sigma, Camera } from "sigma"
+	import type { Sigma as SigmaType, Camera } from "sigma"
 	import type { AnimateOptions } from "sigma/utils"
 	import type GraphType from "graphology"
 	import { build_graph } from "$lib/graph"
@@ -21,7 +21,7 @@
 	)
 
 	let graph: GraphType | undefined = $state()
-	let renderer: Sigma | undefined = $state()
+	let renderer: SigmaType | undefined = $state()
 	let layout: ForceSupervisorType | undefined = $state()
 	let graph_promise: Promise<void> | undefined = $state()
 
@@ -34,10 +34,11 @@
 			const size = `${40 / camera.ratio}px`
 			graph_container.style.backgroundSize = `${size} ${size}`
 			const transparency = Math.max(0.05, 0.5 / camera.ratio)
-			graph_container.style.backgroundImage = `radial-gradient(rgb(0, 0, 0, ${transparency}) 1px, transparent 0)`
+			const part = "var(--octal-color)"
+			graph_container.style.backgroundImage = `radial-gradient(rgb(${part}, ${part}, ${part}, ${transparency}) 1px, transparent 0)`
 
-			let pos_x = "50%"
-			let pos_y = "50%"
+			let pos_x = "0"
+			let pos_y = "0"
 			if (renderer && graph) {
 				const center = { x: camera.x, y: camera.y }
 				const viewport = renderer.graphToViewport(center)
@@ -102,6 +103,14 @@
 		}
 	}
 
+	function css_var(name: string): string {
+		if (!browser) throw new Error("css_var can only be used in the browser")
+		const value = getComputedStyle(document.documentElement).getPropertyValue(
+			name
+		)
+		return value.trim()
+	}
+
 	async function init_graph(): Promise<void> {
 		if (!is_webgl_supported()) return
 
@@ -123,12 +132,18 @@
 			},
 			labelSize: 10,
 			labelFont: '"Fantasque Sans Mono", sans-serif',
-
+			labelColor: { attribute: "textColor" },
 			labelRenderedSizeThreshold: 12,
+
 			maxCameraRatio: 8,
 			minCameraRatio: 0.75,
-			nodeReducer: (node, data) => {
-				const res = { ...data }
+
+			nodeReducer(node, data) {
+				const res: typeof data = { ...data }
+				const faded_color = css_var("--color-graph-inactive")
+
+				res.textColor = css_var("--color-text")
+
 				if (highlighted_node || $hovered_node) {
 					const highlighted =
 						node === highlighted_node || node === $hovered_node
@@ -138,14 +153,24 @@
 
 					if (!highlighted && !is_neighbor) {
 						// Grey out other nodes
-						res.color = "#eee"
+						res.color = faded_color
 						res.image = undefined
 					}
+
+					if (highlighted) {
+						// res.textColor = css_var("--color-bg")
+						res.textColor = "#222"
+					}
 				}
+
 				return res
 			},
-			edgeReducer: (edge, data) => {
+			edgeReducer(edge, data) {
 				const res = { ...data }
+				const faded_color = css_var("--color-graph-inactive")
+
+				res.color = css_var("--color-graph-edge")
+
 				if (highlighted_node || $hovered_node) {
 					const source = graph?.source(edge)
 					const target = graph?.target(edge)
@@ -159,7 +184,7 @@
 							(n) => n.at === (source || target)
 						)?.generated_color
 					} else {
-						res.color = "#eee" // Grey out other edges
+						res.color = faded_color // Grey out other edges
 					}
 				}
 				return res
@@ -285,6 +310,13 @@
 			graph_promise = init_graph().catch(console.error)
 		}
 
+		window
+			.matchMedia("(prefers-color-scheme: dark)")
+			.addEventListener("change", (event) => {
+				// make sure the graph colors are updated when the color scheme changes
+				renderer?.refresh()
+			})
+
 		return () => {
 			layout?.kill()
 			renderer?.kill()
@@ -364,7 +396,7 @@
 
 	<div class="graph" bind:this={graph_element}></div>
 
-	{#await graph_promise}
+	{#await graph_promise then}
 		<div class="camera-controls">
 			<button
 				onclick={() => {
@@ -428,22 +460,21 @@
 		position: fixed;
 		inset: 0;
 		display: flex;
-		background-image: #eee;
+		background: var(--color-bg);
 		background-repeat: none;
 		will-change: background-size, background-position, background-image;
 	}
 
 	.tooltip {
 		position: fixed;
-		/* padding: 0.5em; */
 		font-family: "Fantasque Sans Mono", monospace;
 		font-size: 0.7rem;
 		pointer-events: none;
-		color: #c6c6c6;
+		color: var(--color-border);
 		text-shadow:
-			0 0 2px white,
-			0 0 2px white,
-			0 0 2px white;
+			0 0 2px var(--color-bg),
+			0 0 2px var(--color-bg),
+			0 0 2px var(--color-bg);
 		width: 70ch;
 		transform-origin: center;
 		transform: translate(-50%, -50%);
@@ -468,9 +499,9 @@
 		width: 1.5em;
 		height: 1.5em;
 		font-size: 1em;
-		background-color: #ffffffd8;
-		border: 1px solid #ccc;
-		color: #333;
+		background-color: var(--color-bg);
+		border: 1px solid var(--color-border);
+		color: var(--color-text);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -479,7 +510,7 @@
 	}
 
 	.camera-controls button:active {
-		background-color: #eee;
+		background-color: var(--color-border);
 	}
 
 	.graph {
@@ -501,14 +532,7 @@
 		transform: translate(-50%, -50%);
 		font-family: "Fantasque Sans Mono", monospace;
 		opacity: 0.5;
+		color: var(--color-text);
+		background: var(--color-bg);
 	}
-
-	/* @media (prefers-color-scheme: dark) {
-		#graph {
-			background-image:
-				linear-gradient(to right, hsl(0, 0%, 15%) 1px, transparent 1px),
-				linear-gradient(to bottom, hsl(0, 0%, 15%) 1px, transparent 1px);
-			background-color: #181818;
-		}
-	} */
 </style>

@@ -205,24 +205,25 @@
 		top: 0;
 		left: 0;
 		padding: 0 1rem;
-		background: linear-gradient(to right, white, transparent);
+		background: linear-gradient(to right, var(--color-bg), transparent);
 		min-height: 100vh;
 		will-change: backdrop-filter;
+		color: var(--color-text);
 	}
 
 	.square {
 		display: inline-block;
 		width: 1.1em;
 		height: 1.1em;
-		background: blue;
+		background: var(--color-primary);
 		margin-right: 0.1em;
 		vertical-align: sub;
 	}
 
 	@media (max-width: 35rem) {
 		aside {
-			border-right: 1px solid rgba(0, 0, 0, 0.25);
-			background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+			border-right: 1px solid var(--color-border, rgba(0, 0, 0, 0.25));
+			background: linear-gradient(to right, var(--color-bg), transparent);
 			backdrop-filter: blur(1.5px);
 			transform: translateX(-90%);
 			transition: transform 200ms ease-in-out;
@@ -234,11 +235,9 @@
 		}
 	}
 
-	/* aside.open, */
 	aside:hover {
-		/* background: white; */
-		border-right: 1px solid rgba(0, 0, 0, 0.25);
-		background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+		border-right: 1px solid var(--color-border, rgba(0, 0, 0, 0.25));
+		background: linear-gradient(to right, var(--color-bg), transparent);
 		backdrop-filter: blur(1.5px);
 	}
 
@@ -260,7 +259,7 @@
 	}
 
 	.qna:has(> :focus-visible) {
-		outline: 2px solid blue;
+		outline: 2px solid var(--color-primary);
 	}
 
 	.qna summary:focus {
@@ -268,12 +267,12 @@
 	}
 
 	.qna:is(:hover, :focus-visible) {
-		border: 1px dashed currentColor;
+		border: 1px dashed var(--color-text);
 	}
 
 	.qna[open] {
-		border: 1px dashed currentColor;
-		background: #f5f5f5;
+		border: 1px dashed var(--color-text);
+		background: var(--color-solid);
 	}
 
 	.qna summary {
@@ -308,7 +307,7 @@
 	.crawl-info {
 		display: block;
 		font-size: 0.8rem;
-		color: #666;
+		color: var(--color-shy);
 		margin: 2rem 0;
 	}
 
@@ -317,8 +316,9 @@
 		font-size: 0.9rem;
 		min-width: 15rem;
 		padding: 0.25em;
-		border: 1px solid #919191;
-		background: white;
+		border: 1px solid var(--color-border);
+		background: none;
 		box-sizing: border-box;
+		color: var(--color-text);
 	}
 </style>

@@ -146,11 +146,11 @@
 	}
 
 	details:is(.hovered, :hover):not(.highlighted) {
-		background-color: #8e8e8e36;
+		background-color: var(--color-border);
 	}
 
 	details:has(summary:focus-visible) {
-		border-left: 2px solid blue;
+		border-left: 2px solid var(--color-primary);
 	}
 
 	ul {
@@ -170,21 +170,20 @@
 		font-size: 0.75em;
 		font-family: "Fantasque Sans Mono", monospace;
 		vertical-align: middle;
-		color: currentColor;
 		user-select: none;
 		pointer-events: none;
 		margin-left: 0.5ch;
 	}
 
 	li details[open] .label {
-		background-color: blue;
+		background-color: var(--color-primary);
 		color: white;
 	}
 
 	.label img {
 		display: block;
 		border-radius: 0.1rem;
-		border: 1px solid #ccc;
+		border: 1px solid var(--color-border);
 		aspect-ratio: 1 / 1;
 	}
 
@@ -194,14 +193,14 @@
 
 	.node-header {
 		all: unset;
-		color: currentColor;
+		color: var(--color-text);
 		display: flex;
 		gap: 0.25em;
 		word-break: break-all;
 	}
 
 	.node-content {
-		border-left: 2px solid blue;
+		border-left: 2px solid var(--color-primary);
 		padding: 0.4rem;
 		display: flex;
 		flex: 1;
@@ -217,17 +216,12 @@
 	}
 
 	.node-content a {
-		color: blue;
 		font-weight: bold;
 		word-break: break-word;
 	}
 
 	.node-content a:hover {
 		text-decoration-style: double;
-	}
-
-	.node-content a:visited {
-		color: purple;
 	}
 
 	.date {
