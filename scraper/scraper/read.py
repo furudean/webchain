@@ -63,6 +63,14 @@ async def compareState(
         idx = find_node(new_response.nodes, i)
         if idx != -1:
             new_response.nodes[idx].indexed = False
+        else:
+            oidx = find_node(old_response.nodes, i)
+            if oidx != -1:
+                temp_node = old_response.nodes[oidx]
+                for c in temp_node.children:
+                    mark_not_indexed.append(c)
+                temp_node.indexed = False
+                new_response.nodes.append(temp_node)
 
     if CHANGEFLAG:
         return CrawlResponse(
