@@ -60,7 +60,7 @@ async def compareState(
                 changed_nodes.append(i)
 
     for i in mark_not_indexed:
-        idx = find_node(new_response.nodes, i.at)
+        idx = find_node(new_response.nodes, i)
         if idx != -1:
             new_response.nodes[idx].indexed = False
 
