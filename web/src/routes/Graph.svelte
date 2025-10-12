@@ -360,13 +360,11 @@
 		const camera = renderer.getCamera()
 		const scale = 1 / camera.ratio // Scale tooltip size inversely with zoom ratio
 
-		requestAnimationFrame(() => {
-			tooltip_style = {
-				top: `${y}px`,
-				left: `${x}px`,
-				transform: `translate(-50%, -50%) scale(${scale})`
-			}
-		})
+		tooltip_style = {
+			top: `${y}px`,
+			left: `${x}px`,
+			transform: `translate(-50%, -50%) scale(${scale})`
+		}
 	}
 </script>
 
