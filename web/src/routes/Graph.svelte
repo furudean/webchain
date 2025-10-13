@@ -494,7 +494,7 @@
 		gap: 0.5em;
 	}
 	.camera-controls button {
-		width: 1.75m;
+		width: 1.75em;
 		height: 1.75em;
 		font-size: 1em;
 		font-family: inherit;
