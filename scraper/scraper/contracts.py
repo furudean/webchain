@@ -16,6 +16,7 @@ class CrawledNode:
     parent: str | None
     depth: int
     indexed: bool
+    index_error: Exception | None = None
     unqualified: list[str] = field(default_factory=list)
     """nominations that were already a part of the graph or exceeded the nominations limit"""
     first_seen: str | None = None

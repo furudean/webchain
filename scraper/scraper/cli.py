@@ -23,10 +23,21 @@ def asyncio_click(func):
     return wrapper
 
 
-@click.group
-def webchain():
+@click.group()
+@click.option(
+    '--attempts',
+    default=5,
+    show_default=True,
+    type=int,
+    help='number of retry attempts for network requests',
+)
+def webchain(attempts: int):
     log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
     logging.basicConfig(level=log_level, format='%(filename)s: %(message)s')
+
+    if 'WEBCHAIN_NETWORK_ATTEMPTS' not in os.environ:
+        os.environ['WEBCHAIN_NETWORK_ATTEMPTS'] = str(attempts)
+
     pass
 
 

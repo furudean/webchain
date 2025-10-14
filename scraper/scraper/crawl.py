@@ -134,12 +134,19 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
     nominations_limit: int = sys.maxsize * 2 + 1
     start = time()
 
-    async def process_node(at: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
+    async def process_node(url: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
         nonlocal nominations_limit
 
-        at = without_trailing_slash(at)
+        at = without_trailing_slash(url)
         seen.add(at)
-        html = await load_page_html(at, referrer=parent, session=session)
+        index_error: Exception | None = None
+        try:
+            html = await load_page_html(url, referrer=parent, session=session)
+        except Exception as e:
+            logger.info(f'get {url} failed after retries: {type(e).__name__} {e}')
+            html = None
+            index_error = e
+
         nominations: list[str] = []
         unqualified: list[str] = []
 
@@ -172,11 +179,14 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             parent=parent,
             depth=depth,
             indexed=html is not None,
+            index_error=index_error,
         )
         nodes = [node]
 
         if nominations and depth < recursion_limit:
-            tasks = [process_node(at=url, parent=at, depth=depth + 1) for url in nominations]
+            tasks = [
+                process_node(url=child_url, parent=at, depth=depth + 1) for child_url in nominations
+            ]
             results = await asyncio.gather(*tasks)
 
             nodes.extend(itertools.chain(*results))

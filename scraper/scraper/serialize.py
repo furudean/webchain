@@ -4,9 +4,22 @@ import json
 from scraper.crawl import CrawlResponse, CrawledNode
 
 
+def safe_asdict(obj):
+    """Convert dataclass to dict, converting non-serializable fields to string."""
+    result = {}
+    for field in dataclasses.fields(obj):
+        value = getattr(obj, field.name)
+        try:
+            json.dumps(value)
+            result[field.name] = value
+        except TypeError:
+            result[field.name] = str(value)
+    return result
+
+
 def serialize(crawled: CrawlResponse, **kwargs) -> str:
     data = {
-        'nodes': [dataclasses.asdict(node) for node in crawled.nodes],
+        'nodes': [safe_asdict(node) for node in crawled.nodes],
         'nominations_limit': crawled.nominations_limit,
         'start': crawled.start,
         'end': crawled.end,
