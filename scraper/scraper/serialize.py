@@ -5,25 +5,27 @@ from scraper.crawl import CrawlResponse, CrawledNode
 
 
 def safe_asdict(obj):
-    """Convert dataclass to dict, converting non-serializable fields to string."""
-    result = {}
-    for field in dataclasses.fields(obj):
-        value = getattr(obj, field.name)
+    """Recursively convert dataclass to dict, converting non-serializable fields to string."""
+    if dataclasses.is_dataclass(obj):
+        result = {}
+        for field in dataclasses.fields(obj):
+            value = getattr(obj, field.name)
+            result[field.name] = safe_asdict(value)
+        return result
+    elif isinstance(obj, (list, tuple)):
+        return [safe_asdict(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: safe_asdict(v) for k, v in obj.items()}
+    else:
         try:
-            json.dumps(value)
-            result[field.name] = value
+            json.dumps(obj)
+            return obj
         except TypeError:
-            result[field.name] = str(value)
-    return result
+            return str(obj)
 
 
 def serialize(crawled: CrawlResponse, **kwargs) -> str:
-    data = {
-        'nodes': [safe_asdict(node) for node in crawled.nodes],
-        'nominations_limit': crawled.nominations_limit,
-        'start': crawled.start,
-        'end': crawled.end,
-    }
+    data = safe_asdict(crawled)
     return json.dumps(data, **kwargs)
 
 
