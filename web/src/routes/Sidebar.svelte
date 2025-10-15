@@ -51,41 +51,36 @@
 
 	<p>a distributed webring for friends and enemies</p>
 
-	<details class="qna" name="qna">
+	<details name="qna">
 		<summary>webchain?</summary>
 		<p>
 			A <a href="/spec">webchain</a>
 			is a distributed
 			<a href="https://en.wikipedia.org/wiki/Webring" rel="external">webring</a
-			>, where each member site can nominate other websites, creating a walkable
-			graph of trust.
+			>, where each tracked website can nominate new members, creating a
+			walkable graph of trust.
 		</p>
-		<p>
-			The current state of the <em>milkmedicine webchain</em> is visualized on this
-			page.
-		</p>
+
 		<ol>
 			<li>
 				This page is the starting point of the <em>milkmedicine webchain</em>,
-				which is itself a webchain node. It nominates several other websites,
-				which you may see below.
+				which is itself a webchain link. It nominates several other websites in
+				its HTML.
 			</li>
 			<li>
-				Nominated websites may add their nominations by adding markup to their
-				HTML, up to a limit of {nominations_limit}.
+				Nominated websites may add nominations by adding markup to their HTML,
+				up to a limit of {nominations_limit}.
 			</li>
 			<li>
 				Those websites may nominate {nominations_limit} others, and so on, and so
 				forth.
 			</li>
 		</ol>
+
 		<p>
-			A crawler visits each node, reads its nominations, and then visits those
-			nodes in turn, recursively, building up a graph of all reachable nodes.
-		</p>
-		<p>
-			The crawler runs periodically, so new nodes and nominations will appear on
-			this page over time.
+			A crawler visits each link, reads its nominations, and then visits those
+			links recursively, building up a graph of all reachable sites. The crawler
+			runs periodically, so new links will appear on this page over time.
 		</p>
 		<p>
 			Source code may be found <a
@@ -95,7 +90,7 @@
 		</p>
 	</details>
 
-	<details class="qna" name="qna">
+	<details name="qna">
 		<summary>nomination</summary>
 		<p>
 			To nominate new pages to the webchain, a member can add markup to its
@@ -126,22 +121,12 @@
 			websites that this node nominates.
 		</p>
 		<p>
-			A node must first be a member by the webchain via nomination before it can
+			A node must first be a member of the webchain via nomination before it can
 			add others.
 		</p>
 	</details>
 
-	<details class="qna" name="qna">
-		<summary>questions</summary>
-		<p>
-			If you have inquiries (including wanting to join this webchain), you can
-			come chat in the <a href="https://irc.milkmedicine.net" rel="external"
-				>#webchain channel on irc.milkmedicine.net</a
-			>.
-		</p>
-	</details>
-
-	<details class="qna" name="qna">
+	<details name="qna">
 		<summary>socialize</summary>
 		<p>
 			If you want to link to this webchain from your site, an old-web style
@@ -153,7 +138,7 @@
 				class="button"
 				height="31"
 				width="88"
-				alt="An old-web style button that links to the webchain"
+				alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left."
 			/>
 		</p>
 		<p>
@@ -170,13 +155,26 @@
 		<p></p>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
-			node in the webchain (please use url-safe encoding).
+			node in the webchain, like:
+			<code>{page.url.origin}?node={nodes[0]?.url_param}</code>.
 		</p>
 	</details>
 
-	<h2>members</h2>
+	<details name="qna">
+		<summary>questions</summary>
+		<p>
+			If you have inquiries (including wanting to join this webchain), you can
+			come chat in the <a href="https://irc.milkmedicine.net" rel="external"
+				>#webchain channel on irc.milkmedicine.net</a
+			>. You may also send an email to
+			<a href="mailto:meri@himawari.fun?subject=webchain inquiry"
+				>meri@himawari.fun</a
+			>.
+		</p>
+	</details>
+	<h2>sites</h2>
 	<p>
-		{new Intl.NumberFormat("en-US").format(nodes.length)} sites in this webchain
+		{new Intl.NumberFormat("en-US").format(nodes.length)} links in this webchain
 	</p>
 	{#if nodes.length > 0}
 		<ul class="nodes" bind:this={sidebar_nodes_element}>
@@ -253,34 +251,34 @@
 		margin-top: 0;
 	}
 
-	.qna {
+	[name="qna"] {
 		padding: 0 0.5rem;
 		border: 1px solid transparent;
 	}
 
-	.qna:has(> :focus-visible) {
+	[name="qna"]:has(> :focus-visible) {
 		outline: 2px solid var(--color-primary);
 	}
 
-	.qna summary:focus {
+	[name="qna"] summary:focus {
 		outline: none;
 	}
 
-	.qna:is(:hover, :focus-visible) {
+	[name="qna"]:is(:hover, :focus-visible) {
 		border: 1px dashed var(--color-text);
 	}
 
-	.qna[open] {
+	[name="qna"][open] {
 		border: 1px dashed var(--color-text);
 		background: var(--color-solid);
 	}
 
-	.qna summary {
+	[name="qna"] summary {
 		padding: 0.5rem 0;
 		font-style: italic;
 	}
 
-	.qna ol li {
+	[name="qna"] ol li {
 		margin: 0.5rem 0;
 	}
 
