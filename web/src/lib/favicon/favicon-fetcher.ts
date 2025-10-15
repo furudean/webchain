@@ -105,10 +105,15 @@ export async function refresh_favicon_in_background(
 	fetch: typeof globalThis.fetch
 ): Promise<void> {
 	try {
-		console.log(`background refresh started for ${url_param}`)
+		const already_running = favicon_fetch_promises.has(url_param)
+		if (!already_running) {
+			console.log(`favicon background refresh started for ${url_param}`)
+		}
 		await fetch_and_cache_favicon(url_param, fetch)
-		console.log(`background refresh completed for ${url_param}`)
+		if (!already_running) {
+			console.log(`bfavicon ackground refresh completed for ${url_param}`)
+		}
 	} catch (error) {
-		console.error(`background refresh failed for ${url_param}:`, error)
+		console.error(`favicon background refresh failed for ${url_param}:`, error)
 	}
 }

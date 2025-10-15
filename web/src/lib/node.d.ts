@@ -25,3 +25,10 @@ export interface DisplayNode extends CrawledNode {
 	first_seen: Date | null
 	last_updated: Date | null
 }
+
+export interface CrawlResponse {
+	nodes: CrawledNode[]
+	start: string
+	end: string
+	nominations_limit: number
+}

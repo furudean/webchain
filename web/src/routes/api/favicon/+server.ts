@@ -13,6 +13,7 @@ import {
 import { is_valid_url } from "$lib/url"
 import { gzipSync, deflateSync } from "node:zlib"
 import pixel from "./1x1.png?arraybuffer"
+import { get_allowed_favicon_urls } from "$lib/crawler"
 
 function response_headers(item: CachedItem, is_stale?: boolean): Headers {
 	const headers = new Headers()
@@ -123,6 +124,10 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 
 	if (!is_valid_url(url_param)) {
 		return text("invalid url parameter", { status: 400 })
+	}
+
+	if (!(await get_allowed_favicon_urls(fetch)).has(url_param)) {
+		return text("nice try, but i thought about that", { status: 400 })
 	}
 
 	const cache_hit = await get_cached_file(url_param)
