@@ -47,7 +47,7 @@
 		if (!newest_timestamp) return []
 
 		if ($last_visited instanceof Date) {
-			const cutoff = $last_visited.getTime() - 1000 * 60 * 60 * 6 // 6 hours
+			const cutoff = $last_visited.getTime() - 1000 * 60 * 60 * 24 // 1 day
 			const recent = nodes.filter(
 				(node) => (node.first_seen?.getTime() ?? 0) > cutoff
 			)
