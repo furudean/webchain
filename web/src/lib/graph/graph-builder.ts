@@ -17,7 +17,8 @@ export function build_graph(
 			type: node.depth === 0 ? "square" : "image",
 			image: `/api/favicon?url=${encodeURIComponent(node.at)}`,
 			url: node.at,
-			color: node.generated_color
+			color: node.generated_color,
+			indexed: node.indexed
 		})
 	}
 
@@ -29,7 +30,7 @@ export function build_graph(
 			)?.at
 			if (parent_id) {
 				graph.addEdge(parent_id, id, {
-					size: 3,
+					size: 4,
 					type: "arrow"
 				})
 			}

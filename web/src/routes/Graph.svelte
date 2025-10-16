@@ -114,7 +114,7 @@
 				square: NodeSquareProgram
 			},
 
-			labelSize: 10,
+			labelSize: 12,
 			labelFont: '"Fantasque Sans Mono", sans-serif',
 			labelColor: { attribute: "textColor" },
 			labelGridCellSize: 125,
@@ -127,7 +127,14 @@
 				const res: typeof data = { ...data }
 				const faded_color = css_var("--color-graph-inactive")
 
+				// Default text color
 				res.textColor = css_var("--color-text")
+
+				// Grey out node text if not indexed
+				const indexed = graph?.getNodeAttribute(node, "indexed") !== false
+				if (!indexed) {
+					res.textColor = css_var("--color-shy")
+				}
 
 				if (highlighted_node || $hovered_node) {
 					const is_highlighted =
@@ -144,7 +151,6 @@
 					}
 
 					if (is_highlighted) {
-						// res.textColor = css_var("--color-bg")
 						res.textColor = "#222"
 					}
 				}
@@ -157,9 +163,18 @@
 
 				res.color = css_var("--color-graph-edge")
 
+				const source = graph?.source(edge)
+				const target = graph?.target(edge)
+				const source_indexed =
+					graph?.getNodeAttribute(source, "indexed") !== false
+				const target_indexed =
+					graph?.getNodeAttribute(target, "indexed") !== false
+
+				// Grey out edge if either node is not indexed
+				if (!source_indexed || !target_indexed) {
+					res.color = faded_color
+				}
 				if (highlighted_node || $hovered_node) {
-					const source = graph?.source(edge)
-					const target = graph?.target(edge)
 					const via_highlight =
 						source === highlighted_node || target === highlighted_node
 					const via_hover = source === $hovered_node || target === $hovered_node

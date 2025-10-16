@@ -30,15 +30,15 @@
 	--color-bg: #fff;
 	--color-text: #222;
 	--color-border: #ccc;
-	--color-shy: #666;
+	--color-shy: #9a9a9aff;
 	--color-solid: #f5f5f5;
 
 	--a-not-visited-color: var(--color-primary);
 	--a-visited-color: purple;
 
 	--octal-color: 0;
-	--color-graph-edge: #dedede;
-	--color-graph-inactive: #e3e3e3ff;
+	--color-graph-edge: #d1d1d1ff;
+	--color-graph-inactive: #eaeaeaff;
 	--color-graph-tooltip: var(--color-border);
 }
 
@@ -47,15 +47,15 @@
 		--color-bg: #181a1b;
 		--color-text: #cdc5e1;
 		--color-border: #726d7cff;
-		--color-shy: #605d68ff;
+		--color-shy: #6f6a7bff;
 		--color-solid: #23272e;
 
 		--a-not-visited-color: #1b97ff;
 		--a-visited-color: #e068ff;
 
 		--octal-color: 150;
-		--color-graph-edge: #726d7cff;
-		--color-graph-inactive: #2c2f33;
+		--color-graph-edge: #605c6aff;
+		--color-graph-inactive: #32363bff;
 		--color-graph-tooltip: #2c2f33;
 	}
 }
