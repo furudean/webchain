@@ -206,10 +206,9 @@
 			</button>
 			{#if browser}
 				<br />
-				<label for="pets">links to</label>
+				<label for="links-to">links to</label>
 				<select
-					name="pets"
-					id="pet-select"
+					name="links-to"
 					onchange={(e) => {
 						const select = e.currentTarget as HTMLSelectElement
 						const at = select.value
@@ -236,15 +235,15 @@
 	</details>
 
 	<details name="qna">
-		<summary>questions</summary>
+		<summary>user group</summary>
 		<p>
-			If you have inquiries (including wanting to join this webchain), you can
-			come chat in the <a href="https://irc.milkmedicine.net" rel="external"
-				>#webchain channel on irc.milkmedicine.net</a
+			If you are a member or prospective member, you can come chat in the <a
+				href="https://irc.milkmedicine.net"
+				rel="external">#webchain channel on irc.milkmedicine.net</a
 			>. You may also send an email to
 			<a href="mailto:meri@himawari.fun?subject=webchain inquiry"
 				>meri@himawari.fun</a
-			>.
+			> if you have a private inquiry.
 		</p>
 	</details>
 	<h2>sites</h2>
