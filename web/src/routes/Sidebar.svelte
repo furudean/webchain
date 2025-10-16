@@ -225,7 +225,7 @@
 				</select>
 			{/if}
 		</form>
-		<p>You can use the following HTML snippet to include it on your site:</p>
+		<p>Use the following HTML snippet to include it on your site:</p>
 		<pre><code>{snippet}</code></pre>
 
 		<p></p>
