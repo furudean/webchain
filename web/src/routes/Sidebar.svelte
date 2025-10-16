@@ -44,14 +44,14 @@
 		if (!newest_timestamp) return []
 
 		if ($last_visited instanceof Date) {
-			const cutoff = $last_visited.getTime() - 1000 * 60 * 60 * 2 // 2 hours
+			const cutoff = $last_visited.getTime() - 1000 * 60 * 60 * 6 // 6 hours
 			const recent = nodes.filter(
 				(node) => (node.first_seen?.getTime() ?? 0) > cutoff
 			)
 			return recent.map((n) => n.at)
 		} else {
 			const now = new Date().getTime()
-			const cohort_window = 1000 * 60 * 60 * 24 * 3 // 3 days
+			const cohort_window = 1000 * 60 * 60 * 24 * 3 // 2 days
 			const stale_threshold = 1000 * 60 * 60 * 24 * 14 // 2 weeks
 
 			if (now - newest_timestamp > stale_threshold) {

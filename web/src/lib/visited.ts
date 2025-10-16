@@ -12,9 +12,7 @@ function create_visited_store(): Writable<Date | null> {
 	})
 
 	if (browser) {
-		window.addEventListener("beforeunload", () => {
-			set(new Date())
-		})
+		set(new Date())
 	}
 
 	return {
