@@ -173,7 +173,7 @@
 		<summary>socialize</summary>
 		<p>
 			If you want to link to this webchain from your site, an old-web style
-			button is provided below.
+			button can be created below.
 		</p>
 		<form>
 			<button
