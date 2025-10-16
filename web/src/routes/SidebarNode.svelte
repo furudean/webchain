@@ -10,13 +10,15 @@
 		nodes,
 		highlighted_node,
 		nominations_limit,
-		graph_component
+		graph_component,
+		recent_nodes
 	}: {
 		at: string
 		nodes: DisplayNode[]
 		highlighted_node: string | undefined
 		nominations_limit: number | null
 		graph_component: Graph
+		recent_nodes: string[]
 	} = $props()
 
 	const node = $derived.by(() => {
@@ -83,12 +85,18 @@
 					height="16"
 					style:background-color={node.generated_color}
 				/>
-				<span>
+
+				<span class="label-contents">
 					{node.label}
+					{#if recent_nodes.includes(at)}
+						<span class="new" title="This node was recently added">new</span>
+					{/if}
 					{#if [$hovered_node, highlighted_node].includes(node.at)}
 						<span
 							class="slots"
 							class:full={node.children.length === nominations_limit}
+							title="This node has used {node.children
+								.length}/{nominations_limit} of its nominations"
 						>
 							{#if node.indexed}
 								{node.children.length}/{nominations_limit}
@@ -130,6 +138,7 @@
 				{highlighted_node}
 				{nominations_limit}
 				{graph_component}
+				{recent_nodes}
 			/>
 		{/each}
 	</ul>
@@ -146,7 +155,7 @@
 	}
 
 	details:not([open]):is(.hovered, :hover):not(.highlighted) {
-		background-color: var(--color-border);
+		background-color: var(--color-shy);
 	}
 
 	details:has(summary:focus-visible) {
@@ -166,13 +175,32 @@
 		line-height: 1;
 	}
 
+	.label-contents {
+		display: flex;
+		align-items: center;
+		gap: 0 0.5ch;
+		flex-wrap: wrap;
+	}
+
+	.label .new {
+		background-color: var(--color-primary);
+		color: var(--color-text-primary);
+		border: 1px solid currentColor;
+		font-family: "Fantasque Sans Mono", monospace;
+		border-radius: 0.3rem;
+		padding: 0.075rem 0.15rem;
+		line-height: 1;
+		font-size: 0.75rem;
+		align-self: center;
+		box-sizing: border-box;
+		user-select: none;
+	}
+
 	.label .slots {
 		font-size: 0.75em;
 		font-family: "Fantasque Sans Mono", monospace;
 		vertical-align: middle;
 		user-select: none;
-		pointer-events: none;
-		margin-left: 0.5ch;
 	}
 
 	li details[open] .label {
@@ -183,7 +211,7 @@
 	.label img {
 		display: block;
 		border-radius: 0.1rem;
-		border: 1px solid var(--color-border);
+		border: 1px solid var(--color-shy);
 		aspect-ratio: 1 / 1;
 	}
 

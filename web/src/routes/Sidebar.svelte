@@ -4,6 +4,8 @@
 	import Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
 	import { date_time_fmt } from "$lib/date"
+	import { last_visited } from "$lib/visited"
+	import { browser } from "$app/environment"
 
 	let {
 		nodes = [],
@@ -17,18 +19,53 @@
 		graph_component: Graph
 	} = $props()
 
-	const highlighted_node = $derived(page.state.node)
+	// if server-side, initialize highlighted_node from URL param
+	const init_at = nodes.find(
+		(n) => n.url_param === page.url.searchParams.get("node")
+	)?.at
+	const highlighted_node = $derived(browser ? page.state.node : init_at)
+
 	let sidebar_nodes_element = $state<HTMLElement | null>(null)
 
 	const snippet = `
-	<a href="${page.url.href}" rel="external"><img
-		src="${new URL("/button.png", page.url.origin).href}"
-		style="image-rendering: pixelated;"
-		height="31"
-		width="88"
-	/></a>`
+		<a href="${page.url.href}" rel="external"><img
+			src="${new URL("/button.png", page.url.origin).href}"
+			style="image-rendering: pixelated;"
+			height="31"
+			width="88"
+		/></a>`
 		.replace(/\s+/g, " ")
 		.trim()
+
+	const recent_nodes = $derived.by(() => {
+		const newest_timestamp = Math.max(
+			...nodes.map((n) => n.first_seen?.getTime() ?? 0)
+		)
+		if (!newest_timestamp) return []
+
+		if ($last_visited instanceof Date) {
+			const cutoff = $last_visited.getTime() - 1000 * 60 * 60 * 2 // 2 hours
+			const recent = nodes.filter(
+				(node) => (node.first_seen?.getTime() ?? 0) > cutoff
+			)
+			return recent.map((n) => n.at)
+		} else {
+			const now = new Date().getTime()
+			const cohort_window = 1000 * 60 * 60 * 24 * 3 // 3 days
+			const stale_threshold = 1000 * 60 * 60 * 24 * 14 // 2 weeks
+
+			if (now - newest_timestamp > stale_threshold) {
+				return []
+			}
+
+			return nodes
+				.filter((node) => {
+					const first_seen = node.first_seen?.getTime() ?? 0
+					return first_seen > newest_timestamp - cohort_window
+				})
+				.map((n) => n.at)
+		}
+	})
 
 	$effect(() => {
 		if (highlighted_node) {
@@ -184,6 +221,7 @@
 				{highlighted_node}
 				{nominations_limit}
 				{graph_component}
+				{recent_nodes}
 			/>
 		</ul>
 	{/if}

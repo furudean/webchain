@@ -26,6 +26,7 @@
 	font-size: 16px;
 
 	--color-primary: blue;
+	--color-text-primary: #fff;
 
 	--color-bg: #fff;
 	--color-text: #222;
@@ -47,7 +48,7 @@
 		--color-bg: #181a1b;
 		--color-text: #cdc5e1;
 		--color-border: #726d7cff;
-		--color-shy: #6f6a7bff;
+		--color-shy: #756d89ff;
 		--color-solid: #23272e;
 
 		--a-not-visited-color: #1b97ff;
