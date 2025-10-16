@@ -24,6 +24,12 @@
 		(n) => n.url_param === page.url.searchParams.get("node")
 	)?.at
 	const highlighted_node = $derived(browser ? page.state.node : init_at)
+	const highlighted_node_cls = $derived.by(() => {
+		if (highlighted_node) {
+			return nodes.find((n) => n.at === highlighted_node) ?? null
+		}
+		return null
+	})
 
 	let sidebar_nodes_element = $state<HTMLElement | null>(null)
 
@@ -130,16 +136,17 @@
 	<details name="qna">
 		<summary>nomination</summary>
 		<p>
-			To nominate new pages to the webchain, a member can add markup to its
-			HTML, for example:
+			To nominate new pages to the webchain, an existing member can add markup
+			to its HTML, for example:
 		</p>
 		<pre><code
-				>&lthtml&gt;
+				>&lt;-- https://example.org ---&gt;
+&lthtml&gt;
 &lt;head&gt;
 	&lt;link rel="webchain"
 		href="{page.url.origin}" /&gt;
 	&lt;link rel="webchain-nomination"
-		href="https://www.example.com" /&gt;
+		href="https://foo.bar" /&gt;
 &lt;/head&gt;
 &lt;body&gt;
 	...
@@ -147,19 +154,21 @@
 &lt/html&gt;</code
 			></pre>
 		<p>
-			This snippet nominates <code>https://www.example.com</code>
+			This snippet shows the website <code>https://example.org</code>. This site
+			nominates
+			<code>https://foo.bar</code>
 			to be part of the webchain
 			<code>{page.url.origin}</code>.
 		</p>
-		<p>
+		<blockquote>
 			The <code>webchain</code> link points to the webchain the website wants to
 			be a part of. The
 			<code>webchain-nomination</code> links point to up to {nominations_limit} other
 			websites that this node nominates.
-		</p>
+		</blockquote>
 		<p>
-			A node must first be a member of the webchain via nomination before it can
-			add others.
+			<b>Note</b>: A website must first be a member of the webchain via
+			nomination before it can appear on the graph.
 		</p>
 	</details>
 
@@ -193,8 +202,12 @@
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
 			node in the webchain, like:
-			<code>{page.url.origin}?node={nodes[0]?.url_param}</code>.
 		</p>
+		<pre><code
+				>{highlighted_node
+					? page.url.href
+					: page.url.origin + "?node=" + nodes.at(1)?.url_param}</code
+			></pre>
 	</details>
 
 	<details name="qna">

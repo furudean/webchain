@@ -93,11 +93,10 @@ p {
 }
 
 blockquote {
-	margin: 0;
+	margin: 1rem 0;
 	padding-left: 0.5rem;
 	border-left: 2px solid var(--color-shy);
 	font-style: italic;
-	color: var(--color-shy);
 }
 
 ul {
