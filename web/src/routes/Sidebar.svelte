@@ -19,29 +19,26 @@
 		graph_component: Graph
 	} = $props()
 
-	// if server-side, initialize highlighted_node from URL param
+	let sidebar_nodes_element = $state<HTMLElement | null>(null)
+	let button = $state("/button.png")
+	let embed_node = $state(nodes?.[0])
+
 	const init_at = nodes.find(
 		(n) => n.url_param === page.url.searchParams.get("node")
 	)?.at
 	const highlighted_node = $derived(browser ? page.state.node : init_at)
-	const highlighted_node_cls = $derived.by(() => {
-		if (highlighted_node) {
-			return nodes.find((n) => n.at === highlighted_node) ?? null
-		}
-		return null
-	})
 
-	let sidebar_nodes_element = $state<HTMLElement | null>(null)
-
-	const snippet = `
-		<a href="${page.url.href}" rel="external"><img
-			src="${new URL("/button.png", page.url.origin).href}"
-			style="image-rendering: pixelated;"
-			height="31"
-			width="88"
-		/></a>`
-		.replace(/\s+/g, " ")
-		.trim()
+	const snippet = $derived(
+		`
+<a href="${page.url.origin}?${new URLSearchParams({ node: embed_node.url_param })}" rel="external">
+	<img
+		src="${new URL(button, page.url.origin).href}"
+		style="image-rendering: pixelated;"
+		height="31"
+		width="88"
+	/>
+</a>`.trim()
+	)
 
 	const recent_nodes = $derived.by(() => {
 		const newest_timestamp = Math.max(
@@ -178,36 +175,64 @@
 			If you want to link to this webchain from your site, an old-web style
 			button is provided below.
 		</p>
-		<p>
-			<img
-				src="button.png"
-				class="button"
-				height="31"
-				width="88"
-				alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left."
-			/>
-		</p>
-		<p>
-			You can use the following HTML snippet to include it on your site: <input
-				type="text"
-				readonly
-				value={snippet}
-				onclick={(e) => {
-					e.currentTarget.select()
+		<form>
+			<button
+				type="button"
+				onclick={() => {
+					button = "/button.png"
 				}}
-			/>
-		</p>
+			>
+				<img
+					src="/button.png"
+					class="button"
+					height="31"
+					width="88"
+					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is tinted more blue."
+				/>
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					button = "/button2.png"
+				}}
+			>
+				<img
+					src="/button2.png"
+					class="button"
+					height="31"
+					width="88"
+					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is more monochrome."
+				/>
+			</button>
+			{#if browser}
+				<br />
+				<label for="pets">links to</label>
+				<select
+					name="pets"
+					id="pet-select"
+					onchange={(e) => {
+						const select = e.currentTarget as HTMLSelectElement
+						const at = select.value
+						const node = nodes.find((n) => n.at === at)
+						if (node == null) return
+
+						embed_node = node
+					}}
+				>
+					{#each nodes as node (node.at)}
+						<option value={node.at}>{node?.label}</option>
+					{/each}
+				</select>
+			{/if}
+		</form>
+		<p>You can use the following HTML snippet to include it on your site:</p>
+		<pre><code>{snippet}</code></pre>
 
 		<p></p>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
-			node in the webchain, like:
+			node in the webchain.
 		</p>
-		<pre><code
-				>{highlighted_node
-					? page.url.href
-					: page.url.origin + "?node=" + nodes.at(1)?.url_param}</code
-			></pre>
 	</details>
 
 	<details name="qna">
@@ -360,14 +385,18 @@
 		margin: 2rem 0;
 	}
 
-	input[type="text"] {
-		font-family: "Fantasque Sans Mono", monospace;
-		font-size: 0.9rem;
-		min-width: 15rem;
-		padding: 0.25em;
-		border: 1px solid var(--color-border);
+	button {
 		background: none;
-		box-sizing: border-box;
-		color: var(--color-text);
+		border: none;
+		padding: 0;
+		position: relative;
+	}
+
+	button:hover {
+		top: -1px;
+	}
+
+	button:active {
+		top: 1px;
 	}
 </style>
