@@ -31,7 +31,7 @@ default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q"
+addopts = "-ra -q -vv"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 

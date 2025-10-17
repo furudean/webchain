@@ -89,7 +89,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
                 new_node.last_updated = new_response.end
             change_detected = True
 
-    # Remove nodes if neither present nor referenced as a child and have no tracked children
+    # 5. Remove nodes if neither present nor referenced as a child and have no tracked children
     referenced_children = set()
     for node in new_response.nodes:
         referenced_children.update(node.children)
@@ -113,7 +113,36 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
                     logger.info(f'Node removed (parent no longer lists as child): {at}')
     new_response.nodes = [node for node in new_response.nodes if node.at not in removed_ats]
 
-    # Ensure first_seen is set
+    # 7. Sort nodes by parent/child relationships, parents before children
+    def sort_nodes_by_hierarchy(nodes):
+        at_to_node = {node.at: node for node in nodes}
+        visited = set()
+        ordered = []
+
+        def visit(node):
+            if node.at in visited:
+                return
+            visited.add(node.at)
+            ordered.append(node)
+            # Visit children in the order listed in the parent's children field
+            for child_at in getattr(node, 'children', []):
+                child = at_to_node.get(child_at)
+                if child:
+                    visit(child)
+
+        # Only start from the root(s) as defined by depth==0 (not all parent=None)
+        roots = [node for node in nodes if getattr(node, 'depth', 0) == 0]
+        for root in roots:
+            visit(root)
+        # Add any disconnected nodes (not reachable from roots)
+        for node in nodes:
+            if node.at not in visited:
+                visit(node)
+        return ordered
+
+    new_response.nodes = sort_nodes_by_hierarchy(new_response.nodes)
+
+    # 6. Ensure first_seen is set
     for node in new_response.nodes:
         if getattr(node, 'first_seen', None) is None:
             node.first_seen = new_response.end

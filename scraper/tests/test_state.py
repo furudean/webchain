@@ -4,6 +4,7 @@ from scraper.crawl import CrawlResponse, CrawledNode
 import pytest
 
 from scraper.contracts import HtmlMetadata
+import random
 
 
 def test_compare_node_added():
@@ -359,6 +360,54 @@ def test_patch_offline_subtree(old_crawl: CrawlResponse, new_crawl: CrawlRespons
     assert 'http://child' in ats
     assert 'http://grandchild' in ats
     assert all(not node.indexed for node in patched.nodes if node.at != 'http://node')
+
+
+def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
+    root_node = CrawledNode(
+        at='http://root',
+        children=['http://has_children', 'http://unrelatednode'],
+        parent=None,
+        indexed=True,
+        depth=0,
+    )
+
+    unrelated_node = CrawledNode(
+        at='http://unrelatednode',
+        children=[],
+        parent='http://root',
+        indexed=True,
+        depth=1,
+    )
+
+    children = [
+        CrawledNode(
+            at=f'http://child{i}',
+            children=[],
+            parent='http://has_children',
+            indexed=True,
+            depth=2,
+        )
+        for i in range(3)
+    ]
+
+    parent_node = CrawledNode(
+        at='http://has_children',
+        children=[child.at for child in children],
+        parent=None,
+        indexed=True,
+        depth=1,
+    )
+
+    sorted_nodes = [root_node, parent_node, *children]
+    old_crawl.nodes = sorted_nodes.copy()
+    new_crawl.nodes = sorted_nodes.copy() + [unrelated_node]
+    random.seed(42)
+    random.shuffle(new_crawl.nodes)
+
+    patched = patch_state(old_crawl, new_crawl)
+
+    assert patched is not None
+    assert patched.nodes == sorted_nodes + [unrelated_node]
 
 
 def test_preserve_metadata(
