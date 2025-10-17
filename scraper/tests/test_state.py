@@ -191,6 +191,78 @@ def test_compare_multiple_changes():
     assert mask != NodeChangeMask.NONE
 
 
+def test_compare_metadata_changed_html_metadata(seed_node: CrawledNode):
+    old = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-01T00:00:00Z',
+        last_updated='2023-01-01T00:00:00Z',
+        html_metadata=HtmlMetadata(title='Old Title', description='Old Desc', theme_color=None),
+    )
+    new = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-01T00:00:00Z',
+        last_updated='2023-01-01T00:00:00Z',
+        html_metadata=HtmlMetadata(title='New Title', description='Old Desc', theme_color=None),
+    )
+
+    mask = compare_nodes(old, new)
+
+    assert mask == NodeChangeMask.METADATA_MODIFIED
+
+
+def test_compare_metadata_changed_first_seen(seed_node: CrawledNode):
+    old = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-01T00:00:00Z',
+        last_updated='2023-01-01T00:00:00Z',
+    )
+    new = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-02T00:00:00Z',
+        last_updated='2023-01-01T00:00:00Z',
+    )
+
+    mask = compare_nodes(old, new)
+
+    assert mask == NodeChangeMask.METADATA_MODIFIED
+
+
+def test_compare_metadata_changed_last_updated(seed_node: CrawledNode):
+    old = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-01T00:00:00Z',
+        last_updated='2023-01-01T00:00:00Z',
+    )
+    new = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-01T00:00:00Z',
+        last_updated='2023-01-02T00:00:00Z',
+    )
+
+    mask = compare_nodes(old, new)
+
+    assert mask == NodeChangeMask.METADATA_MODIFIED
+
+
+def test_compare_metadata_no_change(seed_node: CrawledNode):
+    old = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-01T00:00:00Z',
+        last_updated='2023-01-01T00:00:00Z',
+        html_metadata=HtmlMetadata(title='Title', description='Desc', theme_color=None),
+    )
+    new = dataclasses.replace(
+        seed_node,
+        first_seen='2023-01-01T00:00:00Z',
+        last_updated='2023-01-01T00:00:00Z',
+        html_metadata=HtmlMetadata(title='Title', description='Desc', theme_color=None),
+    )
+
+    mask = compare_nodes(old, new)
+
+    assert mask == NodeChangeMask.NONE
+
+
 @pytest.fixture
 def old_crawl():
     return CrawlResponse(

@@ -16,6 +16,7 @@ class NodeChangeMask(IntFlag):
     OFFLINE_TO_ONLINE = 1 << 4
     ONLINE_TO_OFFLINE = 1 << 5
     UNQUALIFIED_MODIFIED = 1 << 6
+    METADATA_MODIFIED = 1 << 7  # new mask for metadata changes
 
 
 def copy_offline_subtree(at: str, visited: Set[str], old_nodes_by_at) -> list[CrawledNode]:
@@ -82,6 +83,30 @@ def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) ->
     if hasattr(new_node, 'unqualified') and hasattr(old_node, 'unqualified'):
         if new_node.unqualified != old_node.unqualified:
             mask |= NodeChangeMask.UNQUALIFIED_MODIFIED
+    # check for metadata changes: html_metadata, first_seen, last_updated
+    # only set METADATA_MODIFIED if both old and new have a value and they differ
+    if (
+        hasattr(new_node, 'html_metadata')
+        and hasattr(old_node, 'html_metadata')
+        and new_node.html_metadata is not None
+        and old_node.html_metadata is not None
+        and new_node.html_metadata != old_node.html_metadata
+    ):
+        mask |= NodeChangeMask.METADATA_MODIFIED
+    # only set for first_seen if both are not None and differ
+    if (
+        getattr(new_node, 'first_seen', None) is not None
+        and getattr(old_node, 'first_seen', None) is not None
+        and new_node.first_seen != old_node.first_seen
+    ):
+        mask |= NodeChangeMask.METADATA_MODIFIED
+    # only set for last_updated if both are not None and differ
+    if (
+        getattr(new_node, 'last_updated', None) is not None
+        and getattr(old_node, 'last_updated', None) is not None
+        and new_node.last_updated != old_node.last_updated
+    ):
+        mask |= NodeChangeMask.METADATA_MODIFIED
 
     return mask
 
@@ -122,8 +147,6 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
                 node.last_updated = old_node.last_updated
             if getattr(node, 'html_metadata', None) is None:
                 node.html_metadata = old_node.html_metadata
-            if getattr(node, 'index_error', None) is None:
-                node.index_error = old_node.index_error
 
     # 3. update last_updated if applicable
     change_detected = False
@@ -142,6 +165,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
             | NodeChangeMask.OFFLINE_TO_ONLINE
             | NodeChangeMask.ONLINE_TO_OFFLINE
             | NodeChangeMask.UNQUALIFIED_MODIFIED
+            # do not trigger patch for METADATA_MODIFIED alone
         ):
             if new_node:
                 new_node.last_updated = new_response.end
