@@ -1,16 +1,21 @@
 import dataclasses
-from scraper.state import patch_state, compare_nodes, NodeChangeMask
-from scraper.crawl import CrawlResponse, CrawledNode
+from spider.state import patch_state, compare_nodes, NodeChangeMask
+from spider.crawl import CrawlResponse, CrawledNode
 import pytest
 
-from scraper.contracts import HtmlMetadata
+from spider.contracts import HtmlMetadata
 import random
 
 
 def test_compare_node_added():
     old = None
     new = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=True, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
     )
 
     mask = compare_nodes(old, new)
@@ -20,7 +25,12 @@ def test_compare_node_added():
 
 def test_node_removed():
     old = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=True, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
     )
     new = None
 
@@ -31,10 +41,20 @@ def test_node_removed():
 
 def test_compare_no_change():
     old = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=True, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
     )
     new = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=True, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
     )
 
     mask = compare_nodes(old, new)
@@ -115,10 +135,20 @@ def test_compare_parent_changed():
 
 def test_compare_offline_to_online():
     old = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=False, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=False,
+        first_seen=None,
+        depth=0,
     )
     new = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=True, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
     )
 
     mask = compare_nodes(old, new)
@@ -128,10 +158,20 @@ def test_compare_offline_to_online():
 
 def test_compare_online_to_offline():
     old = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=True, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
     )
     new = CrawledNode(
-        at='http://node', children=[], parent=None, indexed=False, first_seen=None, depth=0
+        at='http://node',
+        children=[],
+        parent=None,
+        indexed=False,
+        first_seen=None,
+        depth=0,
     )
 
     mask = compare_nodes(old, new)

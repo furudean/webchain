@@ -1,6 +1,6 @@
 import dataclasses
 from typing import Set
-from scraper.crawl import CrawlResponse, CrawledNode
+from spider.crawl import CrawlResponse, CrawledNode
 import logging
 from enum import IntFlag
 
@@ -19,7 +19,9 @@ class NodeChangeMask(IntFlag):
     METADATA_MODIFIED = 1 << 7  # new mask for metadata changes
 
 
-def copy_offline_subtree(at: str, visited: Set[str], old_nodes_by_at) -> list[CrawledNode]:
+def copy_offline_subtree(
+    at: str, visited: Set[str], old_nodes_by_at
+) -> list[CrawledNode]:
     # copy offline subtree from old crawl
     if at in visited or at not in old_nodes_by_at:
         return []
@@ -45,13 +47,13 @@ def sort_nodes_by_hierarchy(nodes: list[CrawledNode]) -> list[CrawledNode]:
         visited.add(node.at)
         ordered.append(node)
         # visit children in the order listed in the parent's children field
-        for child_at in getattr(node, 'children', []):
+        for child_at in getattr(node, "children", []):
             child = at_to_node.get(child_at)
             if child:
                 visit(child)
 
     # only start from the root(s) as defined by depth==0 (not all parent=none)
-    roots = [node for node in nodes if getattr(node, 'depth', 0) == 0]
+    roots = [node for node in nodes if getattr(node, "depth", 0) == 0]
     for root in roots:
         visit(root)
     # add any disconnected nodes (not reachable from roots)
@@ -62,7 +64,9 @@ def sort_nodes_by_hierarchy(nodes: list[CrawledNode]) -> list[CrawledNode]:
     return ordered
 
 
-def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) -> NodeChangeMask:
+def compare_nodes(
+    old_node: CrawledNode | None, new_node: CrawledNode | None
+) -> NodeChangeMask:
     mask = NodeChangeMask.NONE
 
     if old_node is None:
@@ -80,14 +84,14 @@ def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) ->
     if new_node.indexed:
         if set(new_node.children) != set(old_node.children):
             mask |= NodeChangeMask.CHILDREN_MODIFIED
-    if hasattr(new_node, 'unqualified') and hasattr(old_node, 'unqualified'):
+    if hasattr(new_node, "unqualified") and hasattr(old_node, "unqualified"):
         if new_node.unqualified != old_node.unqualified:
             mask |= NodeChangeMask.UNQUALIFIED_MODIFIED
     # check for metadata changes: html_metadata, first_seen, last_updated
     # only set METADATA_MODIFIED if both old and new have a value and they differ
     if (
-        hasattr(new_node, 'html_metadata')
-        and hasattr(old_node, 'html_metadata')
+        hasattr(new_node, "html_metadata")
+        and hasattr(old_node, "html_metadata")
         and new_node.html_metadata is not None
         and old_node.html_metadata is not None
         and new_node.html_metadata != old_node.html_metadata
@@ -95,15 +99,15 @@ def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) ->
         mask |= NodeChangeMask.METADATA_MODIFIED
     # only set for first_seen if both are not None and differ
     if (
-        getattr(new_node, 'first_seen', None) is not None
-        and getattr(old_node, 'first_seen', None) is not None
+        getattr(new_node, "first_seen", None) is not None
+        and getattr(old_node, "first_seen", None) is not None
         and new_node.first_seen != old_node.first_seen
     ):
         mask |= NodeChangeMask.METADATA_MODIFIED
     # only set for last_updated if both are not None and differ
     if (
-        getattr(new_node, 'last_updated', None) is not None
-        and getattr(old_node, 'last_updated', None) is not None
+        getattr(new_node, "last_updated", None) is not None
+        and getattr(old_node, "last_updated", None) is not None
         and new_node.last_updated != old_node.last_updated
     ):
         mask |= NodeChangeMask.METADATA_MODIFIED
@@ -111,7 +115,9 @@ def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) ->
     return mask
 
 
-def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> CrawlResponse | None:
+def patch_state(
+    old_response: CrawlResponse, new_response: CrawlResponse
+) -> CrawlResponse | None:
     """
     patch the new crawl state with offline subtrees and metadata from the old crawl.
     """
@@ -131,7 +137,9 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
             # copy missing children subtrees
             for child_at in old_node.children:
                 if child_at not in present_ats:
-                    for subnode in copy_offline_subtree(child_at, offline_visited, old_nodes_by_at):
+                    for subnode in copy_offline_subtree(
+                        child_at, offline_visited, old_nodes_by_at
+                    ):
                         if subnode.at not in present_ats:
                             new_response.nodes.append(subnode)
                             present_ats.add(subnode.at)
@@ -141,11 +149,11 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
     for node in new_response.nodes:
         old_node = old_nodes_by_at.get(node.at)
         if old_node:
-            if getattr(node, 'first_seen', None) is None:
+            if getattr(node, "first_seen", None) is None:
                 node.first_seen = old_node.first_seen
-            if getattr(node, 'last_updated', None) is None:
+            if getattr(node, "last_updated", None) is None:
                 node.last_updated = old_node.last_updated
-            if getattr(node, 'html_metadata', None) is None:
+            if getattr(node, "html_metadata", None) is None:
                 node.html_metadata = old_node.html_metadata
 
     # 3. update last_updated if applicable
@@ -155,7 +163,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
         new_node = new_nodes_by_at.get(at)
         mask = compare_nodes(old_node, new_node)
         if mask != NodeChangeMask.NONE:
-            logger.debug(f'{at}: {mask!r}')
+            logger.debug(f"{at}: {mask!r}")
 
         if mask & (
             NodeChangeMask.ADDED
@@ -185,22 +193,24 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
             tracked_children = [c for c in old_node.children if c in final_new_ats]
             if not tracked_children:
                 removed_ats.add(at)
-                logger.info(f'node removed {at}')
+                logger.info(f"node removed {at}")
         else:
             node = new_nodes_by_at.get(at)
             if node and node.parent:
                 parent = new_nodes_by_at.get(node.parent)
                 if parent and at not in parent.children:
                     removed_ats.add(at)
-                    logger.info(f'node removed (parent no longer lists as child): {at}')
-    new_response.nodes = [node for node in new_response.nodes if node.at not in removed_ats]
+                    logger.info(f"node removed (parent no longer lists as child): {at}")
+    new_response.nodes = [
+        node for node in new_response.nodes if node.at not in removed_ats
+    ]
 
     # 5. sort nodes by parent/child relationships, parents before children
     new_response.nodes = sort_nodes_by_hierarchy(new_response.nodes)
 
     # 6. ensure first_seen is set
     for node in new_response.nodes:
-        if getattr(node, 'first_seen', None) is None:
+        if getattr(node, "first_seen", None) is None:
             node.first_seen = new_response.end
 
     if change_detected:

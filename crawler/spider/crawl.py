@@ -10,8 +10,8 @@ from bs4 import BeautifulSoup, Tag
 from bs4.element import PageElement
 from ordered_set import OrderedSet
 
-from scraper.http import get_session, load_page_html
-from scraper.contracts import CrawlResponse, CrawledNode
+from spider.http import get_session, load_page_html
+from spider.contracts import CrawlResponse, CrawledNode
 
 logger = getLogger(__name__)
 
@@ -26,16 +26,16 @@ def validate_uri(x: str) -> bool:
 
 
 def is_valid_nomination(tag: Tag) -> bool:
-    if not isinstance(tag, Tag) or tag.name != 'link':
+    if not isinstance(tag, Tag) or tag.name != "link":
         return False
 
-    rel = tag.get('rel')
+    rel = tag.get("rel")
     assert isinstance(rel, str)  # is always a string with multi_valued_attributes=None
 
-    if rel != 'webchain-nomination':
+    if rel != "webchain-nomination":
         return False
 
-    href = tag.get('href')
+    href = tag.get("href")
 
     if isinstance(href, str) and validate_uri(href):
         return True
@@ -47,17 +47,19 @@ def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
     """
     extract valid webchain nominations from html
     """
-    soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
+    soup = BeautifulSoup(html, "lxml", multi_valued_attributes=None)
 
     hrefs: OrderedSet[str] = OrderedSet([])
 
     # look for the webchain declaration link in the html. we're permissive, so
     # we search the entire document, not just the head.
-    webchain_tag = soup.find(name='link', attrs={'rel': 'webchain'})
-    webchain_href = str(webchain_tag.get('href')) if isinstance(webchain_tag, Tag) else None
+    webchain_tag = soup.find(name="link", attrs={"rel": "webchain"})
+    webchain_href = (
+        str(webchain_tag.get("href")) if isinstance(webchain_tag, Tag) else None
+    )
 
     def normalize_url(url: str) -> str:
-        return url.rstrip('/')
+        return url.rstrip("/")
 
     if (
         webchain_tag is None
@@ -72,7 +74,7 @@ def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
     for tag in nominations:
         if not isinstance(tag, Tag):
             continue
-        href = tag.get('href')
+        href = tag.get("href")
         if isinstance(href, str):
             hrefs.add(href)
 
@@ -80,24 +82,24 @@ def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
 
 
 def without_trailing_slash(url: str) -> str:
-    return url.rstrip('/')
+    return url.rstrip("/")
 
 
 def handle_meta_element(node: Tag | PageElement | None) -> str | None:
-    if isinstance(node, Tag) and node.get('content'):
-        content = str(node.get('content'))
-        return content.replace('\n', ' ').strip()
+    if isinstance(node, Tag) and node.get("content"):
+        content = str(node.get("content"))
+        return content.replace("\n", " ").strip()
 
     return None
 
 
 def get_nominations_limit(html: str, default: int | None = None) -> int | None:
-    soup = BeautifulSoup(html, 'lxml', multi_valued_attributes=None)
+    soup = BeautifulSoup(html, "lxml", multi_valued_attributes=None)
 
     if not soup.head:
         return default
 
-    limit_element = soup.find('meta', attrs={'name': 'webchain-nominations-limit'})
+    limit_element = soup.find("meta", attrs={"name": "webchain-nominations-limit"})
     limit_str = handle_meta_element(limit_element)
 
     if limit_str is None:
@@ -134,7 +136,9 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
     nominations_limit: int = sys.maxsize * 2 + 1
     start = time()
 
-    async def process_node(url: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
+    async def process_node(
+        url: str, parent: str | None = None, depth=0
+    ) -> list[CrawledNode]:
         nonlocal nominations_limit
 
         at = without_trailing_slash(url)
@@ -143,7 +147,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
         try:
             html = await load_page_html(url, referrer=parent, session=session)
         except Exception as e:
-            logger.info(f'get {url} failed after retries: {type(e).__name__} {e}')
+            logger.info(f"get {url} failed after retries: {type(e).__name__} {e}")
             html = None
             index_error = e
 
@@ -152,7 +156,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
         if depth == 0:
             if html is None:
-                raise ValueError(f'starting url {root_url} is unreachable')
+                raise ValueError(f"starting url {root_url} is unreachable")
 
             fetched_nominations_limit = get_nominations_limit(html)
             if fetched_nominations_limit is not None:
@@ -160,7 +164,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
             if nominations_limit is None:
                 logger.error(
-                    f'starting url {root_url} does not specify a nominations limit, using unlimited'
+                    f"starting url {root_url} does not specify a nominations limit, using unlimited"
                 )
 
         if html:
@@ -170,7 +174,9 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             nominations = list(node_nominations.difference(seen))
             extra_nominations = nominations[nominations_limit:]
             nominations = nominations[:nominations_limit]
-            unqualified = list(node_nominations.intersection(seen).union(extra_nominations))
+            unqualified = list(
+                node_nominations.intersection(seen).union(extra_nominations)
+            )
 
         node = CrawledNode(
             at=at,
@@ -185,7 +191,8 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
 
         if nominations and depth < recursion_limit:
             tasks = [
-                process_node(url=child_url, parent=at, depth=depth + 1) for child_url in nominations
+                process_node(url=child_url, parent=at, depth=depth + 1)
+                for child_url in nominations
             ]
             results = await asyncio.gather(*tasks)
 

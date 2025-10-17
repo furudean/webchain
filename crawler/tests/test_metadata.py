@@ -1,5 +1,5 @@
-from scraper.metadata import get_html_metadata
-from scraper.contracts import HtmlMetadata
+from spider.metadata import get_html_metadata
+from spider.contracts import HtmlMetadata
 
 
 async def test_metadata():
@@ -15,9 +15,9 @@ async def test_metadata():
 
     result = get_html_metadata(html)
     assert result == HtmlMetadata(
-        title='My Webchain Node',
-        description='This is my webchain node description.',
-        theme_color='#ccc',
+        title="My Webchain Node",
+        description="This is my webchain node description.",
+        theme_color="#ccc",
     )
 
 
@@ -49,8 +49,8 @@ async def test_metadata_og():
     result = get_html_metadata(html)
 
     assert result == HtmlMetadata(
-        title='title',
-        description='desc',
+        title="title",
+        description="desc",
         theme_color=None,
     )
 
@@ -68,7 +68,7 @@ async def test_metadata_twitter():
     result = get_html_metadata(html)
 
     assert result == HtmlMetadata(
-        title='twitter title',
-        description='twitter desc',
+        title="twitter title",
+        description="twitter desc",
         theme_color=None,
     )
