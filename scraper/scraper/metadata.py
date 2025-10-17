@@ -20,6 +20,10 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
     metadata.title = title_element.string if title_element else None
     if not metadata.title:
         metadata.title = handle_meta_element(soup.head.find('meta', attrs={'property': 'og:title'}))
+    if not metadata.title:
+        metadata.title = handle_meta_element(
+            soup.head.find('meta', attrs={'name': 'twitter:title'})
+        )
 
     if metadata.title:
         metadata.title = metadata.title.replace('\n', ' ').strip()
@@ -30,6 +34,10 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
     if not metadata.description:
         metadata.description = handle_meta_element(
             soup.head.find('meta', attrs={'property': 'og:description'})
+        )
+    if not metadata.description:
+        metadata.description = handle_meta_element(
+            soup.head.find('meta', attrs={'name': 'twitter:description'})
         )
 
     metadata.theme_color = handle_meta_element(
