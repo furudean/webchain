@@ -18,56 +18,114 @@ class NodeChangeMask(IntFlag):
     UNQUALIFIED_MODIFIED = 1 << 6
 
 
+def copy_offline_subtree(at: str, visited: Set[str], old_nodes_by_at) -> list[CrawledNode]:
+    # copy offline subtree from old crawl
+    if at in visited or at not in old_nodes_by_at:
+        return []
+    visited.add(at)
+    old_node = old_nodes_by_at[at]
+    node_copy = dataclasses.replace(old_node, indexed=False)
+    nodes = [node_copy]
+    for child_at in old_node.children:
+        nodes.extend(copy_offline_subtree(child_at, visited, old_nodes_by_at))
+    return nodes
+
+
+def sort_nodes_by_hierarchy(nodes: list[CrawledNode]) -> list[CrawledNode]:
+    # sort nodes by parent/child relationships, parents before children
+    at_to_node = {node.at: node for node in nodes}
+    visited = set()
+    ordered = []
+
+    def visit(node):
+        # visit node and its children in order
+        if node.at in visited:
+            return
+        visited.add(node.at)
+        ordered.append(node)
+        # visit children in the order listed in the parent's children field
+        for child_at in getattr(node, 'children', []):
+            child = at_to_node.get(child_at)
+            if child:
+                visit(child)
+
+    # only start from the root(s) as defined by depth==0 (not all parent=none)
+    roots = [node for node in nodes if getattr(node, 'depth', 0) == 0]
+    for root in roots:
+        visit(root)
+    # add any disconnected nodes (not reachable from roots)
+    # this shouldn't really happen, but whatever
+    for node in nodes:
+        if node.at not in visited:
+            visit(node)
+    return ordered
+
+
+def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) -> NodeChangeMask:
+    mask = NodeChangeMask.NONE
+
+    if old_node is None:
+        mask |= NodeChangeMask.ADDED
+        return mask
+    if new_node is None:
+        mask |= NodeChangeMask.REMOVED
+        return mask
+    if old_node.indexed and not new_node.indexed:
+        mask |= NodeChangeMask.ONLINE_TO_OFFLINE
+    if not old_node.indexed and new_node.indexed:
+        mask |= NodeChangeMask.OFFLINE_TO_ONLINE
+    if new_node.parent != old_node.parent:
+        mask |= NodeChangeMask.PARENT_MODIFIED
+    if new_node.indexed:
+        if set(new_node.children) != set(old_node.children):
+            mask |= NodeChangeMask.CHILDREN_MODIFIED
+    if hasattr(new_node, 'unqualified') and hasattr(old_node, 'unqualified'):
+        if new_node.unqualified != old_node.unqualified:
+            mask |= NodeChangeMask.UNQUALIFIED_MODIFIED
+
+    return mask
+
+
 def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> CrawlResponse | None:
     """
-    Patch the new crawl state with offline subtrees and metadata from the old crawl.
+    patch the new crawl state with offline subtrees and metadata from the old crawl.
     """
-    # Build lookup tables for fast access
+    # build lookup tables for fast access
     old_nodes_by_at = {node.at: node for node in old_response.nodes}
     new_nodes_by_at = {node.at: node for node in new_response.nodes}
 
-    # 1. Start with the new crawl (already in new_response.nodes)
-
-    # 2. For each node in new crawl that is not indexed, copy its subtree from old crawl
-    def copy_offline_subtree(at: str, visited: Set[str]) -> list[CrawledNode]:
-        if at in visited or at not in old_nodes_by_at:
-            return []
-        visited.add(at)
-        old_node = old_nodes_by_at[at]
-        node_copy = dataclasses.replace(old_node, indexed=False)
-        nodes = [node_copy]
-        for child_at in old_node.children:
-            nodes.extend(copy_offline_subtree(child_at, visited))
-        return nodes
-
+    # 1. for each node in new crawl that is not indexed, copy its subtree from old crawl
     present_ats = {node.at for node in new_response.nodes}
     offline_visited = set()
     for node in list(new_response.nodes):
         if not node.indexed and node.at in old_nodes_by_at:
             old_node = old_nodes_by_at[node.at]
-            # Restore children if missing
+            # restore children if missing
             if not node.children:
                 node.children = old_node.children.copy()
-            # Copy missing children subtrees
+            # copy missing children subtrees
             for child_at in old_node.children:
                 if child_at not in present_ats:
-                    for subnode in copy_offline_subtree(child_at, offline_visited):
+                    for subnode in copy_offline_subtree(child_at, offline_visited, old_nodes_by_at):
                         if subnode.at not in present_ats:
                             new_response.nodes.append(subnode)
                             present_ats.add(subnode.at)
                             new_nodes_by_at[subnode.at] = subnode
 
-    # 3. Copy metadata from old node onto new node, except for last_updated
+    # 2. copy metadata from old node onto new node, if not present
     for node in new_response.nodes:
         old_node = old_nodes_by_at.get(node.at)
         if old_node:
-            # Copy metadata fields except last_updated
-            node.first_seen = old_node.first_seen
-            node.html_metadata = old_node.html_metadata
-            node.index_error = old_node.index_error
-            node.unqualified = old_node.unqualified.copy()
+            if getattr(node, 'first_seen', None) is None:
+                node.first_seen = old_node.first_seen
+            if getattr(node, 'last_updated', None) is None:
+                node.last_updated = old_node.last_updated
+            if getattr(node, 'html_metadata', None) is None:
+                node.html_metadata = old_node.html_metadata
+            if getattr(node, 'index_error', None) is None:
+                node.index_error = old_node.index_error
 
-    # 4. Update last_updated if applicable
+    # 3. update last_updated if applicable
     change_detected = False
     for at in set(old_nodes_by_at) | set(new_nodes_by_at):
         old_node = old_nodes_by_at.get(at)
@@ -89,7 +147,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
                 new_node.last_updated = new_response.end
             change_detected = True
 
-    # 5. Remove nodes if neither present nor referenced as a child and have no tracked children
+    # 4. remove nodes if neither present nor referenced as a child and have no tracked children
     referenced_children = set()
     for node in new_response.nodes:
         referenced_children.update(node.children)
@@ -103,46 +161,20 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
             tracked_children = [c for c in old_node.children if c in final_new_ats]
             if not tracked_children:
                 removed_ats.add(at)
-                logger.info(f'Node removed {at}')
+                logger.info(f'node removed {at}')
         else:
             node = new_nodes_by_at.get(at)
             if node and node.parent:
                 parent = new_nodes_by_at.get(node.parent)
                 if parent and at not in parent.children:
                     removed_ats.add(at)
-                    logger.info(f'Node removed (parent no longer lists as child): {at}')
+                    logger.info(f'node removed (parent no longer lists as child): {at}')
     new_response.nodes = [node for node in new_response.nodes if node.at not in removed_ats]
 
-    # 7. Sort nodes by parent/child relationships, parents before children
-    def sort_nodes_by_hierarchy(nodes):
-        at_to_node = {node.at: node for node in nodes}
-        visited = set()
-        ordered = []
-
-        def visit(node):
-            if node.at in visited:
-                return
-            visited.add(node.at)
-            ordered.append(node)
-            # Visit children in the order listed in the parent's children field
-            for child_at in getattr(node, 'children', []):
-                child = at_to_node.get(child_at)
-                if child:
-                    visit(child)
-
-        # Only start from the root(s) as defined by depth==0 (not all parent=None)
-        roots = [node for node in nodes if getattr(node, 'depth', 0) == 0]
-        for root in roots:
-            visit(root)
-        # Add any disconnected nodes (not reachable from roots)
-        for node in nodes:
-            if node.at not in visited:
-                visit(node)
-        return ordered
-
+    # 5. sort nodes by parent/child relationships, parents before children
     new_response.nodes = sort_nodes_by_hierarchy(new_response.nodes)
 
-    # 6. Ensure first_seen is set
+    # 6. ensure first_seen is set
     for node in new_response.nodes:
         if getattr(node, 'first_seen', None) is None:
             node.first_seen = new_response.end
@@ -155,30 +187,3 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
             nominations_limit=new_response.nominations_limit,
         )
     return None
-
-
-def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) -> NodeChangeMask:
-    """
-    Compare two nodes and return a NodeChangeMask bitmask value.
-    """
-    mask = NodeChangeMask.NONE
-    if old_node is None:
-        mask |= NodeChangeMask.ADDED
-        return mask
-    if new_node is None:
-        mask |= NodeChangeMask.REMOVED
-        return mask
-    if old_node.indexed and not new_node.indexed:
-        mask |= NodeChangeMask.ONLINE_TO_OFFLINE
-    if not old_node.indexed and new_node.indexed:
-        mask |= NodeChangeMask.OFFLINE_TO_ONLINE
-    if new_node.parent != old_node.parent:
-        mask |= NodeChangeMask.PARENT_MODIFIED
-    if new_node.indexed:
-        if set(new_node.children) != set(old_node.children):
-            mask |= NodeChangeMask.CHILDREN_MODIFIED
-    if hasattr(new_node, 'unqualified') and hasattr(old_node, 'unqualified'):
-        if new_node.unqualified != old_node.unqualified:
-            mask |= NodeChangeMask.UNQUALIFIED_MODIFIED
-    # Add more fields as needed
-    return mask

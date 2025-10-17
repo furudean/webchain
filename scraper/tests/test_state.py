@@ -410,12 +410,41 @@ def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
     assert patched.nodes == sorted_nodes + [unrelated_node]
 
 
-def test_preserve_metadata(
+def test_pick_up_new_metadata(
+    old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_node: CrawledNode
+):
+    old_crawl.nodes = [seed_node]
+    new_node = dataclasses.replace(
+        seed_node,
+        first_seen='2000-01-01T00:00:00Z',
+        last_updated='2000-01-01T00:05:00Z',
+        html_metadata=HtmlMetadata(
+            title='New Title', description='New Description', theme_color=None
+        ),
+    )
+    unrelated_node = dataclasses.replace(
+        seed_node,
+        at='http://othernode',
+    )
+    new_crawl.nodes = [new_node, unrelated_node]
+
+    patched = patch_state(old_crawl, new_crawl)
+
+    assert patched is not None
+    assert len(patched.nodes) == 2
+    assert patched.nodes[0].html_metadata is not None
+    assert patched.nodes[0].html_metadata.title == 'New Title'
+    assert patched.nodes[0].first_seen == '2000-01-01T00:00:00Z'
+    assert patched.nodes[0].last_updated == '2000-01-01T00:05:00Z'
+
+
+def test_preserve_missing_metadata(
     old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_node: CrawledNode
 ):
     metadata_node = dataclasses.replace(
         seed_node,
-        at='http://node',
+        first_seen='1995-01-01T00:02:00Z',
+        last_updated='1995-01-05T00:01:00Z',
         html_metadata=dataclasses.replace(
             seed_node.html_metadata or HtmlMetadata(None, None, None),
             title='Old Title',
@@ -436,6 +465,8 @@ def test_preserve_metadata(
     assert len(patched.nodes) == 1
     assert patched.nodes[0].html_metadata is not None
     assert patched.nodes[0].html_metadata.title == 'Old Title'
+    assert patched.nodes[0].first_seen == '1995-01-01T00:02:00Z'
+    assert patched.nodes[0].last_updated == '1995-01-05T00:01:00Z'
 
 
 def test_irrelevant_changes(
