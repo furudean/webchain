@@ -1,5 +1,5 @@
 import dataclasses
-from scraper.read import patch_state, compare_nodes, NodeChangeMask
+from scraper.state import patch_state, compare_nodes, NodeChangeMask
 from scraper.crawl import CrawlResponse, CrawledNode
 import pytest
 

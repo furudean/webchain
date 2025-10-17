@@ -8,9 +8,8 @@ import logging
 import click
 
 from scraper.crawl import crawl
-from scraper.read import patch_state
+from scraper.state import patch_state
 from scraper.metadata import enrich_with_metadata
-from scraper.contracts import CrawlResponse
 from scraper.serialize import deserialize, serialize
 
 
