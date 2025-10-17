@@ -16,7 +16,7 @@ class NodeChangeMask(IntFlag):
     OFFLINE_TO_ONLINE = 1 << 4
     ONLINE_TO_OFFLINE = 1 << 5
     UNQUALIFIED_MODIFIED = 1 << 6
-    METADATA_MODIFIED = 1 << 7  # new mask for metadata changes
+    METADATA_MODIFIED = 1 << 7
 
 
 def copy_offline_subtree(
