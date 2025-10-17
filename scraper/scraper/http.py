@@ -4,7 +4,7 @@ import os
 import aiohttp
 import tenacity
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 def get_session() -> aiohttp.ClientSession:

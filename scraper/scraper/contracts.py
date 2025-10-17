@@ -11,9 +11,9 @@ class HtmlMetadata:
 @dataclass
 class CrawledNode:
     at: str
+    parent: str | None
     children: list[str]
     """valid nominations"""
-    parent: str | None
     depth: int
     indexed: bool
     index_error: Exception | None = None
