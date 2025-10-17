@@ -8,8 +8,9 @@ import logging
 import click
 
 from scraper.crawl import crawl
-from scraper.read import compareState
+from scraper.read import patch_state
 from scraper.metadata import enrich_with_metadata
+from scraper.contracts import CrawlResponse
 from scraper.serialize import deserialize, serialize
 
 
@@ -86,34 +87,30 @@ async def json(url: str):
     print(serialized)
 
 
-# checks for updates to the state encapsulated in res
-# data will be the updated state, if there is an update, or will be 0 else.
-# if data == 0, return 1 to interrupt bash
 @webchain.command
 @click.argument('path1', required=True, type=click.File())
 @click.argument('path2', required=True, type=click.File())
-@asyncio_click
-async def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
-    data = 0
-
+def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
     try:
         res1 = deserialize(path1.read())
-    except:
-        print(f'{path1.name} not valid crawl json')
+    except Exception as e:
+        print(f'{path1.name} not valid crawl json: {e}')
         sys.exit(1)
 
     try:
         res2 = deserialize(path2.read())
-    except:
-        print(f'{path2.name} not valid crawl json')
+    except Exception as e:
+        print(f'{path2.name} not valid crawl json: {e}')
         sys.exit(1)
 
-    data = await compareState(res1, res2)
+    patched_crawl = patch_state(res1, res2)
 
-    if not data:
+    if not patched_crawl:
+        # no changes
+        print('no changes detected')
         sys.exit(1)
 
-    ret = serialize(data, indent='\t')
+    ret = serialize(patched_crawl, indent='\t')
     print(ret)
 
 
