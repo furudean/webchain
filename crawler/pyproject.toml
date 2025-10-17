@@ -8,17 +8,17 @@ dynamic = ["version"]
 requires-python = ">=3.14"
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [
-	"aiohttp[speedups]~=3.12",
-	"beautifulsoup4~=4.14.2",
-	"click~=8.3.0",
-	"lxml~=6.0",
-	"ordered-set~=4.1.0",
-	"tenacity~=9.1.2",
-	"zstandard~=0.25.0",
+	"aiohttp[speedups]>=3.13.0",
+	"beautifulsoup4>=4.14.2",
+	"click>=8.3.0",
+	"lxml>=6.0.2",
+	"ordered-set>=4.1.0",
+	"tenacity>=9.1.2",
+	"zstandard>=0.25.0",
 ]
 
 [dependency-groups]
-dev = ["pytest~=8.4.1", "pytest-asyncio~=1.2.0", "ruff~=0.14.0"]
+dev = ["pytest>=8.4.2", "pytest-asyncio>=1.2.0", "ruff>=0.14.1"]
 
 [project.scripts]
 webchain = "spider.cli:webchain"
