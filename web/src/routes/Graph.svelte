@@ -25,7 +25,6 @@
 	let layout: ForceSupervisorType | undefined = $state()
 	let graph_promise: Promise<void> | undefined = $state()
 
-	let zoom_frame: number | null = null
 	let graph_element: HTMLElement
 	let graph_container: HTMLElement
 
@@ -58,7 +57,7 @@
 		if (!renderer) return
 		nodes = typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
 		const camera_state = getCameraStateToFitViewportToNodes(renderer, nodes)
-		camera_state.ratio *= 1.5 // add some padding
+		camera_state.ratio *= 1.25 // add some padding
 		await renderer.getCamera()?.animate(camera_state, options)
 	}
 
