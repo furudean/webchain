@@ -98,11 +98,7 @@
 							title="This node has used {node.children
 								.length}/{nominations_limit} of its nominations"
 						>
-							{#if node.indexed}
-								{node.children.length}/{nominations_limit}
-							{:else}
-								not indexed
-							{/if}
+							{node.indexed ? node.children.length : "?"}/{nominations_limit}
 						</span>
 					{/if}
 				</span>
@@ -114,6 +110,15 @@
 			</a>
 			{#if node.html_metadata?.description}
 				<p>{node.html_metadata.description}</p>
+			{/if}
+			{#if !node.indexed}
+				<div class="crawl-warning">
+					{#if node.index_error}
+						<pre><code>{node.index_error}</code></pre>
+					{:else}
+						This node could not be crawled
+					{/if}
+				</div>
 			{/if}
 			{#if node.first_seen}
 				<p
@@ -179,7 +184,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0 0.5ch;
-		flex-wrap: wrap;
 	}
 
 	.label .new {
@@ -194,6 +198,7 @@
 		align-self: center;
 		box-sizing: border-box;
 		user-select: none;
+		text-wrap: nowrap;
 	}
 
 	.label .slots {
@@ -229,6 +234,10 @@
 		word-break: break-all;
 	}
 
+	details:not([open]) .node-header {
+		max-width: 17rem;
+	}
+
 	.node-content {
 		border-left: 2px solid var(--color-primary);
 		padding: 0.4rem;
@@ -258,5 +267,21 @@
 		font-size: 0.85em;
 		opacity: 0.8;
 		font-style: italic;
+	}
+
+	.crawl-warning {
+		display: flex;
+		flex-grow: 0;
+		margin: 0;
+		font-family: "Fantasque Sans Mono", monospace;
+		font-size: 0.8rem;
+		padding: 0.25rem;
+		border: 1px solid var(--color-border);
+		margin-top: 0.4rem;
+	}
+
+	.crawl-warning pre {
+		margin: 0;
+		text-wrap: wrap;
 	}
 </style>
