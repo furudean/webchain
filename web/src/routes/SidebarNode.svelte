@@ -213,6 +213,7 @@
 		border-radius: 0.1rem;
 		border: 1px solid var(--color-shy);
 		aspect-ratio: 1 / 1;
+		color: transparent; /* hide alt text */
 	}
 
 	/* Only apply opacity when details is NOT open and node is not indexed */
