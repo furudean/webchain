@@ -36,7 +36,10 @@ async def load_page_html(
                 url, timeout=aiohttp.ClientTimeout(total=5), headers=headers
             ) as response:
                 content_type = response.headers.get('Content-Type', '')
-                if not content_type.startswith('text/html'):
+                if not (
+                    content_type.startswith('text/html')
+                    or content_type.startswith('application/xhtml+xml')
+                ):
                     raise InvalidContentType
                 html = await response.text()
                 logger.debug(f'got {url}')
