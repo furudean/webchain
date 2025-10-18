@@ -601,3 +601,37 @@ def test_irrelevant_changes(
     patched = patch_state(old_crawl, new_crawl)
 
     assert patched is None
+
+
+def test_children_modified(
+    old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_node: CrawledNode
+):
+    old_node = dataclasses.replace(
+        seed_node,
+        children=[],
+    )
+    new_node = dataclasses.replace(
+        old_node,
+        children=['http://child1', 'http://child2'],
+    )
+    child_1 = dataclasses.replace(
+        seed_node,
+        at='http://child1',
+        parent=seed_node.at,
+        depth=1,
+    )
+    child_2 = dataclasses.replace(
+        seed_node,
+        at='http://child2',
+        parent=seed_node.at,
+        depth=1,
+    )
+
+    old_crawl.nodes = [old_node]
+    new_crawl.nodes = [new_node, child_1, child_2]
+
+    patched = patch_state(old_crawl, new_crawl)
+
+    assert patched is not None
+    assert len(patched.nodes) == 3
+    assert patched.nodes == [new_node, child_1, child_2]
