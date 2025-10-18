@@ -118,9 +118,9 @@
 			labelColor: { attribute: "textColor" },
 			labelGridCellSize: 125,
 			labelRenderedSizeThreshold: 10,
-
-			maxCameraRatio: 8,
-			minCameraRatio: 0.75,
+			stagePadding: 50,
+			minCameraRatio: 0.6,
+			maxCameraRatio: 10,
 
 			nodeReducer(node, data) {
 				const res: typeof data = { ...data }
