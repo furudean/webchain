@@ -37,7 +37,9 @@
 		height="31"
 		width="88"
 	/>
-</a>`.trim()
+</a>`
+			.replace(/\s+/g, " ")
+			.trim()
 	)
 
 	const recent_nodes = $derived.by(() => {
@@ -173,15 +175,18 @@
 		<summary>socialize</summary>
 		<p>
 			If you want to link to this webchain from your site, an old-web style
-			button can be created below.
+			button can be created with this form:
 		</p>
 		<form>
-			<button
-				type="button"
-				onclick={() => {
-					button = "/button.png"
-				}}
-			>
+			<label for="button-style">Style</label>
+			<br />
+			<label class="button-option">
+				<input
+					type="radio"
+					name="button-style"
+					value="/button.png"
+					bind:group={button}
+				/>
 				<img
 					src="/button.png"
 					class="button"
@@ -189,13 +194,14 @@
 					width="88"
 					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is tinted more blue."
 				/>
-			</button>
-			<button
-				type="button"
-				onclick={() => {
-					button = "/button2.png"
-				}}
-			>
+			</label>
+			<label class="button-option">
+				<input
+					type="radio"
+					name="button-style"
+					value="/button2.png"
+					bind:group={button}
+				/>
 				<img
 					src="/button2.png"
 					class="button"
@@ -203,10 +209,10 @@
 					width="88"
 					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is more monochrome."
 				/>
-			</button>
+			</label>
 			{#if browser}
 				<br />
-				<label for="links-to">links to</label>
+				<label for="links-to">Links to</label>
 				<select
 					name="links-to"
 					onchange={(e) => {
@@ -223,11 +229,17 @@
 					{/each}
 				</select>
 			{/if}
+			<p>
+				Use this snippet to include it on your site: <input
+					type="text"
+					readonly
+					value={snippet}
+					onmouseup={(e) => {
+						e.currentTarget.select()
+					}}
+				/>
+			</p>
 		</form>
-		<p>Use the following HTML snippet to include it on your site:</p>
-		<pre><code>{snippet}</code></pre>
-
-		<p></p>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
 			node in the webchain.
@@ -384,18 +396,33 @@
 		margin: 2rem 0;
 	}
 
-	button {
+	form {
+		border: double var(--color-border);
+		padding: 0.5rem;
+	}
+
+	.button-option {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	input[type="text"] {
+		font-family: "Fantasque Sans Mono", monospace;
+		font-size: 0.9rem;
+		min-width: 15rem;
+		padding: 0.25em;
+		border: 1px solid var(--color-border);
 		background: none;
-		border: none;
-		padding: 0;
-		position: relative;
+		box-sizing: border-box;
+		color: var(--color-text);
 	}
 
-	button:hover {
-		top: -1px;
+	label {
+		margin: 0.5rem 0;
 	}
 
-	button:active {
-		top: 1px;
+	form p {
+		margin: 0.5rem 0;
 	}
 </style>
