@@ -56,19 +56,22 @@ async def fetch_and_update_metadata(
 ) -> CrawledNode:
     """Returns a new CrawledNode with updated metadata"""
 
+    node_copy = CrawledNode(**dataclasses.asdict(node))
+
     if check_robots_txt and not (
         await allowed_by_robots_txt(node.at, user_agent=UA, session=session)
     ):
         logger.info(f"disallowed by robots.txt: {node.at}")
-        return node
-
-    node_copy = CrawledNode(**dataclasses.asdict(node))
+        return node_copy
 
     if node.indexed:
-        html = await load_page_html(node.at, referrer=node.parent, session=session)
+        try:
+            html = await load_page_html(node.at, referrer=node.parent, session=session)
 
-        if html:
-            node_copy.html_metadata = get_html_metadata(html)
+            if html:
+                node_copy.html_metadata = get_html_metadata(html)
+        except Exception as e:
+            logger.warning(f"failed to fetch metadata for {node.at}: " + type(e).__name__)
 
     return node_copy
 

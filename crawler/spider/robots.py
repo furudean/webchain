@@ -32,7 +32,7 @@ async def get_robots_txt(
             if not content_type.startswith("text/plain"):
                 raise InvalidContentType
     except aiohttp.ClientResponseError as e:
-        if e.status == 404:
+        if 400 <= e.status < 500:
             return None
         raise
 
