@@ -110,7 +110,7 @@ export async function refresh_favicon_in_background(
 		}
 		await fetch_and_cache_favicon(url_param, fetch)
 		if (!already_running) {
-			console.log(`bfavicon ackground refresh completed for ${url_param}`)
+			console.log(`favicon ackground refresh completed for ${url_param}`)
 		}
 	} catch (error) {
 		console.error(`favicon background refresh failed for ${url_param}:`, error)
