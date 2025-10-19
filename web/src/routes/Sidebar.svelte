@@ -166,8 +166,8 @@
 			websites that this node nominates.
 		</blockquote>
 		<p>
-			<b>Note</b>: A website must first be a member of the webchain via
-			nomination before it can appear on the graph.
+			See the <a href="/pages/manual.md">manual page</a>
+			for more information.
 		</p>
 	</details>
 
