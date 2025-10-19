@@ -8,4 +8,4 @@ This repository contains code for a [crawler](crawler) that can discover the web
 and output it in different formats, and a [visualizer webpage](web) to inspect the
 current state of a webchain.
 
-See [SPEC.md](SPEC.md) for the specification.
+See [spec.md](pages/spec.md) for the specification.

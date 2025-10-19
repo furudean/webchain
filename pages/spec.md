@@ -1,3 +1,7 @@
+---
+title: "webchain Specification"
+---
+
 # webchain Specification (draft)
 
 webchain is a distributed [webring](https://en.wikipedia.org/wiki/Webring),

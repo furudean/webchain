@@ -4,6 +4,12 @@
 	let { data }: PageProps = $props()
 </script>
 
+<svelte:head>
+	{#if data.frontmatter?.title}
+		<title>{data.frontmatter.title}</title>
+	{/if}
+</svelte:head>
+
 <main>
 	{@html data.html}
 </main>
