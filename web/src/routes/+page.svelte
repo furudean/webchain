@@ -27,9 +27,6 @@
 			replaceState: true,
 			noScroll: true
 		})
-		const nodes = [current_node.at, ...current_node.children]
-		if (current_node.parent) nodes.push(current_node.parent)
-		graph_component?.center_on_nodes(nodes)
 	})
 </script>
 
