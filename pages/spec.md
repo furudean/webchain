@@ -2,7 +2,7 @@
 title: "webchain Specification"
 ---
 
-# webchain Specification (draft)
+# webchain Specification
 
 webchain is a distributed [webring](https://en.wikipedia.org/wiki/Webring),
 where each member can nominate other websites, creating a walkable graph of
@@ -34,10 +34,9 @@ higher up the chain.
    different domains altogether.
 6. Nodes may not nominate themselves or create cycles in the nomination path. If
    these cases are detected, the offending nominations are ignored.
-7. If a node does not respond with a 200 status-code in a timely manner, the
-   node is considered offline. Offline nodes are still a part of the data
-   representation, but its subtree is not traversable until it comes online
-   again.
+7. If a node does not respond in a timely manner, the node is considered
+   offline. Offline nodes are still a part of the data representation, but its
+   subtree is not traversable until it comes online again.
 
 [^1]:
     The value of `n` is left unspecified. The webchain admin may choose a suitable
