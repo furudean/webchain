@@ -34,7 +34,6 @@ export const entries: EntryGenerator = () => {
 export const load: PageServerLoad = async ({ params }) => {
 	const page = pages[params.slug]
 
-	console.log(pages)
 	if (!page) {
 		return error(404, "Page not found")
 	}
