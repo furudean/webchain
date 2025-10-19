@@ -47,7 +47,13 @@ async def load_page_html(
             raise
         except aiohttp.ClientResponseError as e:
             if e.status == 404:
+                logger.debug(f"{url}: 404 Not Found")
                 return None
+
+            logger.debug(f"{url}: " + type(e).__name__)
+            raise
+        except aiohttp.ClientError as e:
+            logger.debug(f"{url}: " + type(e).__name__)
             raise
 
         try:
