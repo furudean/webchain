@@ -7,8 +7,7 @@ const favicon_fetch_promises = new Map<
 	Promise<{ data: ArrayBuffer; item: CachedItem } | null>
 >()
 const request_headers = new Headers({
-	"User-Agent":
-		"webchain-favicon-fetcher/DRAFT (+https://webchain.milkmedicine.net)",
+	"User-Agent": "WebchainSpider (+https://github.com/furudean/webchain)",
 	"Accept-Language": "en-US,en;q=0.9,*;q=0.5",
 	Accept: "*/*"
 })
