@@ -1,6 +1,6 @@
 import itertools
 import sys
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 import asyncio
 from datetime import datetime, timezone
 from time import time
@@ -162,7 +162,7 @@ async def crawl(
                 html = None
                 index_error = e
         else:
-            logger.info(f"fetch from {UA} disallowed by {url} robots.txt")
+            logger.info(f"fetch from {UA} not allowed by {urljoin(url, 'robots.txt')}")
             index_error = RobotsExclusionError(f"fetch from {UA} disallowed by page robots.txt")
 
         nominations: list[str] = []
