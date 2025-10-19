@@ -10,10 +10,11 @@
 	let graph_component: Graph | undefined = $state()
 
 	onMount(async () => {
-		const url_param = page.url.searchParams.get("node")
+		const url_param = page.url.searchParams.get("node")?.replace(/_$/, "") // old format used to have trailing underscores
 		const current_node = data.nodes.find(
 			(n) => n.url_param === url_param || n.at === url_param
 		)
+		console.log(current_node)
 
 		if (!current_node) return
 
