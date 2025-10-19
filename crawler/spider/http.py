@@ -6,7 +6,7 @@ import tenacity
 
 logger = logging.getLogger(__name__)
 
-UA = "webchain-scraper/DRAFT"
+UA = "WebchainSpider (+https://github.com/furudean/webchain)"
 
 
 def get_session() -> aiohttp.ClientSession:
