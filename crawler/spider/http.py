@@ -78,6 +78,7 @@ async def load_page_html(
                 aiohttp.ClientResponseError,
                 aiohttp.ClientConnectionError,
                 aiohttp.ServerConnectionError,
+                TimeoutError,
             )
         ),
         reraise=True,
