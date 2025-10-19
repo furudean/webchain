@@ -112,17 +112,22 @@
 				<p>{node.html_metadata.description}</p>
 			{/if}
 			{#if !node.indexed}
-				<div class="crawl-warning">
-					{#if node.index_error}
+				{#if node.index_error}
+					<!-- <span class="small"><b>, the error is shown below</b></span> -->
+					<div class="crawl-warning">
 						<pre><code>{node.index_error}</code></pre>
-					{:else}
-						This node could not be crawled
-					{/if}
-				</div>
+					</div>
+				{/if}
+				<span class="small">
+					this page was not crawled. is this your page?
+					<a href="/pages/manual.md#my-page-is-not-being-crawled!"
+						>see the manual</a
+					></span
+				>
 			{/if}
 			{#if node.first_seen}
 				<p
-					class="date"
+					class="small date"
 					title={date_time_fmt.format(node.first_seen).toLowerCase()}
 				>
 					first seen
@@ -263,9 +268,13 @@
 		text-decoration-style: double;
 	}
 
-	.date {
+	.small {
 		font-size: 0.85em;
 		opacity: 0.8;
+		margin: 0.2rem 0;
+	}
+
+	.date {
 		font-style: italic;
 	}
 

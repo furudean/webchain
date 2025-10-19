@@ -96,7 +96,7 @@
 	<details name="qna">
 		<summary>webchain?</summary>
 		<p>
-			A <a href="/pages/spec">webchain</a>
+			A <a href="/pages/spec.md">webchain</a>
 			is a distributed
 			<a href="https://en.wikipedia.org/wiki/Webring" rel="external">webring</a
 			>, where each tracked website can nominate new members, creating a

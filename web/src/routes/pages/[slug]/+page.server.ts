@@ -22,7 +22,7 @@ const md = MarkdownIt({
 const pages = Object.fromEntries(
 	Object.entries(
 		import.meta.glob("$pages/*.md", { query: "?raw", import: "default" })
-	).map(([key, value]) => [basename(key).replace(/\.md$/, ""), value])
+	).map(([key, value]) => [basename(key), value])
 ) as Record<string, (() => Promise<string>) | undefined>
 
 export const prerender = true
