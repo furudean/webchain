@@ -10,7 +10,7 @@ import random
 def test_compare_node_added():
     old = None
     new = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -25,7 +25,7 @@ def test_compare_node_added():
 
 def test_node_removed():
     old = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -41,7 +41,7 @@ def test_node_removed():
 
 def test_compare_no_change():
     old = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -49,7 +49,7 @@ def test_compare_no_change():
         depth=0,
     )
     new = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -64,7 +64,7 @@ def test_compare_no_change():
 
 def test_ignore_untracked_fields():
     old = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -73,11 +73,11 @@ def test_ignore_untracked_fields():
         unqualified=[],
     )
     new = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
-        first_seen='2023-01-01T00:00:00Z',
+        first_seen="2023-01-01T00:00:00Z",
         depth=1,
         unqualified=[],
     )
@@ -89,16 +89,16 @@ def test_ignore_untracked_fields():
 
 def test_compare_children_modified():
     old = CrawledNode(
-        at='http://node',
-        children=['http://child1'],
+        at="http://node",
+        children=["http://child1"],
         parent=None,
         indexed=True,
         first_seen=None,
         depth=0,
     )
     new = CrawledNode(
-        at='http://node',
-        children=['http://child1', 'http://child2'],
+        at="http://node",
+        children=["http://child1", "http://child2"],
         parent=None,
         indexed=True,
         first_seen=None,
@@ -112,17 +112,17 @@ def test_compare_children_modified():
 
 def test_compare_parent_changed():
     old = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
-        parent='http://oldparent',
+        parent="http://oldparent",
         indexed=True,
         first_seen=None,
         depth=0,
     )
     new = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
-        parent='http://newparent',
+        parent="http://newparent",
         indexed=True,
         first_seen=None,
         depth=0,
@@ -135,7 +135,7 @@ def test_compare_parent_changed():
 
 def test_compare_offline_to_online():
     old = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=False,
@@ -143,7 +143,7 @@ def test_compare_offline_to_online():
         depth=0,
     )
     new = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -158,7 +158,7 @@ def test_compare_offline_to_online():
 
 def test_compare_online_to_offline():
     old = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -166,7 +166,7 @@ def test_compare_online_to_offline():
         depth=0,
     )
     new = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=False,
@@ -181,7 +181,7 @@ def test_compare_online_to_offline():
 
 def test_compare_unqualified_change():
     old = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -190,13 +190,13 @@ def test_compare_unqualified_change():
         unqualified=[],
     )
     new = CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
         first_seen=None,
         depth=1,
-        unqualified=['http://somenode'],
+        unqualified=["http://somenode"],
     )
 
     mask = compare_nodes(old, new)
@@ -206,17 +206,17 @@ def test_compare_unqualified_change():
 
 def test_compare_multiple_changes():
     old = CrawledNode(
-        at='http://node',
-        children=['http://child1'],
-        parent='http://oldparent',
+        at="http://node",
+        children=["http://child1"],
+        parent="http://oldparent",
         indexed=False,
         first_seen=None,
         depth=0,
     )
     new = CrawledNode(
-        at='http://node',
-        children=['http://child1', 'http://child2'],
-        parent='http://newparent',
+        at="http://node",
+        children=["http://child1", "http://child2"],
+        parent="http://newparent",
         indexed=True,
         first_seen=None,
         depth=0,
@@ -234,15 +234,15 @@ def test_compare_multiple_changes():
 def test_compare_metadata_changed_html_metadata(seed_node: CrawledNode):
     old = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-01T00:00:00Z',
-        last_updated='2023-01-01T00:00:00Z',
-        html_metadata=HtmlMetadata(title='Old Title', description='Old Desc', theme_color=None),
+        first_seen="2023-01-01T00:00:00Z",
+        last_updated="2023-01-01T00:00:00Z",
+        html_metadata=HtmlMetadata(title="Old Title", description="Old Desc", theme_color=None),
     )
     new = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-01T00:00:00Z',
-        last_updated='2023-01-01T00:00:00Z',
-        html_metadata=HtmlMetadata(title='New Title', description='Old Desc', theme_color=None),
+        first_seen="2023-01-01T00:00:00Z",
+        last_updated="2023-01-01T00:00:00Z",
+        html_metadata=HtmlMetadata(title="New Title", description="Old Desc", theme_color=None),
     )
 
     mask = compare_nodes(old, new)
@@ -253,13 +253,13 @@ def test_compare_metadata_changed_html_metadata(seed_node: CrawledNode):
 def test_compare_metadata_changed_first_seen(seed_node: CrawledNode):
     old = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-01T00:00:00Z',
-        last_updated='2023-01-01T00:00:00Z',
+        first_seen="2023-01-01T00:00:00Z",
+        last_updated="2023-01-01T00:00:00Z",
     )
     new = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-02T00:00:00Z',
-        last_updated='2023-01-01T00:00:00Z',
+        first_seen="2023-01-02T00:00:00Z",
+        last_updated="2023-01-01T00:00:00Z",
     )
 
     mask = compare_nodes(old, new)
@@ -270,13 +270,13 @@ def test_compare_metadata_changed_first_seen(seed_node: CrawledNode):
 def test_compare_metadata_changed_last_updated(seed_node: CrawledNode):
     old = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-01T00:00:00Z',
-        last_updated='2023-01-01T00:00:00Z',
+        first_seen="2023-01-01T00:00:00Z",
+        last_updated="2023-01-01T00:00:00Z",
     )
     new = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-01T00:00:00Z',
-        last_updated='2023-01-02T00:00:00Z',
+        first_seen="2023-01-01T00:00:00Z",
+        last_updated="2023-01-02T00:00:00Z",
     )
 
     mask = compare_nodes(old, new)
@@ -287,15 +287,15 @@ def test_compare_metadata_changed_last_updated(seed_node: CrawledNode):
 def test_compare_metadata_no_change(seed_node: CrawledNode):
     old = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-01T00:00:00Z',
-        last_updated='2023-01-01T00:00:00Z',
-        html_metadata=HtmlMetadata(title='Title', description='Desc', theme_color=None),
+        first_seen="2023-01-01T00:00:00Z",
+        last_updated="2023-01-01T00:00:00Z",
+        html_metadata=HtmlMetadata(title="Title", description="Desc", theme_color=None),
     )
     new = dataclasses.replace(
         seed_node,
-        first_seen='2023-01-01T00:00:00Z',
-        last_updated='2023-01-01T00:00:00Z',
-        html_metadata=HtmlMetadata(title='Title', description='Desc', theme_color=None),
+        first_seen="2023-01-01T00:00:00Z",
+        last_updated="2023-01-01T00:00:00Z",
+        html_metadata=HtmlMetadata(title="Title", description="Desc", theme_color=None),
     )
 
     mask = compare_nodes(old, new)
@@ -307,8 +307,8 @@ def test_compare_metadata_no_change(seed_node: CrawledNode):
 def old_crawl():
     return CrawlResponse(
         nodes=[],
-        start='1995-01-01T00:00:00Z',
-        end='1995-01-01T00:05:00Z',
+        start="1995-01-01T00:00:00Z",
+        end="1995-01-01T00:05:00Z",
         nominations_limit=4,
     )
 
@@ -317,8 +317,8 @@ def old_crawl():
 def new_crawl():
     return CrawlResponse(
         nodes=[],
-        start='2000-01-01T00:10:00Z',
-        end='2000-01-01T00:15:00Z',
+        start="2000-01-01T00:10:00Z",
+        end="2000-01-01T00:15:00Z",
         nominations_limit=4,
     )
 
@@ -326,7 +326,7 @@ def new_crawl():
 @pytest.fixture
 def seed_node():
     return CrawledNode(
-        at='http://node',
+        at="http://node",
         children=[],
         parent=None,
         indexed=True,
@@ -387,7 +387,7 @@ def test_patch_child_added(
 ):
     child_node = dataclasses.replace(
         seed_node,
-        at='http://child',
+        at="http://child",
         parent=seed_node.at,
         depth=1,
     )
@@ -409,7 +409,7 @@ def test_patch_child_added(
 def test_child_removed(old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_node: CrawledNode):
     child_node = dataclasses.replace(
         seed_node,
-        at='http://child',
+        at="http://child",
         parent=seed_node.at,
         depth=1,
     )
@@ -430,23 +430,23 @@ def test_child_removed(old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_
 
 def test_patch_offline_subtree(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
     child_node = CrawledNode(
-        at='http://child',
-        children=['http://grandchild'],
-        parent='http://node',
+        at="http://child",
+        children=["http://grandchild"],
+        parent="http://node",
         indexed=True,
         depth=1,
     )
     grandchild_node = CrawledNode(
-        at='http://grandchild',
+        at="http://grandchild",
         children=[],
-        parent='http://child',
+        parent="http://child",
         indexed=True,
         depth=2,
     )
     old_crawl.nodes = [
         CrawledNode(
-            at='http://node',
-            children=['http://child'],
+            at="http://node",
+            children=["http://child"],
             parent=None,
             indexed=True,
             depth=0,
@@ -456,7 +456,7 @@ def test_patch_offline_subtree(old_crawl: CrawlResponse, new_crawl: CrawlRespons
     ]
     new_crawl.nodes = [
         CrawledNode(
-            at='http://node',
+            at="http://node",
             children=[],
             parent=None,
             indexed=False,
@@ -469,33 +469,33 @@ def test_patch_offline_subtree(old_crawl: CrawlResponse, new_crawl: CrawlRespons
     assert patched is not None
     assert len(patched.nodes) == 3
     ats = {node.at for node in patched.nodes}
-    assert 'http://child' in ats
-    assert 'http://grandchild' in ats
-    assert all(not node.indexed for node in patched.nodes if node.at != 'http://node')
+    assert "http://child" in ats
+    assert "http://grandchild" in ats
+    assert all(not node.indexed for node in patched.nodes if node.at != "http://node")
 
 
 def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
     root_node = CrawledNode(
-        at='http://root',
-        children=['http://has_children', 'http://unrelatednode'],
+        at="http://root",
+        children=["http://has_children", "http://unrelatednode"],
         parent=None,
         indexed=True,
         depth=0,
     )
 
     unrelated_node = CrawledNode(
-        at='http://unrelatednode',
+        at="http://unrelatednode",
         children=[],
-        parent='http://root',
+        parent="http://root",
         indexed=True,
         depth=1,
     )
 
     children = [
         CrawledNode(
-            at=f'http://child{i}',
+            at=f"http://child{i}",
             children=[],
-            parent='http://has_children',
+            parent="http://has_children",
             indexed=True,
             depth=2,
         )
@@ -503,7 +503,7 @@ def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
     ]
 
     parent_node = CrawledNode(
-        at='http://has_children',
+        at="http://has_children",
         children=[child.at for child in children],
         parent=None,
         indexed=True,
@@ -528,15 +528,15 @@ def test_pick_up_new_metadata(
     old_crawl.nodes = [seed_node]
     new_node = dataclasses.replace(
         seed_node,
-        first_seen='2000-01-01T00:00:00Z',
-        last_updated='2000-01-01T00:05:00Z',
+        first_seen="2000-01-01T00:00:00Z",
+        last_updated="2000-01-01T00:05:00Z",
         html_metadata=HtmlMetadata(
-            title='New Title', description='New Description', theme_color=None
+            title="New Title", description="New Description", theme_color=None
         ),
     )
     unrelated_node = dataclasses.replace(
         seed_node,
-        at='http://othernode',
+        at="http://othernode",
     )
     new_crawl.nodes = [new_node, unrelated_node]
 
@@ -545,9 +545,9 @@ def test_pick_up_new_metadata(
     assert patched is not None
     assert len(patched.nodes) == 2
     assert patched.nodes[0].html_metadata is not None
-    assert patched.nodes[0].html_metadata.title == 'New Title'
-    assert patched.nodes[0].first_seen == '2000-01-01T00:00:00Z'
-    assert patched.nodes[0].last_updated == '2000-01-01T00:05:00Z'
+    assert patched.nodes[0].html_metadata.title == "New Title"
+    assert patched.nodes[0].first_seen == "2000-01-01T00:00:00Z"
+    assert patched.nodes[0].last_updated == "2000-01-01T00:05:00Z"
 
 
 def test_preserve_missing_metadata(
@@ -555,17 +555,17 @@ def test_preserve_missing_metadata(
 ):
     metadata_node = dataclasses.replace(
         seed_node,
-        first_seen='1995-01-01T00:02:00Z',
-        last_updated='1995-01-05T00:01:00Z',
+        first_seen="1995-01-01T00:02:00Z",
+        last_updated="1995-01-05T00:01:00Z",
         html_metadata=dataclasses.replace(
             seed_node.html_metadata or HtmlMetadata(None, None, None),
-            title='Old Title',
+            title="Old Title",
         ),
     )
     # unrelated node to make sure that a state is returned
     unrelated_node = dataclasses.replace(
         seed_node,
-        at='http://othernode',
+        at="http://othernode",
     )
 
     old_crawl.nodes = [metadata_node, unrelated_node]
@@ -576,22 +576,22 @@ def test_preserve_missing_metadata(
     assert patched is not None
     assert len(patched.nodes) == 1
     assert patched.nodes[0].html_metadata is not None
-    assert patched.nodes[0].html_metadata.title == 'Old Title'
-    assert patched.nodes[0].first_seen == '1995-01-01T00:02:00Z'
-    assert patched.nodes[0].last_updated == '1995-01-05T00:01:00Z'
+    assert patched.nodes[0].html_metadata.title == "Old Title"
+    assert patched.nodes[0].first_seen == "1995-01-01T00:02:00Z"
+    assert patched.nodes[0].last_updated == "1995-01-05T00:01:00Z"
 
 
 def test_irrelevant_changes(
     old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_node: CrawledNode
 ):
     old_node = dataclasses.replace(
-        seed_node, last_updated='1995-01-01T00:00:00Z', html_metadata=None
+        seed_node, last_updated="1995-01-01T00:00:00Z", html_metadata=None
     )
     new_node = dataclasses.replace(
         seed_node,
-        last_updated='2000-01-01T00:00:00Z',
+        last_updated="2000-01-01T00:00:00Z",
         html_metadata=HtmlMetadata(
-            title='New Title', description='New Description', theme_color=None
+            title="New Title", description="New Description", theme_color=None
         ),
     )
 
@@ -612,17 +612,17 @@ def test_children_modified(
     )
     new_node = dataclasses.replace(
         old_node,
-        children=['http://child1', 'http://child2'],
+        children=["http://child1", "http://child2"],
     )
     child_1 = dataclasses.replace(
         seed_node,
-        at='http://child1',
+        at="http://child1",
         parent=seed_node.at,
         depth=1,
     )
     child_2 = dataclasses.replace(
         seed_node,
-        at='http://child2',
+        at="http://child2",
         parent=seed_node.at,
         depth=1,
     )

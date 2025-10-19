@@ -1,11 +1,15 @@
 import asyncio
 import dataclasses
+from logging import getLogger
 
 import aiohttp
 from bs4 import BeautifulSoup
-from spider.http import get_session, load_page_html
+from spider.robots import allowed_by_robots_txt
+from spider.http import UA, get_session, load_page_html
 from spider.crawl import CrawlResponse, handle_meta_element
 from spider.contracts import CrawledNode, HtmlMetadata
+
+logger = getLogger(__name__)
 
 
 def get_html_metadata(html: str) -> HtmlMetadata | None:
@@ -19,9 +23,7 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
     title_element = soup.head.title
     metadata.title = title_element.string if title_element else None
     if not metadata.title:
-        metadata.title = handle_meta_element(
-            soup.head.find("meta", attrs={"property": "og:title"})
-        )
+        metadata.title = handle_meta_element(soup.head.find("meta", attrs={"property": "og:title"}))
     if not metadata.title:
         metadata.title = handle_meta_element(
             soup.head.find("meta", attrs={"name": "twitter:title"})
@@ -50,24 +52,36 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
 
 
 async def fetch_and_update_metadata(
-    node: CrawledNode | CrawledNode, session: aiohttp.ClientSession
+    node: CrawledNode, session: aiohttp.ClientSession, check_robots_txt=False
 ) -> CrawledNode:
-    node_dict = dataclasses.asdict(node)
+    """Returns a new CrawledNode with updated metadata"""
+
+    if check_robots_txt and not (
+        await allowed_by_robots_txt(node.at, user_agent=UA, session=session)
+    ):
+        logger.info(f"disallowed by robots.txt: {node.at}")
+        return node
+
+    node_copy = CrawledNode(**dataclasses.asdict(node))
 
     if node.indexed:
         html = await load_page_html(node.at, referrer=node.parent, session=session)
 
         if html:
-            node_dict["html_metadata"] = get_html_metadata(html)
+            node_copy.html_metadata = get_html_metadata(html)
 
-    return CrawledNode(**node_dict)
+    return node_copy
 
 
-async def enrich_with_metadata(crawl_response: CrawlResponse) -> CrawlResponse:
+async def enrich_with_metadata(
+    crawl_response: CrawlResponse, check_robots_txt=False
+) -> CrawlResponse:
     async with get_session() as session:
         tasks = []
         for node in crawl_response.nodes:
-            tasks.append(fetch_and_update_metadata(node, session))
+            tasks.append(
+                fetch_and_update_metadata(node, check_robots_txt=check_robots_txt, session=session)
+            )
 
         nodes = await asyncio.gather(*tasks)
 

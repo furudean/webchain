@@ -19,9 +19,7 @@ class NodeChangeMask(IntFlag):
     METADATA_MODIFIED = 1 << 7
 
 
-def copy_offline_subtree(
-    at: str, visited: Set[str], old_nodes_by_at
-) -> list[CrawledNode]:
+def copy_offline_subtree(at: str, visited: Set[str], old_nodes_by_at) -> list[CrawledNode]:
     # copy offline subtree from old crawl
     if at in visited or at not in old_nodes_by_at:
         return []
@@ -64,9 +62,7 @@ def sort_nodes_by_hierarchy(nodes: list[CrawledNode]) -> list[CrawledNode]:
     return ordered
 
 
-def compare_nodes(
-    old_node: CrawledNode | None, new_node: CrawledNode | None
-) -> NodeChangeMask:
+def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) -> NodeChangeMask:
     mask = NodeChangeMask.NONE
 
     if old_node is None:
@@ -115,9 +111,7 @@ def compare_nodes(
     return mask
 
 
-def patch_state(
-    old_response: CrawlResponse, new_response: CrawlResponse
-) -> CrawlResponse | None:
+def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> CrawlResponse | None:
     """
     patch the new crawl state with offline subtrees and metadata from the old crawl.
     """
@@ -137,9 +131,7 @@ def patch_state(
             # copy missing children subtrees
             for child_at in old_node.children:
                 if child_at not in present_ats:
-                    for subnode in copy_offline_subtree(
-                        child_at, offline_visited, old_nodes_by_at
-                    ):
+                    for subnode in copy_offline_subtree(child_at, offline_visited, old_nodes_by_at):
                         if subnode.at not in present_ats:
                             new_response.nodes.append(subnode)
                             present_ats.add(subnode.at)
@@ -201,9 +193,7 @@ def patch_state(
                 if parent and at not in parent.children:
                     removed_ats.add(at)
                     logger.info(f"node removed (parent no longer lists as child): {at}")
-    new_response.nodes = [
-        node for node in new_response.nodes if node.at not in removed_ats
-    ]
+    new_response.nodes = [node for node in new_response.nodes if node.at not in removed_ats]
 
     # 5. sort nodes by parent/child relationships, parents before children
     new_response.nodes = sort_nodes_by_hierarchy(new_response.nodes)

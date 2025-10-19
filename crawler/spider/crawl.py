@@ -10,10 +10,15 @@ from bs4 import BeautifulSoup, Tag
 from bs4.element import PageElement
 from ordered_set import OrderedSet
 
-from spider.http import get_session, load_page_html
+from spider.http import UA, get_session, load_page_html
 from spider.contracts import CrawlResponse, CrawledNode
+from spider.robots import RobotsExclusionError, allowed_by_robots_txt
 
 logger = getLogger(__name__)
+
+
+class EmptyPageError(Exception):
+    pass
 
 
 def validate_uri(x: str) -> bool:
@@ -54,9 +59,7 @@ def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
     # look for the webchain declaration link in the html. we're permissive, so
     # we search the entire document, not just the head.
     webchain_tag = soup.find(name="link", attrs={"rel": "webchain"})
-    webchain_href = (
-        str(webchain_tag.get("href")) if isinstance(webchain_tag, Tag) else None
-    )
+    webchain_href = str(webchain_tag.get("href")) if isinstance(webchain_tag, Tag) else None
 
     def normalize_url(url: str) -> str:
         return url.rstrip("/")
@@ -118,7 +121,9 @@ def to_iso_timestamp(x: float) -> str:
     return datetime.fromtimestamp(x, tz=timezone.utc).isoformat()
 
 
-async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
+async def crawl(
+    root_url: str, recursion_limit: int = 1000, check_robots_txt=False
+) -> CrawlResponse:
     """
     crawl the webchain nomination graph starting from `root_url`.
 
@@ -136,20 +141,29 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
     nominations_limit: int = sys.maxsize * 2 + 1
     start = time()
 
-    async def process_node(
-        url: str, parent: str | None = None, depth=0
-    ) -> list[CrawledNode]:
+    async def process_node(url: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
         nonlocal nominations_limit
 
         at = without_trailing_slash(url)
         seen.add(at)
+
+        html: str | None = None
         index_error: Exception | None = None
-        try:
-            html = await load_page_html(url, referrer=parent, session=session)
-        except Exception as e:
-            logger.info(f"get {url} failed after retries: {type(e).__name__} {e}")
-            html = None
-            index_error = e
+
+        if check_robots_txt is False or await allowed_by_robots_txt(
+            url, user_agent=UA, session=session
+        ):
+            try:
+                html = await load_page_html(url, referrer=parent, session=session)
+                if html is None:
+                    index_error = EmptyPageError("{url} has no content")
+            except Exception as e:
+                logger.info(f"get {url} failed after retries: {type(e).__name__} {e}")
+                html = None
+                index_error = e
+        else:
+            logger.info(f"fetch from {UA} disallowed by {url} robots.txt")
+            index_error = RobotsExclusionError(f"fetch from {UA} disallowed by page robots.txt")
 
         nominations: list[str] = []
         unqualified: list[str] = []
@@ -174,9 +188,7 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             nominations = list(node_nominations.difference(seen))
             extra_nominations = nominations[nominations_limit:]
             nominations = nominations[:nominations_limit]
-            unqualified = list(
-                node_nominations.intersection(seen).union(extra_nominations)
-            )
+            unqualified = list(node_nominations.intersection(seen).union(extra_nominations))
 
         node = CrawledNode(
             at=at,
@@ -184,15 +196,14 @@ async def crawl(root_url: str, recursion_limit: int = 1000) -> CrawlResponse:
             unqualified=unqualified,
             parent=parent,
             depth=depth,
-            indexed=html is not None,
+            indexed=index_error is None,
             index_error=index_error,
         )
         nodes = [node]
 
         if nominations and depth < recursion_limit:
             tasks = [
-                process_node(url=child_url, parent=at, depth=depth + 1)
-                for child_url in nominations
+                process_node(url=child_url, parent=at, depth=depth + 1) for child_url in nominations
             ]
             results = await asyncio.gather(*tasks)
 

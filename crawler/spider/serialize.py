@@ -1,11 +1,15 @@
 import dataclasses
 import json
+import logging
 
 from spider.crawl import CrawlResponse, CrawledNode
 
+logger = logging.getLogger(__name__)
+
 
 def safe_asdict(obj):
-    """Recursively convert dataclass to dict, converting non-serializable fields to string."""
+    """Recursively convert dataclass to dict, converting non-serializable fields to string.
+    If a value is an exception, represent it as 'ClassName: string'."""
     if dataclasses.is_dataclass(obj):
         result = {}
         for field in dataclasses.fields(obj):
@@ -16,6 +20,8 @@ def safe_asdict(obj):
         return [safe_asdict(item) for item in obj]
     elif isinstance(obj, dict):
         return {k: safe_asdict(v) for k, v in obj.items()}
+    elif isinstance(obj, BaseException):
+        return f"{obj.__class__.__name__}: {str(obj)}"
     else:
         try:
             json.dumps(obj)

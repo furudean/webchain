@@ -43,10 +43,14 @@ def webchain(attempts: int):
 
 @webchain.command
 @click.argument("url", required=True)
+@click.option(
+    "--robots-txt/--no-robots-txt",
+    default=True,
+)
 @asyncio_click
-async def tree(url: str):
+async def tree(url: str, robots_txt: bool):
     try:
-        crawled = await crawl(url)
+        crawled = await crawl(url, check_robots_txt=robots_txt)
     except Exception as e:
         print(f"error: {e}")
         sys.exit(1)
@@ -65,25 +69,23 @@ async def tree(url: str):
         print("")
         for node in crawled.nodes:
             if node.unqualified:
-                print(
-                    f"{len(node.unqualified)} unqualified in {node.at} -> {node.unqualified}"
-                )
+                print(f"{len(node.unqualified)} unqualified in {node.at} -> {node.unqualified}")
 
-    duration = datetime.fromisoformat(crawled.end) - datetime.fromisoformat(
-        crawled.start
-    )
+    duration = datetime.fromisoformat(crawled.end) - datetime.fromisoformat(crawled.start)
 
-    print(
-        f"\ncrawled {len(crawled.nodes)} nodes in {duration.total_seconds():.2f} seconds"
-    )
+    print(f"\ncrawled {len(crawled.nodes)} nodes in {duration.total_seconds():.2f} seconds")
 
 
 @webchain.command
 @click.argument("url", required=True)
+@click.option(
+    "--robots-txt/--no-robots-txt",
+    default=True,
+)
 @asyncio_click
-async def json(url: str):
+async def json(url: str, robots_txt: bool):
     try:
-        crawled = await crawl(url)
+        crawled = await crawl(url, check_robots_txt=robots_txt)
     except Exception as e:
         print(f"error: {e}")
         sys.exit(1)
@@ -121,14 +123,18 @@ def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
 
 @webchain.command
 @click.argument("file", required=True, type=click.File())
+@click.option(
+    "--robots-txt/--no-robots-txt",
+    default=True,
+)
 @asyncio_click
-async def enrich(file: io.TextIOWrapper) -> None:
+async def enrich(file: io.TextIOWrapper, robots_txt: bool) -> None:
     try:
         webchain = deserialize(file.read())
     except Exception as e:
         print(f"error: {e}")
         sys.exit(1)
 
-    enriched = await enrich_with_metadata(webchain)
+    enriched = await enrich_with_metadata(webchain, check_robots_txt=robots_txt)
     serialized = serialize(enriched, indent="\t")
     print(serialized)
