@@ -5,14 +5,18 @@ import type { Writable } from "svelte/store"
 function create_visited_store(): Writable<Date | null> {
 	const { subscribe, set, update } = persistent<Date | null>({
 		key: "last-visited",
-		start_value: null,
+		start_value: browser ? new Date() : null,
 		storage_type: "localStorage",
 		serialize: (date) => (date ? date.toISOString() : ""),
 		deserialize: (str) => (str ? new Date(str) : null)
 	})
 
 	if (browser) {
-		set(new Date())
+		document.addEventListener("visibilitychange", () => {
+			if (document.visibilityState === "hidden") {
+				set(new Date())
+			}
+		})
 	}
 
 	return {
