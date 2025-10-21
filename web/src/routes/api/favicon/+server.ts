@@ -15,7 +15,15 @@ import { gzipSync, deflateSync } from "node:zlib"
 import pixel from "./1x1.png?arraybuffer"
 import { get_allowed_favicon_urls } from "$lib/crawler"
 
-function response_headers(item: CachedItem, is_stale?: boolean): Headers {
+function response_headers({
+	item,
+	allowed_origin,
+	is_stale = false
+}: {
+	item: CachedItem
+	allowed_origin: string
+	is_stale?: boolean
+}): Headers {
 	const headers = new Headers()
 
 	if (item.content_type) {
@@ -40,11 +48,14 @@ function response_headers(item: CachedItem, is_stale?: boolean): Headers {
 		}
 	}
 
+	headers.set("Access-Control-Allow-Origin", allowed_origin)
+
 	return headers
 }
 
 async function create_empty_response(
 	url: string,
+	origin: string,
 	disk_cache_status: string = "MISS",
 	request?: Request
 ): Promise<Response> {
@@ -53,7 +64,7 @@ async function create_empty_response(
 		? await compress_if_accepted(pixel, request)
 		: { body: pixel }
 
-	const headers = response_headers(item)
+	const headers = response_headers({ item, allowed_origin: origin })
 	headers.set("content-type", "image/png")
 	headers.set("x-disk-cache", disk_cache_status)
 	if (encoding) {
@@ -91,16 +102,18 @@ async function compressed_response({
 	data,
 	item,
 	request,
+	origin,
 	is_stale
 }: {
 	data: ArrayBuffer | Uint8Array | Buffer
 	item: CachedItem
 	request: Request
+	origin: string
 	is_stale?: boolean
 }): Promise<Response> {
 	const binary = data instanceof ArrayBuffer ? new Uint8Array(data) : data
 	const { body, encoding } = await compress_if_accepted(binary, request)
-	const headers = response_headers(item, is_stale)
+	const headers = response_headers({ item, allowed_origin: origin, is_stale })
 	headers.set("x-disk-cache", is_stale ? "STALE" : "HIT")
 	if (encoding) {
 		headers.set("Content-Encoding", encoding)
@@ -117,6 +130,7 @@ async function compressed_response({
 
 export const GET: RequestHandler = async ({ url, fetch, request }) => {
 	const url_param = url.searchParams.get("url")
+	const origin = url.origin
 
 	if (!url_param) {
 		return text("url parameter required", { status: 400 })
@@ -154,12 +168,17 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		}
 
 		if (!data) {
-			return await create_empty_response(url_param, is_stale ? "STALE" : "HIT")
+			return await create_empty_response(
+				url_param,
+				origin,
+				is_stale ? "STALE" : "HIT"
+			)
 		}
 
 		return await compressed_response({
 			data,
 			item,
+			origin,
 			request,
 			is_stale
 		})
@@ -167,13 +186,14 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 
 	const fetch_result = await fetch_and_cache_favicon(url_param, fetch)
 	if (!fetch_result) {
-		return await create_empty_response(url_param)
+		return await create_empty_response(url_param, origin)
 	}
 
 	return await compressed_response({
 		data: fetch_result.data,
 		item: fetch_result.item,
 		request,
+		origin,
 		is_stale: false
 	})
 }
