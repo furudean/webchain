@@ -128,6 +128,17 @@ async function compressed_response({
 	})
 }
 
+export const OPTIONS: RequestHandler = async ({url}) => {
+	const headers = new Headers()
+	headers.set("Access-Control-Allow-Origin", url.origin)
+	headers.set("Access-Control-Allow-Methods", "*")
+	headers.set("Access-Control-Allow-Headers", "*")
+	return new Response(null, {
+		status: 204,
+		headers
+	})
+}
+
 export const GET: RequestHandler = async ({ url, fetch, request }) => {
 	const url_param = url.searchParams.get("url")
 	const origin = url.origin
