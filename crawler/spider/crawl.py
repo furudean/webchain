@@ -158,7 +158,7 @@ async def crawl(
                 if html is None:
                     index_error = EmptyPageError("{url} has no content")
             except Exception as e:
-                logger.info(f"get {url} failed after retries: {type(e).__name__} {e}")
+                logger.info(f"GET {url} failed after retries: {type(e).__name__} {e}")
                 html = None
                 index_error = e
         else:

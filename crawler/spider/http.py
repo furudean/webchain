@@ -33,6 +33,7 @@ async def load_page_html(
             headers["Referer"] = referrer
 
         try:
+            # HEAD request to check if robots.txt exists
             async with session.head(
                 url, timeout=aiohttp.ClientTimeout(total=5), headers=headers
             ) as head_response:
@@ -42,21 +43,7 @@ async def load_page_html(
                     or content_type.startswith("application/xhtml+xml")
                 ):
                     raise InvalidContentType
-        except aiohttp.InvalidURL as e:
-            logger.info(f"invalid url {url}: " + type(e).__name__)
-            raise
-        except aiohttp.ClientResponseError as e:
-            if e.status == 404:
-                logger.debug(f"{url}: 404 Not Found")
-                return None
 
-            logger.debug(f"{url}: " + type(e).__name__)
-            raise
-        except aiohttp.ClientError as e:
-            logger.debug(f"{url}: " + type(e).__name__)
-            raise
-
-        try:
             logger.debug(f"get {url}")
             async with session.get(
                 url, timeout=aiohttp.ClientTimeout(total=10), headers=headers
@@ -65,7 +52,16 @@ async def load_page_html(
                 logger.debug(f"got {url}")
             return html
 
+        except aiohttp.InvalidURL as e:
+            logger.info(f"invalid url {url}: " + type(e).__name__)
+            return None
+        except aiohttp.ClientSSLError as e:
+            logger.info(f"SSL error for url {url}: {type(e).__name__} {e}")
+            return None
         except aiohttp.ClientResponseError as e:
+            if 400 <= e.status < 500:
+                logger.info(f"GET {url}: bad status code {e}")
+                return None  # don't retry on 4xx errors
             logger.debug(f"{url}: " + type(e).__name__)
             raise
         except InvalidContentType:
