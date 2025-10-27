@@ -4,7 +4,6 @@
 	import Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
 	import { date_time_fmt } from "$lib/date"
-	import { last_visited } from "$lib/visited"
 	import { browser } from "$app/environment"
 
 	let {
@@ -48,28 +47,20 @@
 		)
 		if (!newest_timestamp) return []
 
-		if ($last_visited instanceof Date) {
-			const cutoff = $last_visited.getTime() - 1000 * 60 * 60 * 2 // 2 hours
-			const recent = nodes.filter(
-				(node) => (node.first_seen?.getTime() ?? 0) > cutoff
-			)
-			return recent.map((n) => n.at)
-		} else {
-			const now = new Date().getTime()
-			const cohort_window = 1000 * 60 * 60 * 24 * 3 // 2 days
-			const stale_threshold = 1000 * 60 * 60 * 24 * 14 // 2 weeks
+		const now = new Date().getTime()
+		const cohort_window = 1000 * 60 * 60 * 24 * 3.5 // 3.5 days
+		const stale_threshold = 1000 * 60 * 60 * 24 * 7 // 7 days
 
-			if (now - newest_timestamp > stale_threshold) {
-				return []
-			}
-
-			return nodes
-				.filter((node) => {
-					const first_seen = node.first_seen?.getTime() ?? 0
-					return first_seen > newest_timestamp - cohort_window
-				})
-				.map((n) => n.at)
+		if (now - newest_timestamp > stale_threshold) {
+			return []
 		}
+
+		return nodes
+			.filter(
+				(node) =>
+					(node.first_seen?.getTime() ?? 0) > newest_timestamp - cohort_window
+			)
+			.map((n) => n.at)
 	})
 
 	$effect(() => {
