@@ -183,7 +183,7 @@
 					class="button"
 					height="31"
 					width="88"
-					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is tinted more blue."
+					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is more monochrome."
 				/>
 			</label>
 			<label class="button-option">
@@ -198,7 +198,7 @@
 					class="button"
 					height="31"
 					width="88"
-					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is more monochrome."
+					alt="An old-web style button with the webchain's logo on the right, with some pixel-art chains to the left. This one is tinted more blue."
 				/>
 			</label>
 			{#if browser}
