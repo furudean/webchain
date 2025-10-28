@@ -117,7 +117,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
     patch the new crawl state with offline subtrees and metadata from the old crawl.
     """
 
-    # copy the to avoid mutating inputs
+    # copy to avoid mutating inputs
     _new_response = [dataclasses.replace(node) for node in new_response.nodes]
 
     # build lookup tables for fast access
