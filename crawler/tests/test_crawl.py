@@ -11,7 +11,7 @@ async def test_get_node_nominations_single():
     </head>
     </html>
     """
-    result = get_raw_nominations(html, root="https://mychain.net")
+    result = get_raw_nominations(html, seed="https://mychain.net")
     assert OrderedSet(result or []) == OrderedSet(["https://example.org"])
 
 
@@ -26,7 +26,7 @@ async def test_get_node_nominations_multiple():
     </head>
     </html>
     """
-    result = get_raw_nominations(html, root="https://mychain.net")
+    result = get_raw_nominations(html, seed="https://mychain.net")
     assert OrderedSet(result or []) == OrderedSet(
         ["https://example.org", "https://example.com", "https://mysite.com"]
     )
@@ -34,7 +34,7 @@ async def test_get_node_nominations_multiple():
 
 async def test_get_node_nominations_missing():
     html = "<html></html>"
-    result = get_raw_nominations(html, root="https://mychain.net")
+    result = get_raw_nominations(html, seed="https://mychain.net")
     assert result == OrderedSet([])
 
 
@@ -47,7 +47,7 @@ async def test_missing_webchain_tag():
     </head>
     </html>
     """
-    result = get_raw_nominations(html, root="https://mychain.net")
+    result = get_raw_nominations(html, seed="https://mychain.net")
     assert result == OrderedSet([])
 
 
@@ -61,7 +61,7 @@ async def test_different_webchain_tag():
     </head>
     </html>
     """
-    result = get_raw_nominations(html, root="https://mychain.net")
+    result = get_raw_nominations(html, seed="https://mychain.net")
     assert result == OrderedSet([])
 
 
@@ -75,11 +75,11 @@ async def test_invalid_nomination_tag():
     </head>
     </html>
     """
-    result = get_raw_nominations(html, root="https://mychain.net")
+    result = get_raw_nominations(html, seed="https://mychain.net")
     assert OrderedSet(result or []) == OrderedSet(["https://example.com"])
 
 
-async def test_mismatched_trailing_slash_on_root():
+async def test_mismatched_trailing_slash_on_seed():
     html = """
     <html>
     <head>
@@ -91,7 +91,7 @@ async def test_mismatched_trailing_slash_on_root():
 
     result = get_raw_nominations(
         html,
-        root="https://mychain.net",  # note: no trailing slash
+        seed="https://mychain.net",  # note: no trailing slash
     )
     assert OrderedSet(result or []) == OrderedSet(["https://example.org"])
 
@@ -107,5 +107,5 @@ async def test_weird_permissive_case():
     </body>
     </html>
     """
-    result = get_raw_nominations(html, root="https://mychain.net")
+    result = get_raw_nominations(html, seed="https://mychain.net")
     assert OrderedSet(result or []) == OrderedSet(["https://example.org"])

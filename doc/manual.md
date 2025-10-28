@@ -50,16 +50,16 @@ The relevant link relations are as follows:
 
 | `rel`                        | description                                       |
 | ---------------------------- | ------------------------------------------------- |
-| `webchain`                   | URL of the webchain root document                 |
+| `webchain`                   | URL of the webchain seed document                 |
 | `webchain-nomination`        | URL of a nominated website                        |
-| `webchain-nominations-limit` | Maximum number of nominations allowed (root only) |
+| `webchain-nominations-limit` | Maximum number of nominations allowed (seed only) |
 
 Your `<link>` tags don't need to be placed in the `<head>` section, as the
 scraper is quite forgiving.
 
 ## Crawler
 
-The crawler discovers the webchain by starting from a root document. It follows
+The crawler discovers the webchain by starting from a seed. It follows
 nominations until all paths are exhausted.
 
 If a page cannot be reached, or does not contain valid webchain markup, it is

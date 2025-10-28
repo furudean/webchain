@@ -5,6 +5,7 @@ import asyncio
 from datetime import datetime, timezone
 from time import time
 from logging import getLogger
+from aiohttp import ClientSession
 
 from bs4 import BeautifulSoup, Tag
 from bs4.element import PageElement
@@ -48,7 +49,7 @@ def is_valid_nomination(tag: Tag) -> bool:
     return False
 
 
-def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
+def get_raw_nominations(html: str, seed: str) -> OrderedSet[str]:
     """
     extract valid webchain nominations from html
     """
@@ -68,7 +69,7 @@ def get_raw_nominations(html: str, root: str) -> OrderedSet[str]:
         webchain_tag is None
         or not isinstance(webchain_tag, Tag)
         or webchain_href is None
-        or normalize_url(webchain_href) != normalize_url(root)
+        or normalize_url(webchain_href) != normalize_url(seed)
     ):
         return hrefs
 
@@ -122,16 +123,16 @@ def to_iso_timestamp(x: float) -> str:
 
 
 async def crawl(
-    root_url: str, recursion_limit: int = 1000, check_robots_txt=False
+    seed_url: str, recursion_limit: int = 1000, check_robots_txt=False
 ) -> CrawlResponse:
     """
-    crawl the webchain nomination graph starting from `root_url`.
+    crawl the webchain nomination graph starting from `seed_url`.
 
     this performs a depth-first traversal of the webchain graph, following
     nomination links from each valid webchain node.
 
     Parameters:
-        root_url: The starting URL for the crawl
+        seed_url: The starting URL for the crawl
         limit_nominations: Maximum number of nominations to follow from each node,
             ignoring any additional nominations. 0 means unlimited.
         recursion_limit: maximum recursion depth
@@ -141,7 +142,9 @@ async def crawl(
     nominations_limit: int = sys.maxsize * 2 + 1
     start = time()
 
-    async def process_node(url: str, parent: str | None = None, depth=0) -> list[CrawledNode]:
+    async def process_node(
+        url: str, session: ClientSession, parent: str | None = None, depth=0
+    ) -> list[CrawledNode]:
         nonlocal nominations_limit
 
         at = without_trailing_slash(url)
@@ -170,7 +173,7 @@ async def crawl(
 
         if depth == 0:
             if html is None:
-                raise ValueError(f"starting url {root_url} is unreachable")
+                raise ValueError(f"starting url {seed_url} is unreachable")
 
             fetched_nominations_limit = get_nominations_limit(html)
             if fetched_nominations_limit is not None:
@@ -178,12 +181,12 @@ async def crawl(
 
             if nominations_limit is None:
                 logger.error(
-                    f"starting url {root_url} does not specify a nominations limit, using unlimited"
+                    f"starting url {seed_url} does not specify a nominations limit, using unlimited"
                 )
 
         if html:
             node_nominations = OrderedSet(
-                map(without_trailing_slash, get_raw_nominations(html, root_url))
+                map(without_trailing_slash, get_raw_nominations(html, seed_url))
             )
             nominations = list(node_nominations.difference(seen))
             extra_nominations = nominations[nominations_limit:]
@@ -203,7 +206,8 @@ async def crawl(
 
         if nominations and depth < recursion_limit:
             tasks = [
-                process_node(url=child_url, parent=at, depth=depth + 1) for child_url in nominations
+                process_node(url=child_url, session=session, parent=at, depth=depth + 1)
+                for child_url in nominations
             ]
             results = await asyncio.gather(*tasks)
 
@@ -213,7 +217,7 @@ async def crawl(
 
     async with get_session() as session:
         start = time()
-        nodes = await process_node(root_url)
+        nodes = await process_node(seed_url, session=session)
         end = time()
 
         return CrawlResponse(

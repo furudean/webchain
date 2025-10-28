@@ -23,20 +23,23 @@ higher up the chain.
 
 ## Rules
 
-1. The tree starts with a single node, for example: https://mychain.org.
-2. Each node in the tree represents a website, which is identified by its URL.
+1. The tree starts with a seed, for example: https://mychain.org. There is one
+   seed in the webchain.
+2. Each node in the tree represents a website, which is uniquely identified by
+   its URL.
 3. Each node may define child nominations by including appropriate `<link>` tags
    in the `<head>` section of its HTML (see examples below).
-4. Each node can nominate up to `n`[^1] other nodes, with any additional nominations
-   being ignored. Nominations may be freely added or removed by the node owner,
-   at their discretion.
+4. Each node can nominate up to `n`[^1] other nodes, with any additional
+   nominations being ignored. Nominations may be freely added or removed by the
+   node owner, at their discretion.
 5. A nominated node can be any valid URL, including subdomains, paths, or even
    different domains altogether.
 6. Nodes may not nominate themselves or create cycles in the nomination path. If
    these cases are detected, the offending nominations are ignored.
-7. If a node does not respond in a timely manner, the node is considered
-   offline. Offline nodes are still a part of the data representation, but its
-   subtree is not traversable until it comes online again.
+7. If a node does not respond in a timely manner, responds with a bad status
+   code, or not at all, the node is considered not indexed. Non-indexed nodes
+   are still a part of the data representation, but its subtree is not
+   traversable until it comes online again.
 
 [^1]:
     The value of `n` is left unspecified. The webchain admin may choose a suitable
@@ -51,7 +54,7 @@ higher up the chain.
 	<head>
 		<meta charset="UTF-8" />
 
-		<!-- The root of the webchain this node is part of -->
+		<!-- The webchain this node is part of -->
 		<link rel="webchain" href="https://mychain.org" />
 		<!-- Nominations made by this node -->
 		<link rel="webchain-nomination" href="https://www.example.org" />
@@ -73,9 +76,9 @@ member.
 ## Joining a webchain
 
 Let's say you have a website, `https://www.example.org`, and you want to join
-the webchain rooted at `https://mychain.org`.
+the webchain at `https://mychain.org`.
 
-1. Find the webchain root (e.g., `https://mychain.org`) and
+1. Find the webchain seed (e.g., `https://mychain.org`) and
    visit it to understand the community and its purpose
 2. Request nomination by contacting existing members with open slots, asking
    for a nomination.
@@ -88,8 +91,8 @@ markup to their own page.
 
 ## Crawling
 
-Webchain is intended to be crawled from the root node. The crawler should start
-from the root URL, fetch the HTML content, and parse it to extract nominations.
+Webchain is intended to be crawled from the seed node. The crawler should start
+from the seed URL, fetch the HTML content, and parse it to extract nominations.
 
 Assuming the nominations are valid (not breaking any of the stated
 [rules](#rules)), the crawler should then recursively visit each nominated URL,
@@ -107,15 +110,15 @@ graph can be studied.
 
 The webchain isn't very fun on its own. Visualization software will have to be
 created to traverse the graph and display it in a meaningful way. This includes
-handling of historical states, offline nodes, and other metadata.
+handling of historical states, non-indexed nodes, and other metadata.
 
-The webchain root should be treated as a starting point for discovering the
+The webchain seed should be treated as a starting point for discovering the
 rest of the chain. A web page or application should be created to visualize the
 chain and allow users to navigate it.
 
 Discoverability may be an issue, as visitors of any given node will have to know
 the webchain exists to browse it. Members should thus be encouraged to link back
-to the webchain root node or other representations available.
+to the webchain seed node or other representations available.
 
 If all parts work well together, a fun and dangerous social experiment will
 emerge.

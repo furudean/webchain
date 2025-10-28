@@ -51,9 +51,10 @@ def sort_nodes_by_hierarchy(nodes: list[CrawledNode]) -> list[CrawledNode]:
                 visit(child)
 
     # only start from the root(s) as defined by depth==0 (not all parent=none)
-    roots = [node for node in nodes if getattr(node, "depth", 0) == 0]
-    for root in roots:
-        visit(root)
+    # there may be multiple roots, even though that shouldn't really happen
+    seeds = [node for node in nodes if getattr(node, "depth", 0) == 0]
+    for seed in seeds:
+        visit(seed)
     # add any disconnected nodes (not reachable from roots)
     # this shouldn't really happen, but whatever
     for node in nodes:

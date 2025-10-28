@@ -475,8 +475,8 @@ def test_patch_offline_subtree(old_crawl: CrawlResponse, new_crawl: CrawlRespons
 
 
 def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
-    root_node = CrawledNode(
-        at="http://root",
+    seed_node = CrawledNode(
+        at="http://seed",
         children=["http://has_children", "http://unrelatednode"],
         parent=None,
         indexed=True,
@@ -486,7 +486,7 @@ def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
     unrelated_node = CrawledNode(
         at="http://unrelatednode",
         children=[],
-        parent="http://root",
+        parent="http://seed",
         indexed=True,
         depth=1,
     )
@@ -510,7 +510,7 @@ def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
         depth=1,
     )
 
-    sorted_nodes = [root_node, parent_node, *children]
+    sorted_nodes = [seed_node, parent_node, *children]
     old_crawl.nodes = sorted_nodes.copy()
     new_crawl.nodes = sorted_nodes.copy() + [unrelated_node]
     random.seed(42)
