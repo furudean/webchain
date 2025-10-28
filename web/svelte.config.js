@@ -18,7 +18,7 @@ const config = {
 		adapter: adapter(),
 
 		alias: {
-			"$pages/*": "../pages/*"
+			"$doc/*": "../doc/*"
 		}
 	}
 }

@@ -87,7 +87,7 @@
 	<details name="qna">
 		<summary>webchain?</summary>
 		<p>
-			A <a href="/pages/spec.md">webchain</a>
+			A <a href="/doc/spec.md">webchain</a>
 			is a distributed
 			<a href="https://en.wikipedia.org/wiki/Webring" rel="external">webring</a
 			>, where each tracked website can nominate new members, creating a
@@ -157,7 +157,7 @@
 			websites that this node nominates.
 		</blockquote>
 		<p>
-			See the <a href="/pages/manual.md">manual page</a>
+			See the <a href="/doc/manual.md">manual page</a>
 			for more information.
 		</p>
 	</details>

@@ -120,7 +120,7 @@
 				{/if}
 				<span class="small">
 					this page was not crawled. is this your page?
-					<a href="/pages/manual.md#my-page-is-not-being-crawled!"
+					<a href="/doc/manual.md#my-page-is-not-being-crawled!"
 						>see the manual</a
 					></span
 				>
