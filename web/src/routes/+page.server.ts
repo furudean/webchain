@@ -10,8 +10,10 @@ export const load: PageServerLoad = async ({
 	start: Date | null
 	end: Date | null
 }> => {
-	const crawl_request = await fetch("/crawler/current.json")
-	const heartbeat_request = await fetch("/crawler/heartbeat.json")
+	const [crawl_request, heartbeat_request] = await Promise.all([
+		fetch("/crawler/current.json"),
+		fetch("/crawler/heartbeat.json")
+	])
 
 	if (!crawl_request.ok || !crawl_request.ok) {
 		throw new Error("Failed to fetch data")
