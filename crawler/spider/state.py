@@ -116,14 +116,18 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
     """
     patch the new crawl state with offline subtrees and metadata from the old crawl.
     """
+
+    # copy the to avoid mutating inputs
+    _new_response = [dataclasses.replace(node) for node in new_response.nodes]
+
     # build lookup tables for fast access
     old_nodes_by_at = {node.at: node for node in old_response.nodes}
-    new_nodes_by_at = {node.at: node for node in new_response.nodes}
+    new_nodes_by_at = {node.at: node for node in _new_response}
 
     # 1. for each node in new crawl that is not indexed, copy its subtree from old crawl
-    present_ats = {node.at for node in new_response.nodes}
+    present_ats = {node.at for node in _new_response}
     offline_visited: set[str] = set()
-    for node in list(new_response.nodes):
+    for node in list(_new_response):
         if not node.indexed and node.at in old_nodes_by_at:
             old_node = old_nodes_by_at[node.at]
             # restore children if missing
@@ -134,12 +138,12 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
                 if child_at not in present_ats:
                     for subnode in copy_offline_subtree(child_at, offline_visited, old_nodes_by_at):
                         if subnode.at not in present_ats:
-                            new_response.nodes.append(subnode)
+                            _new_response.append(subnode)
                             present_ats.add(subnode.at)
                             new_nodes_by_at[subnode.at] = subnode
 
     # 2. copy metadata from old node onto new node, if not present
-    for node in new_response.nodes:
+    for node in _new_response:
         old_node = old_nodes_by_at.get(node.at)
         if old_node:
             if getattr(node, "first_seen", None) is None:
@@ -174,11 +178,11 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
 
     # 4. remove nodes if neither present nor referenced as a child and have no tracked children
     referenced_children = set()
-    for node in new_response.nodes:
+    for node in _new_response:
         referenced_children.update(node.children)
     for node in old_response.nodes:
         referenced_children.update(node.children)
-    final_new_ats = {node.at for node in new_response.nodes}
+    final_new_ats = {node.at for node in _new_response}
     all_referenced_ats = final_new_ats | referenced_children
     removed_ats = set()
     for at, old_node in old_nodes_by_at.items():
@@ -194,13 +198,13 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
                 if parent and at not in parent.children:
                     removed_ats.add(at)
                     logger.info(f"node removed (parent no longer lists as child): {at}")
-    new_response.nodes = [node for node in new_response.nodes if node.at not in removed_ats]
+    _new_response = [node for node in _new_response if node.at not in removed_ats]
 
     # 5. sort nodes by parent/child relationships, parents before children
-    new_response.nodes = sort_nodes_by_hierarchy(new_response.nodes)
+    _new_response = sort_nodes_by_hierarchy(_new_response)
 
     # 6. ensure first_seen is set
-    for node in new_response.nodes:
+    for node in _new_response:
         if getattr(node, "first_seen", None) is None:
             node.first_seen = new_response.end
 
@@ -208,7 +212,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
         return CrawlResponse(
             start=new_response.start,
             end=new_response.end,
-            nodes=new_response.nodes,
+            nodes=_new_response,
             nominations_limit=new_response.nominations_limit,
         )
     return None

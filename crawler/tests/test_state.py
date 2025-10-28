@@ -5,6 +5,7 @@ import pytest
 
 from spider.contracts import HtmlMetadata
 import random
+import copy
 
 
 def test_compare_node_added():
@@ -340,7 +341,12 @@ def test_patch_added(old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_no
     patched = patch_state(old_crawl, new_crawl)
 
     assert patched is not None
-    assert patched.nodes == [seed_node]
+    expected_node = dataclasses.replace(
+        seed_node,
+        first_seen=new_crawl.end,
+        last_updated=new_crawl.end,
+    )
+    assert patched.nodes == [expected_node]
     assert patched.start == new_crawl.start
     assert patched.end == new_crawl.end
 
@@ -519,7 +525,18 @@ def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):
     patched = patch_state(old_crawl, new_crawl)
 
     assert patched is not None
-    assert patched.nodes == sorted_nodes + [unrelated_node]
+
+    # All nodes should have first_seen set to new_crawl.end, and unrelated_node also gets last_updated
+    expected_nodes = [
+        dataclasses.replace(node, first_seen=new_crawl.end) for node in sorted_nodes
+    ] + [
+        dataclasses.replace(
+            unrelated_node,
+            first_seen=new_crawl.end,
+            last_updated=new_crawl.end,
+        )
+    ]
+    assert patched.nodes == expected_nodes
 
 
 def test_pick_up_new_metadata(
@@ -634,4 +651,39 @@ def test_children_modified(
 
     assert patched is not None
     assert len(patched.nodes) == 3
-    assert patched.nodes == [new_node, child_1, child_2]
+
+    # All nodes should have first_seen and last_updated set to new_crawl.end
+    expected_nodes = [
+        dataclasses.replace(
+            new_node,
+            first_seen=new_crawl.end,
+            last_updated=new_crawl.end,
+        ),
+        dataclasses.replace(
+            child_1,
+            first_seen=new_crawl.end,
+            last_updated=new_crawl.end,
+        ),
+        dataclasses.replace(
+            child_2,
+            first_seen=new_crawl.end,
+            last_updated=new_crawl.end,
+        ),
+    ]
+    assert patched.nodes == expected_nodes
+
+
+def test_patch_state_immutability(
+    old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_node: CrawledNode
+):
+    old_crawl.nodes = [seed_node]
+    new_node = dataclasses.replace(seed_node, indexed=False)
+    new_crawl.nodes = [new_node]
+
+    old_crawl_copy = copy.deepcopy(old_crawl)
+    new_crawl_copy = copy.deepcopy(new_crawl)
+
+    patch_state(old_crawl, new_crawl)
+
+    assert old_crawl == old_crawl_copy
+    assert new_crawl == new_crawl_copy
