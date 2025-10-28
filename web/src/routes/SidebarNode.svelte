@@ -11,7 +11,8 @@
 		highlighted_node,
 		nominations_limit,
 		graph_component,
-		recent_nodes
+		recent_nodes,
+		render_children = true
 	}: {
 		at: string
 		nodes: DisplayNode[]
@@ -19,6 +20,7 @@
 		nominations_limit: number | null
 		graph_component: Graph
 		recent_nodes: string[]
+		render_children?: boolean
 	} = $props()
 
 	const node = $derived.by(() => {
@@ -63,17 +65,19 @@
 				graph_component.center_on_nodes([node.at])
 			}}
 			onkeydown={(event) => {
-				if (event.key === "ArrowDown") {
-					event.preventDefault()
-					const nodes = document.querySelectorAll(".nodes summary")
-					const next = nodes[node.index + 1]
-					if (next) (next as HTMLElement).focus()
-				}
-				if (event.key === "ArrowUp") {
-					event.preventDefault()
-					const nodes = document.querySelectorAll(".nodes summary")
-					const prev = nodes[node.index - 1]
-					if (prev) (prev as HTMLElement).focus()
+				if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+					const nodes = Array.from(
+						document.querySelectorAll("#nodes summary")
+					) as HTMLElement[]
+					const index = nodes.findIndex((summary) => summary === event.target)
+					if (index === -1) return
+
+					const next_index = event.key === "ArrowDown" ? index + 1 : index - 1
+
+					if (next_index >= 0 && next_index < nodes.length) {
+						event.preventDefault()
+						nodes.at(next_index)?.focus()
+					}
 				}
 			}}
 		>
@@ -139,7 +143,7 @@
 		</div>
 	</details>
 </li>
-{#if node.children.length > 0}
+{#if render_children === true && node.children.length > 0}
 	<ul>
 		{#each node.children as child_at}
 			<SidebarNode

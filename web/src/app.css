@@ -160,3 +160,30 @@ hr {
 :target:before {
 	content: "# ";
 }
+
+select {
+	font-family: "Fantasque Sans Mono", monospace;
+	font-size: 0.9rem;
+	padding: 0.25em;
+	border: 1px solid var(--color-border);
+	background: var(--color-bg);
+	color: var(--color-text);
+	width: auto;
+	max-width: 100%;
+}
+
+input[type="text"] {
+	font-family: "Fantasque Sans Mono", monospace;
+	font-size: 0.9rem;
+	width: 100%;
+	max-width: 14rem;
+	padding: 0.25em;
+	border: 1px solid var(--color-border);
+	background: var(--color-bg);
+	box-sizing: border-box;
+	color: var(--color-text);
+}
+
+input[type="text"][readonly] {
+	background: transparent;
+}
