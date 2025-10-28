@@ -28,17 +28,9 @@
 	const highlighted_node = $derived(browser ? page.state.node : init_at)
 
 	const snippet = $derived(
-		`
-<a href="${page.url.origin}?${new URLSearchParams({ node: embed_node.url_param })}" rel="external">
-	<img
-		src="${new URL(button, page.url.origin).href}"
-		style="image-rendering: pixelated;"
-		height="31"
-		width="88"
-	/>
-</a>`
-			.replace(/\s+/g, " ")
-			.trim()
+		`<a href="${page.url.origin}?${new URLSearchParams({ node: embed_node.url_param })}" rel="external">` +
+			`<img src="${new URL(button, page.url.origin).href}" style="image-rendering: pixelated;" height="31" width="88"/>` +
+			`</a>`
 	)
 
 	const recent_nodes = $derived.by(() => {
@@ -220,8 +212,9 @@
 					{/each}
 				</select>
 			{/if}
-			<p>
-				Use this snippet to include it on your site: <input
+			<br />
+			<label>
+				Snippet to include on your site<br /><input
 					type="text"
 					readonly
 					value={snippet}
@@ -229,7 +222,7 @@
 						e.currentTarget.select()
 					}}
 				/>
-			</p>
+			</label>
 		</form>
 		<p>
 			The <code>?node</code> query parameter can be used to highlight a specific
@@ -398,22 +391,30 @@
 		gap: 0.25rem;
 	}
 
+	select {
+		font-family: "Fantasque Sans Mono", monospace;
+		font-size: 0.9rem;
+		padding: 0.25em;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		width: 100%;
+		max-width: 14rem;
+	}
+
 	input[type="text"] {
 		font-family: "Fantasque Sans Mono", monospace;
 		font-size: 0.9rem;
-		min-width: 15rem;
+		width: 100%;
+		max-width: 14rem;
 		padding: 0.25em;
 		border: 1px solid var(--color-border);
-		background: none;
+		background: var(--color-bg);
 		box-sizing: border-box;
 		color: var(--color-text);
 	}
 
 	label {
-		margin: 0.5rem 0;
-	}
-
-	form p {
 		margin: 0.5rem 0;
 	}
 </style>
