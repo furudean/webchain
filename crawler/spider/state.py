@@ -122,7 +122,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
 
     # 1. for each node in new crawl that is not indexed, copy its subtree from old crawl
     present_ats = {node.at for node in new_response.nodes}
-    offline_visited = set()
+    offline_visited: set[str] = set()
     for node in list(new_response.nodes):
         if not node.indexed and node.at in old_nodes_by_at:
             old_node = old_nodes_by_at[node.at]
