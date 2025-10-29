@@ -279,8 +279,7 @@
 		margin-top: 1rem;
 	}
 
-	p,
-	.sorts {
+	p {
 		margin: 0.5rem 0;
 	}
 

@@ -13,13 +13,21 @@
 	} = $props()
 
 	let button = $state("/button.png")
-	let embed_node = $state(nodes?.[0])
+	let embed_node: DisplayNode | undefined = $state()
 
-	const snippet = $derived(
-		`<a href="${page.url.origin}?${new URLSearchParams({ node: embed_node.url_param })}" rel="external">` +
+	const snippet = $derived.by(() => {
+		const url = new URL(page.url.origin)
+		if (embed_node) {
+			url.searchParams.set("node", embed_node.url_param)
+		} else {
+			url.searchParams.delete("node")
+		}
+		return (
+			`<a href="${url}" rel="external">` +
 			`<img src="${new URL(button, page.url.origin).href}" style="image-rendering: pixelated;" height="31" width="88"/>` +
 			`</a>`
-	)
+		)
+	})
 </script>
 
 <details name="qna">
@@ -145,13 +153,10 @@
 				name="links-to"
 				onchange={(e) => {
 					const select = e.currentTarget as HTMLSelectElement
-					const at = select.value
-					const node = nodes.find((n) => n.at === at)
-					if (node == null) return
-
-					embed_node = node
+					embed_node = nodes.find((n) => n.at === select.value)
 				}}
 			>
+				<option value="">(none)</option>
 				{#each nodes as node (node.at)}
 					<option value={node.at}>{node?.label}</option>
 				{/each}

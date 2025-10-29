@@ -187,3 +187,9 @@ input[type="text"] {
 input[type="text"][readonly] {
 	background: transparent;
 }
+
+input,
+select,
+textarea {
+	margin: 0.5rem 0;
+}
