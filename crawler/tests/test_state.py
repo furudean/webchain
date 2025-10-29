@@ -733,5 +733,7 @@ def test_parent_change_keep_metadata(
     assert len(patched.nodes) == 2
     assert patched.nodes[0].at == "http://newparent"
     assert patched.nodes[0].first_seen == new_crawl.end
+    assert patched.nodes[1].last_updated == new_crawl.end
     assert patched.nodes[1].parent == "http://newparent"
     assert patched.nodes[1].first_seen == old_crawl.end
+    assert patched.nodes[1].last_updated == new_crawl.end
