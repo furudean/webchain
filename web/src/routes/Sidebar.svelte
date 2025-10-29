@@ -150,7 +150,7 @@
 		{:else}
 			<!-- if server rendered only, selects can't do actions on change. links still work -->
 			<div class="chips">
-				sort by
+				ordered by
 				{#each sorts as sort_option}
 					<a
 						href={url_with_sort(sort_option.key)}
