@@ -53,8 +53,8 @@
 		{ key: "tree", value: "webchain" },
 		{ key: "new", value: "newest" },
 		{ key: "old", value: "oldest" },
-		{ key: "asc", value: "url(↓)" },
-		{ key: "desc", value: "url(↑)" }
+		{ key: "asc", value: "alphabetic (↓)" },
+		{ key: "desc", value: "alphabetic (↑)" }
 	] as const
 	const current_sort: (typeof sorts)[number] = $derived.by(() => {
 		const param = page.url.searchParams.get("sort")
@@ -276,10 +276,6 @@
 	}
 
 	#nodes {
-		margin: 0.5rem 0;
-	}
-
-	p {
 		margin: 0.5rem 0;
 	}
 
