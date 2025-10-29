@@ -131,7 +131,8 @@
 				onchange={(e) => {
 					const select = e.currentTarget as HTMLSelectElement
 					goto(sort_url(select.value), {
-						replaceState: true
+						replaceState: true,
+						state: { node: highlighted_node }
 					})
 				}}
 			>
