@@ -132,6 +132,8 @@
 					const select = e.currentTarget as HTMLSelectElement
 					goto(sort_url(select.value), {
 						replaceState: true,
+						noScroll: true,
+						keepFocus: true,
 						state: { node: highlighted_node }
 					})
 				}}
