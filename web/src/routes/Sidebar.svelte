@@ -84,7 +84,7 @@
 		}
 	}
 
-	function sort_url(type: string): string {
+	function url_with_sort(type: string): string {
 		const params = new URLSearchParams(page.url.searchParams)
 
 		if (type === "tree") {
@@ -130,7 +130,7 @@
 				aria-label="Sort nodes"
 				onchange={(e) => {
 					const select = e.currentTarget as HTMLSelectElement
-					goto(sort_url(select.value), {
+					goto(url_with_sort(select.value), {
 						replaceState: true,
 						noScroll: true,
 						keepFocus: true,
@@ -153,7 +153,7 @@
 				sort by
 				{#each sorts as sort_option}
 					<a
-						href={sort_url(sort_option.key)}
+						href={url_with_sort(sort_option.key)}
 						aria-current={sort_option === current_sort ? "page" : undefined}
 						>{sort_option.value}</a
 					>
