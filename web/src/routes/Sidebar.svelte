@@ -254,7 +254,6 @@
 		flex-wrap: wrap;
 		gap: 0.5ch;
 		padding: 0;
-		margin: 0.5rem 0;
 		list-style-type: none;
 	}
 
