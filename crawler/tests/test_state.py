@@ -687,3 +687,51 @@ def test_patch_state_immutability(
 
     assert old_crawl == old_crawl_copy
     assert new_crawl == new_crawl_copy
+
+
+def test_parent_change_keep_metadata(
+    old_crawl: CrawlResponse, new_crawl: CrawlResponse, seed_node: CrawledNode
+):
+    # Set an initial first_seen date
+    old_parent = dataclasses.replace(
+        seed_node,
+        at="http://oldparent",
+        children=["http://node"],
+        depth=0,
+        first_seen=old_crawl.end,
+    )
+    old_child = dataclasses.replace(
+        seed_node,
+        at="http://node",
+        parent=old_parent.at,
+        depth=1,
+        first_seen=old_crawl.end,
+    )
+
+    new_parent = dataclasses.replace(
+        seed_node,
+        at="http://newparent",
+        children=["http://node"],
+        depth=0,
+        first_seen=None,
+    )
+
+    new_child = dataclasses.replace(
+        seed_node,
+        at="http://node",
+        parent=new_parent.at,
+        depth=1,
+        first_seen=None,
+    )
+
+    old_crawl.nodes = [old_parent, old_child]
+    new_crawl.nodes = [new_parent, new_child]
+
+    patched = patch_state(old_crawl, new_crawl)
+
+    assert patched is not None
+    assert len(patched.nodes) == 2
+    assert patched.nodes[0].at == "http://newparent"
+    assert patched.nodes[0].first_seen == new_crawl.end
+    assert patched.nodes[1].parent == "http://newparent"
+    assert patched.nodes[1].first_seen == old_crawl.end
