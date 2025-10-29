@@ -50,7 +50,7 @@
 	})
 
 	const sorts = [
-		{ key: "tree", value: "webchain" },
+		{ key: "tree", value: "nomination" },
 		{ key: "new", value: "newest" },
 		{ key: "old", value: "oldest" },
 		{ key: "asc", value: "alphabetic (↓)" },
