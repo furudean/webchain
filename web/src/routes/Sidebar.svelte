@@ -119,7 +119,6 @@
 
 	<QnA {nodes} {nominations_limit}></QnA>
 
-	<h2>pages</h2>
 	<div class="sorts">
 		{new Intl.NumberFormat("en-US").format(nodes.length)} links ·
 		{#if browser}
@@ -165,7 +164,7 @@
 	{#if nodes.length > 0}
 		<ul id="nodes" bind:this={sidebar_nodes_element}>
 			{#if current_sort.key === "tree"}
-				<!-- List as tree -->
+				<!-- Use recursion via render_children -->
 				<SidebarNode
 					at={nodes[0].at}
 					{nodes}
@@ -176,7 +175,7 @@
 					render_children={true}
 				/>
 			{:else}
-				<!-- List is flat list -->
+				<!-- List is flat -->
 				{#each [...nodes].sort(node_sort(current_sort.key)) as node (node.at)}
 					<SidebarNode
 						at={node.at}
@@ -241,6 +240,10 @@
 		border-right: 1px solid var(--color-border, rgba(0, 0, 0, 0.25));
 		background: linear-gradient(to right, var(--color-bg), transparent);
 		backdrop-filter: blur(1.5px);
+	}
+
+	.sorts {
+		margin-top: 1rem;
 	}
 
 	ul {
