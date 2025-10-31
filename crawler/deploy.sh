@@ -3,12 +3,15 @@
 set -euxo pipefail
 cd "$(dirname "$0")"
 
+HOST=webchain.milkmedicine.net
+DESTINATION="/root"
+
 uv build
 
-scp dist/webchain_spider-0.0.0-py3-none-any.whl webchain.milkmedicine.net:/root
+scp dist/webchain_spider-0.0.0-py3-none-any.whl $HOST:$DESTINATION
 
-ssh webchain.milkmedicine.net "
-	uv tool install webchain_spider-0.0.0-py3-none-any.whl --force && \
-	rm webchain_spider-0.0.0-py3-none-any.whl && \
-	/root/crawl.sh
+ssh $HOST "
+    /root/.local/bin/uv tool install webchain_spider-0.0.0-py3-none-any.whl --force && \
+    rm webchain_spider-0.0.0-py3-none-any.whl && \
+    /root/crawl.sh
 "

@@ -3,15 +3,18 @@
 set -euxo pipefail
 cd "$(dirname "$0")"
 
+HOST=webchain.milkmedicine.net
+DESTINATION="/home/node/webchain.milkmedicine.net"
+SERVICE_NAME="webchain-site.service"
+
 npm run build
 
-rsync -zhave ssh --progress build webchain.milkmedicine.net:/var/www/
+rsync -zhave ssh --progress build "$HOST:/home/node/"
 
-ssh webchain.milkmedicine.net "
-    cd /var/www/ && \
-	systemctl stop node.service && \
-    rm -rf webchain.milkmedicine.net && \
-    mv build webchain.milkmedicine.net && \
-    chown -R node:node webchain.milkmedicine.net && \
-    systemctl start node.service
+ssh $HOST "
+    systemctl stop $SERVICE_NAME && \
+    rm -rf $DESTINATION && \
+    mv /home/node/build $DESTINATION && \
+    chown -R node:node $DESTINATION && \
+    systemctl start $SERVICE_NAME
 "

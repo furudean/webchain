@@ -95,9 +95,9 @@ If your page is not being crawled, please verify that:
 Your page must also be reachable by the crawler. Some common issues and
 solutions are described in the table below:
 
-| Problem                                      | Solution                                                        |
-| -------------------------------------------- | --------------------------------------------------------------- |
-| You are using `robots.txt` to block crawlers | Allow the user-agent `WebchainSpider` in your `robots.txt` file |
-| Your server is blocking certain IP-ranges    | Add an exception for the crawler's IP address: `134.199.140.52` |
+| Problem                                      | Solution                                                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| You are using `robots.txt` to block crawlers | Allow the user-agent `WebchainSpider` in your `robots.txt` file                                   |
+| Your server is blocking certain IP-ranges    | Add an exception for the crawler's IP addresses: `10.124.0.3` and `2604:a880:4:1d0:0:1:2560:6000` |
 
 If you continue to have issues, please contact the maintainer of the webchain.
