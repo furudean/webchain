@@ -23,17 +23,20 @@ async def get_robots_txt(
     try:
         # First, try HEAD request
         async with session.head(
-            robots_url, timeout=aiohttp.ClientTimeout(total=5)
+            robots_url,
+            timeout=aiohttp.ClientTimeout(total=5),
+            headers={
+                "Accept": "text/plain",
+            },
         ) as head_response:
-            if head_response.status == 404:
-                logger.debug(f"HEAD request failed for {robots_url}: {head_response.status}")
-                return None
             content_type = head_response.headers.get("Content-Type", "")
             if not content_type.startswith("text/plain"):
-                raise InvalidContentType
+                raise InvalidContentType(url=url, content_type=content_type)
     except aiohttp.ClientResponseError as e:
         if 400 <= e.status < 500:
+            logger.debug(f"HEAD request failed for {robots_url}: {head_response.status}")
             return None
+        logger.debug(f"HEAD request attempt failed for {robots_url}: " + type(e).__name__)
         raise
 
     try:

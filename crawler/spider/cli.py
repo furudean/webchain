@@ -31,8 +31,17 @@ def asyncio_click(func):
     type=int,
     help="number of retry attempts for network requests",
 )
-def webchain(attempts: int):
-    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    help="enable verbose logging",
+)
+def webchain(attempts: int, verbose: bool):
+    if os.environ.get("LOG_LEVEL"):
+        log_level = logging._nameToLevel.get(os.environ.get("LOG_LEVEL", "").upper(), logging.INFO)
+    else:
+        log_level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(level=log_level, format="%(filename)s: %(message)s")
 
     if "WEBCHAIN_NETWORK_ATTEMPTS" not in os.environ:

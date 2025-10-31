@@ -18,8 +18,20 @@ def get_session() -> aiohttp.ClientSession:
     )
 
 
-class InvalidContentType(Exception):
+class WebchainError(Exception):
     pass
+
+
+class InvalidContentType(WebchainError):
+    def __init__(self, content_type: str):
+        super().__init__(f"Invalid content type: {content_type}")
+        self.content_type = content_type
+
+
+class InvalidStatusCode(WebchainError):
+    def __init__(self, status: int, message: str | None = None):
+        super().__init__(f"Status {status} not retryable: {message}")
+        self.status = status
 
 
 async def load_page_html(
@@ -42,7 +54,7 @@ async def load_page_html(
                     content_type.startswith("text/html")
                     or content_type.startswith("application/xhtml+xml")
                 ):
-                    raise InvalidContentType
+                    raise InvalidContentType(content_type)
 
             logger.debug(f"get {url}")
             async with session.get(
@@ -60,8 +72,7 @@ async def load_page_html(
             return None
         except aiohttp.ClientResponseError as e:
             if 400 <= e.status < 500:
-                logger.info(f"GET {url}: bad status code {e}")
-                return None  # don't retry on 4xx errors
+                raise InvalidStatusCode(e.status, e.message) from e
             logger.debug(f"{url}: " + type(e).__name__)
             raise
         except InvalidContentType:
