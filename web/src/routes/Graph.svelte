@@ -103,9 +103,18 @@
 		const { default: ForceSupervisor } = await import(
 			"graphology-layout-force/worker"
 		)
+		const { default: forceAtlas2 } = await import(
+			"graphology-layout-forceatlas2"
+		)
+
 		const hashmap = new Map(Object.values(nodes).map((node) => [node.at, node]))
 
 		graph = build_graph(hashmap, Graph)
+		const sensibleSettings = {
+			...forceAtlas2.inferSettings(graph),
+			iterations: 10_000
+		}
+		forceAtlas2.assign(graph, sensibleSettings)
 
 		renderer = new Sigma(graph, graph_element, {
 			nodeProgramClasses: {
@@ -195,9 +204,9 @@
 		let is_dragging = false
 
 		layout = new ForceSupervisor(graph, {
-			isNodeFixed(node, attr) {
-				return dragged_node === node
-			},
+			// isNodeFixed(node, attr) {
+			// 	return dragged_node === node
+			// },
 			settings: {
 				// attraction: 0.0005,
 				// repulsion: 0.1,
