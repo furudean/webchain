@@ -204,9 +204,9 @@
 		let is_dragging = false
 
 		layout = new ForceSupervisor(graph, {
-			// isNodeFixed(node, attr) {
-			// 	return dragged_node === node
-			// },
+			isNodeFixed(node, attr) {
+				return dragged_node === node
+			},
 			settings: {
 				// attraction: 0.0005,
 				// repulsion: 0.1,
