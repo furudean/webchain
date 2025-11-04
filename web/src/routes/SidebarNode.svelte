@@ -176,8 +176,24 @@
 		border-left: 2px solid var(--color-primary);
 	}
 
+	li:has(details[open]) + ul {
+		border-image: repeating-linear-gradient(
+				to bottom,
+				var(--color-primary),
+				var(--color-primary) 4px,
+				transparent 4px,
+				transparent 8px
+			)
+			1;
+	}
+
+	li:hover + ul {
+		border-color: var(--color-shy);
+	}
+
 	ul {
-		padding-left: 1ch;
+		border-left: 2px solid var(--color-solid);
+		padding-left: 0.75ch;
 	}
 
 	.label {
@@ -185,7 +201,7 @@
 		flex: 1;
 		align-items: center;
 		gap: 0.5ch;
-		padding: 0.15em 0.4em 0.15em 0.4em;
+		padding: 0.15em 0.15em 0.15em 0.2em;
 		line-height: 1;
 	}
 
