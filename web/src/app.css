@@ -32,8 +32,8 @@
 	--color-bg: #fff;
 	--color-text: #222;
 	--color-border: #ccc;
-	--color-shy: #9a9a9aff;
-	--color-solid: #f5f5f5;
+	--color-shy: #c6c6c6;
+	--color-solid: #f1f1f1;
 
 	--a-not-visited-color: var(--color-primary);
 	--a-visited-color: purple;

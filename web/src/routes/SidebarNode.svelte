@@ -163,9 +163,9 @@
 		display: flex;
 		gap: 0.5ch;
 		list-style-type: none;
-		display: flex;
 		flex-direction: column;
-		flex: 1;
+		flex-grow: 1;
+		max-width: 35ch;
 	}
 
 	details:not([open]):is(.hovered, :hover):not(.highlighted) {
@@ -260,7 +260,7 @@
 	}
 
 	details:not([open]) .node-header {
-		max-width: 17rem;
+		/* max-width: 17rem; */
 	}
 
 	.node-content {
@@ -269,7 +269,12 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		max-width: 35ch;
+		/* max-width: 35ch; */
+		background: linear-gradient(
+			to right bottom,
+			var(--color-solid),
+			transparent
+		);
 	}
 
 	.node-content p {
