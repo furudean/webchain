@@ -53,16 +53,33 @@ function response_headers({
 	return headers
 }
 
-async function create_empty_response(
-	url: string,
-	origin: string,
-	disk_cache_status: string = "MISS",
+async function create_empty_response({
+	url,
+	origin,
+	request,
+	fallback_url,
+	disk_cache_status = "MISS"
+}: {
+	url: string
+	origin: string
 	request?: Request
-): Promise<Response> {
+	fallback_url?: string | null
+	disk_cache_status?: string
+}): Promise<Response> {
+	if (fallback_url) {
+		const headers = new Headers()
+		headers.set("Location", fallback_url)
+		headers.set("Access-Control-Allow-Origin", origin)
+		return new Response(null, {
+			status: 302,
+			headers
+		})
+	}
 	const item = cache_empty_favicon(url)
+	const image = pixel
 	const { body, encoding } = request
-		? await compress_if_accepted(pixel, request)
-		: { body: pixel }
+		? await compress_if_accepted(image, request)
+		: { body: image }
 
 	const headers = response_headers({ item, allowed_origin: origin })
 	headers.set("content-type", "image/png")
@@ -128,7 +145,7 @@ async function compressed_response({
 	})
 }
 
-export const OPTIONS: RequestHandler = async ({url}) => {
+export const OPTIONS: RequestHandler = async ({ url }) => {
 	const headers = new Headers()
 	headers.set("Access-Control-Allow-Origin", url.origin)
 	headers.set("Access-Control-Allow-Methods", "*")
@@ -141,7 +158,7 @@ export const OPTIONS: RequestHandler = async ({url}) => {
 
 export const GET: RequestHandler = async ({ url, fetch, request }) => {
 	const url_param = url.searchParams.get("url")
-	const origin = url.origin
+	const fallback_url = url.searchParams.get("fallback")
 
 	if (!url_param) {
 		return text("url parameter required", { status: 400 })
@@ -179,17 +196,19 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		}
 
 		if (!data) {
-			return await create_empty_response(
-				url_param,
-				origin,
-				is_stale ? "STALE" : "HIT"
-			)
+			return await create_empty_response({
+				url: url_param,
+				origin: url.origin,
+				request,
+				fallback_url,
+				disk_cache_status: is_stale ? "STALE" : "HIT"
+			})
 		}
 
 		return await compressed_response({
 			data,
 			item,
-			origin,
+			origin: url.origin,
 			request,
 			is_stale
 		})
@@ -197,7 +216,12 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 
 	const fetch_result = await fetch_and_cache_favicon(url_param, fetch)
 	if (!fetch_result) {
-		return await create_empty_response(url_param, origin)
+		return await create_empty_response({
+			url: url_param,
+			origin,
+			request,
+			fallback_url
+		})
 	}
 
 	return await compressed_response({

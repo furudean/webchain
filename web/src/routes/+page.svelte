@@ -5,17 +5,20 @@
 	import Sidebar from "./Sidebar.svelte"
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
+	import type { DisplayNode } from "$lib/node"
 
 	let { data }: PageProps = $props()
 	let graph_component: Graph | undefined = $state()
 
-	onMount(async () => {
-		const url_param = page.url.searchParams.get("node")?.replace(/_$/, "") // old format used to have trailing underscores
-		const current_node = data.nodes.find(
+	const current_node: DisplayNode | undefined = $derived.by(() => {
+		// old format used to have trailing underscores
+		const url_param = page.url.searchParams.get("node")?.replace(/_$/, "")
+		return data.nodes.find(
 			(n) => n.url_param === url_param || n.at === url_param
 		)
-		console.log(current_node)
+	})
 
+	onMount(async () => {
 		if (!current_node) return
 
 		const new_url = new URL(page.url)
@@ -42,7 +45,18 @@
 	<!-- set the nominations limit for each node - seed only -->
 	<meta name="webchain-nominations-limit" content="4" />
 
-	<title>milkmedicine webchain</title>
+	{#if current_node}
+		<title>{current_node.label} · milkmedicine webchain</title>
+		<link
+			rel="shortcut icon"
+			href="/api/favicon?url={encodeURIComponent(
+				current_node.at
+			)}&fallback=/favicon.png"
+		/>
+	{:else}
+		<title>milkmedicine webchain</title>
+		<link rel="shortcut icon" href="/favicon.png" type="image/png" />
+	{/if}
 	<meta
 		name="description"
 		content="a distributed webring for friends and enemies. you are here!"
