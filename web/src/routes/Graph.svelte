@@ -130,6 +130,7 @@
 			stagePadding: 50,
 			minCameraRatio: 0.6,
 			maxCameraRatio: 10,
+			autoCenter: false,
 
 			nodeReducer(node, data) {
 				const res: typeof data = { ...data }
