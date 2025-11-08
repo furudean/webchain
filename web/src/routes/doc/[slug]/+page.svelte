@@ -5,6 +5,7 @@
 </script>
 
 <svelte:head>
+	<link rel="shortcut icon" href="/favicon.png" type="image/png" />
 	{#if data.frontmatter?.title}
 		<title>{data.frontmatter.title}</title>
 	{/if}
