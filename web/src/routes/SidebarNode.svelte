@@ -42,13 +42,11 @@
 	}
 </script>
 
-<li>
-	<details
-		open={node.at === highlighted_node}
-		name="node"
-		class:hovered={node.at === $hovered_node}
-		class:highlighted={node.at === highlighted_node}
-	>
+<li
+	class:hovered={node.at === $hovered_node}
+	class:highlighted={node.at === highlighted_node}
+>
+	<details open={node.at === highlighted_node} name="node">
 		<summary
 			class="node-header"
 			onmouseenter={hover_in}
@@ -168,7 +166,7 @@
 		max-width: 35ch;
 	}
 
-	details:not([open]):is(.hovered, :hover):not(.highlighted) {
+	li.hovered:not(.highlighted) {
 		background-color: var(--color-shy);
 	}
 
@@ -179,21 +177,21 @@
 	li:has(details[open]) + ul {
 		border-image: repeating-linear-gradient(
 				to bottom,
-				var(--color-primary),
-				var(--color-primary) 4px,
+				var(--color-border),
+				var(--color-border) 4px,
 				transparent 4px,
 				transparent 8px
 			)
 			1;
 	}
 
-	li:hover + ul {
+	li:is(.hovered, :hover) + ul {
 		border-color: var(--color-shy);
 	}
 
 	ul {
 		border-left: 2px solid var(--color-solid);
-		padding-left: 0.75ch;
+		padding-left: 0.5ch;
 	}
 
 	.label {
@@ -259,10 +257,6 @@
 		word-break: break-all;
 	}
 
-	details:not([open]) .node-header {
-		/* max-width: 17rem; */
-	}
-
 	.node-content {
 		border-left: 2px solid var(--color-primary);
 		padding: 0.4rem;
@@ -270,11 +264,7 @@
 		flex: 1;
 		flex-direction: column;
 		/* max-width: 35ch; */
-		background: linear-gradient(
-			to right bottom,
-			var(--color-solid),
-			transparent
-		);
+		background: var(--color-solid);
 	}
 
 	.node-content p {
