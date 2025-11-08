@@ -218,7 +218,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 	if (!fetch_result) {
 		return await create_empty_response({
 			url: url_param,
-			origin,
+			origin: url.origin,
 			request,
 			fallback_url
 		})
@@ -228,7 +228,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		data: fetch_result.data,
 		item: fetch_result.item,
 		request,
-		origin,
+		origin: url.origin,
 		is_stale: false
 	})
 }
