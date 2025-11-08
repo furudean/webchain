@@ -64,7 +64,7 @@
 		Source code may be found <a
 			href="https://github.com/furudean/webchain"
 			rel="external">on GitHub</a
-		>.
+		>. The <a href="/doc/spec.md">specification</a> may also be of interest.
 	</p>
 </details>
 
