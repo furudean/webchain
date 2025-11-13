@@ -2,16 +2,16 @@ import type { CrawlResponse } from "./node"
 
 const REFRESH_INTERVAL = 5 * 60_000 // 5 minutes
 
-let allowed_favicon_urls: Set<string> | null = null
+let allowed_fetch_urls: Set<string> | null = null
 let last_fetch = 0
 let current_fetch: Promise<Response> | null = null
 
-export async function get_allowed_favicon_urls(
+export async function get_allowed_fetch_urls(
 	fetch_fn: typeof fetch
 ): Promise<Set<string>> {
 	const now = Date.now()
-	if (allowed_favicon_urls && now - last_fetch < REFRESH_INTERVAL) {
-		return allowed_favicon_urls
+	if (allowed_fetch_urls && now - last_fetch < REFRESH_INTERVAL) {
+		return allowed_fetch_urls
 	}
 	try {
 		const request = current_fetch ?? fetch_fn("/crawler/current.json")
@@ -22,9 +22,9 @@ export async function get_allowed_favicon_urls(
 		const crawl: Partial<CrawlResponse> = await response.json()
 		const ats = crawl.nodes?.map((node) => node.at)
 		if (!ats) throw new Error("No nodes in crawl response")
-		allowed_favicon_urls = new Set(ats)
+		allowed_fetch_urls = new Set(ats)
 		last_fetch = now
-		return allowed_favicon_urls
+		return allowed_fetch_urls
 	} catch (err) {
 		console.error("failed to refresh allowed favicon URLs", err)
 		throw err

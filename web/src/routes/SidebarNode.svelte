@@ -108,8 +108,17 @@
 		</summary>
 		<div class="node-content">
 			<a href={node.url.href} rel="external">
-				{node.html_metadata?.title || node.label}
+				<img
+					src="/api/snap?url={encodeURIComponent(node.at)}"
+					class="snap"
+					alt="Screenshot of {node.label}"
+					height="600"
+					width="800"
+					loading="lazy"
+				/>
+				<h2>{node.html_metadata?.title || node.label}</h2>
 			</a>
+
 			{#if node.html_metadata?.description}
 				<p>{node.html_metadata.description}</p>
 			{/if}
@@ -267,6 +276,11 @@
 		background: var(--color-solid);
 	}
 
+	.node-content h2 {
+		all: unset;
+		display: block;
+	}
+
 	.node-content p {
 		margin: 0;
 		margin-top: 0.4rem;
@@ -307,5 +321,17 @@
 	.crawl-warning pre {
 		margin: 0;
 		text-wrap: wrap;
+	}
+
+	.snap {
+		display: block;
+		max-width: 80%;
+		height: auto;
+		font-weight: normal;
+		font-size: 0.9rem;
+		font-family: "Fantasque Sans Mono", monospace;
+		text-decoration: none;
+		color: var(--color-border);
+		background: var(--color-bg);
 	}
 </style>

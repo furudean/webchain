@@ -40,6 +40,7 @@
 		"oklab.ts": "^2.2.7",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
+		"puppeteer": "^24.30.0",
 		"sigma": "^3.0.2",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",

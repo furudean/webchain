@@ -11,9 +11,9 @@ import {
 	STALE_THRESHOLD
 } from "$lib/favicon"
 import { is_valid_url } from "$lib/url"
-import { gzipSync, deflateSync } from "node:zlib"
 import pixel from "./1x1.png?arraybuffer"
-import { get_allowed_favicon_urls } from "$lib/crawler"
+import { get_allowed_fetch_urls } from "$lib/crawler"
+import { compress_if_accepted } from "$lib/compress"
 
 function response_headers({
 	item,
@@ -95,26 +95,6 @@ async function create_empty_response({
 	})
 }
 
-async function compress_if_accepted(
-	data: Uint8Array | Buffer | ArrayBuffer,
-	request: Request
-): Promise<{ body: Uint8Array | Buffer | ArrayBuffer; encoding?: string }> {
-	const acceptEncoding = request.headers.get("accept-encoding") || ""
-	if (/\bgzip\b/.test(acceptEncoding)) {
-		return {
-			body: gzipSync(data),
-			encoding: "gzip"
-		}
-	}
-	if (/\bdeflate\b/.test(acceptEncoding)) {
-		return {
-			body: deflateSync(data),
-			encoding: "deflate"
-		}
-	}
-	return { body: data }
-}
-
 async function compressed_response({
 	data,
 	item,
@@ -168,7 +148,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		return text("invalid url parameter", { status: 400 })
 	}
 
-	if (!(await get_allowed_favicon_urls(fetch)).has(url_param)) {
+	if (!(await get_allowed_fetch_urls(fetch)).has(url_param)) {
 		return text("nice try, but i thought about that", { status: 400 })
 	}
 
