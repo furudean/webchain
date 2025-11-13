@@ -32,7 +32,7 @@
 		requestAnimationFrame(() => {
 			const size = `${40 / camera.ratio}px`
 			graph_container.style.backgroundSize = `${size} ${size}`
-			const transparency = Math.max(0.05, 0.5 / camera.ratio)
+			const transparency = Math.max(0, 0.4 / camera.ratio)
 			const part = "var(--octal-color)"
 			graph_container.style.backgroundImage = `radial-gradient(rgb(${part}, ${part}, ${part}, ${transparency}) 1px, transparent 0)`
 

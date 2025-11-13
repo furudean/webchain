@@ -11,7 +11,7 @@ export function build_graph(
 	for (const [id, node] of hashmap.entries()) {
 		graph.addNode(id, {
 			label: node.label,
-			size: 20 + node.children.length * 1.5,
+			size: 18 + Math.pow(node.children.length, 1.5),
 			x: Math.random(),
 			y: Math.random(),
 			type: node.depth === 0 ? "square" : "image",
