@@ -160,7 +160,7 @@ async function take_screenshot(
 			timeout: 30_000
 		})
 
-		if (!response || response.status() !== 200) {
+		if (response?.ok()) {
 			await page.close()
 			throw new Error(
 				`failed to load page, status code: ${response ? response.status() : "unknown"}`
