@@ -25,7 +25,7 @@
 		render_children?: boolean
 	} = $props()
 
-	let image_loaded = $state(!browser)
+	let snap_load_finished = $state(!browser)
 	let snap_image_element: HTMLImageElement | null = $state(null)
 
 	const node = $derived.by(() => {
@@ -47,7 +47,7 @@
 	}
 
 	onMount(() => {
-		image_loaded = snap_image_element?.complete === true
+		snap_load_finished = snap_image_element?.complete === true
 	})
 </script>
 
@@ -120,17 +120,17 @@
 				<img
 					src="/api/snap?url={encodeURIComponent(node.at)}"
 					class="snap"
-					data-loading={image_loaded ? undefined : "true"}
+					data-loading={snap_load_finished ? undefined : "true"}
 					alt="Screenshot of {node.label}"
 					height="600"
 					width="800"
 					loading="lazy"
 					bind:this={snap_image_element}
 					onload={() => {
-						image_loaded = true
+						snap_load_finished = true
 					}}
 					onerror={() => {
-						image_loaded = true
+						snap_load_finished = true
 					}}
 				/>
 
