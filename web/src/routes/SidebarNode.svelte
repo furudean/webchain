@@ -344,7 +344,7 @@
 
 	.snap {
 		display: block;
-		max-width: 80%;
+		max-width: 75%;
 		height: auto;
 		font-weight: normal;
 		font-size: 0.9rem;
