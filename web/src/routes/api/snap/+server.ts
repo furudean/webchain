@@ -14,8 +14,6 @@ const CACHE_DURATION_MS = 60 * 60 * 24 * 3 * 1000 // 3 days in ms
 const MAX_CONCURRENT_SNAPS = 10
 const BROWSER_KEEPALIVE_MS = 120_000
 
-let active_snap_count = 0
-
 interface SnapSidecar {
 	original_url: string
 	content_type: string
@@ -145,7 +143,7 @@ async function take_screenshot(
 		if (!response || response.status() !== 200) {
 			await page.close()
 			throw new Error(
-				`Failed to load page, status code: ${response ? response.status() : "unknown"}`
+				`failed to load page, status code: ${response ? response.status() : "unknown"}`
 			)
 		}
 
@@ -157,10 +155,39 @@ async function take_screenshot(
 		console.log("done snap of", url_param)
 		return screenshot
 	} catch (err) {
-		console.error("Screenshot error for", url_param, err)
-		throw new Error("Failed to take screenshot")
+		console.error("screenshot error for", url_param, err)
+		throw new Error("failed to take screenshot")
 	}
 }
+
+class Semaphore {
+	private tasks: (() => void)[] = []
+	public count: number
+	constructor(max: number) {
+		this.count = max
+	}
+	async acquire(): Promise<() => void> {
+		return new Promise((resolve) => {
+			const try_acquire = () => {
+				if (this.count > 0) {
+					this.count--
+					resolve(() => {
+						this.count++
+						if (this.tasks.length) {
+							const next = this.tasks.shift()
+							if (next) next()
+						}
+					})
+				} else {
+					this.tasks.push(try_acquire)
+				}
+			}
+			try_acquire()
+		})
+	}
+}
+
+const snap_semaphore = new Semaphore(MAX_CONCURRENT_SNAPS)
 
 const snap_fetch_promises = new Map<
 	string,
@@ -255,7 +282,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		let refresh_promise = snap_fetch_promises.get(url_param)
 		if (!refresh_promise) {
 			refresh_promise = (async () => {
-				active_snap_count++
+				const release = await snap_semaphore.acquire()
 				try {
 					const browser = await get_browser()
 					const screenshot = await take_screenshot(url_param, browser)
@@ -265,7 +292,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 					console.error("failed to refresh screenshot for", url_param, err)
 					throw err
 				} finally {
-					active_snap_count--
+					release()
 					snap_fetch_promises.delete(url_param)
 				}
 			})()
@@ -283,11 +310,11 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 
 	let fetch_promise = snap_fetch_promises.get(url_param)
 	if (!fetch_promise) {
-		if (active_snap_count >= MAX_CONCURRENT_SNAPS) {
+		if (snap_semaphore.count === 0) {
 			return text("too many concurrent screenshot requests", { status: 429 })
 		}
 		fetch_promise = (async () => {
-			active_snap_count++
+			const release = await snap_semaphore.acquire()
 			try {
 				const browser = await get_browser()
 				const screenshot = await take_screenshot(url_param, browser)
@@ -297,7 +324,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 				console.error("Failed to fetch/capture screenshot for", url_param, err)
 				throw text("Failed to capture screenshot", { status: 503 })
 			} finally {
-				active_snap_count--
+				release()
 				snap_fetch_promises.delete(url_param)
 			}
 		})()
