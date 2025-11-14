@@ -279,6 +279,7 @@
 	.node-content h2 {
 		all: unset;
 		display: block;
+		margin-top: 0.4rem;
 	}
 
 	.node-content p {

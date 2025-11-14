@@ -11,6 +11,10 @@ import { get_allowed_fetch_urls } from "$lib/crawler"
 
 const CACHE_DIR = path.resolve(process.cwd(), ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 3 * 1000 // 3 days in ms
+const MAX_CONCURRENT_SNAPS = 5
+const BROWSER_KEEPALIVE_MS = 120_000
+
+let active_snap_count = 0
 
 interface SnapSidecar {
 	original_url: string
@@ -78,23 +82,26 @@ export const OPTIONS: RequestHandler = async ({ url }) => {
 
 let browser: Browser | null = null
 let browser_close_timer: NodeJS.Timeout | null = null
-const BROWSER_KEEPALIVE_MS = 120_000
 
 async function get_browser(): Promise<Browser> {
-	if (browser) {
-		// Reset close timer
+	function reset_browser_close_timer() {
 		if (browser_close_timer) clearTimeout(browser_close_timer)
-		browser_close_timer = setTimeout(async () => {
-			await browser?.close()
-			browser = null
+		browser_close_timer = setTimeout(() => {
+			console.log("closing idle browser instance")
+			browser?.close().catch((err) => {
+				console.error("error closing browser:", err)
+				browser = null
+			})
 		}, BROWSER_KEEPALIVE_MS)
+	}
+
+	if (browser) {
+		reset_browser_close_timer()
 		return browser
 	}
+	console.log("launching new browser instance for snaps")
 	browser = await puppeteer.launch({ headless: "shell" })
-	browser_close_timer = setTimeout(async () => {
-		await browser?.close()
-		browser = null
-	}, BROWSER_KEEPALIVE_MS)
+	reset_browser_close_timer()
 	return browser
 }
 
@@ -206,6 +213,10 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		return text("nice try, but i thought about that", { status: 400 })
 	}
 
+	if (active_snap_count >= MAX_CONCURRENT_SNAPS) {
+		return text("too many concurrent screenshot requests", { status: 429 })
+	}
+
 	const cache_hit = await get_cached_snap(url_param)
 	const if_none_match = request.headers.get("if-none-match")
 
@@ -233,6 +244,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	let fetch_promise = snap_fetch_promises.get(url_param)
 	if (!fetch_promise) {
 		fetch_promise = (async () => {
+			active_snap_count++
 			try {
 				const browser = await get_browser()
 				const screenshot = await take_screenshot(url_param, browser)
@@ -240,8 +252,10 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 				return { data: Buffer.from(screenshot), item }
 			} catch (err) {
 				console.error("Failed to fetch/capture screenshot for", url_param, err)
-				snap_fetch_promises.delete(url_param)
 				throw text("Failed to capture screenshot", { status: 503 })
+			} finally {
+				active_snap_count--
+				snap_fetch_promises.delete(url_param)
 			}
 		})()
 		snap_fetch_promises.set(url_param, fetch_promise)
@@ -250,13 +264,11 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	try {
 		fetch_result = await fetch_promise
 	} catch (err) {
-		snap_fetch_promises.delete(url_param)
-		if (err instanceof Response) return err
-		return text("Failed to capture screenshot", { status: 503 })
-	} finally {
 		if (snap_fetch_promises.get(url_param) === fetch_promise) {
 			snap_fetch_promises.delete(url_param)
 		}
+		if (err instanceof Response) return err
+		return text("Failed to capture screenshot", { status: 503 })
 	}
 
 	return await make_snap_response({
