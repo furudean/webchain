@@ -11,8 +11,7 @@ import { get_allowed_fetch_urls } from "$lib/crawler"
 
 const CACHE_DIR = path.resolve(process.cwd(), ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 3 * 1000 // 3 days in ms
-const MAX_CONCURRENT_SNAPS = 5
-const BROWSER_KEEPALIVE_MS = 120_000
+const MAX_CONCURRENT_SNAPS = 10
 
 interface SnapSidecar {
 	original_url: string
@@ -85,7 +84,6 @@ export const OPTIONS: RequestHandler = async ({ url }) => {
 }
 
 let browser: Browser | null = null
-let browser_close_timer: NodeJS.Timeout | null = null
 
 // Track active abort controllers for requests
 const abortcontrollers = new Set<AbortController>()
@@ -112,27 +110,14 @@ if (typeof process !== "undefined" && process.on) {
 }
 
 async function get_browser(): Promise<Browser> {
-	function reset_browser_close_timer() {
-		if (browser_close_timer) clearTimeout(browser_close_timer)
-		browser_close_timer = setTimeout(() => {
-			console.log("closing idle browser instance")
-			browser?.close().catch((err) => {
-				console.error("error closing browser:", err)
-				browser = null
-			})
-		}, BROWSER_KEEPALIVE_MS)
-	}
-
 	if (browser) {
-		reset_browser_close_timer()
 		return browser
 	}
-	console.log("launching new browser instance for snaps")
+	console.log("launching persistent browser instance for snaps")
 	browser = await puppeteer.launch({
 		headless: true,
-		args: ["--disable-features=FedCm"] // idk but prevents crashes
+		args: ["--disable-features=FedCm"]
 	})
-	reset_browser_close_timer()
 	return browser
 }
 
@@ -400,4 +385,32 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		request,
 		url_origin: url.origin
 	})
+}
+
+async function cleanup_expired_cache() {
+	try {
+		await fs.mkdir(CACHE_DIR, { recursive: true })
+		const files = await fs.readdir(CACHE_DIR)
+		for (const file of files) {
+			if (file.endsWith(".json")) {
+				const metaPath = path.join(CACHE_DIR, file)
+				try {
+					const metaRaw = await fs.readFile(metaPath, "utf8")
+					const sidecar: SnapSidecar = JSON.parse(metaRaw)
+					if (Date.now() > sidecar.expires) {
+						// Remove both .json and .webp
+						await Promise.all([
+							fs.unlink(metaPath),
+							fs.unlink(metaPath.replace(/\.json$/, ".webp")).catch(() => {})
+						])
+					}
+				} catch {
+					// If corrupt, remove meta file
+					await fs.unlink(metaPath).catch(() => {})
+				}
+			}
+		}
+	} catch (err) {
+		console.error("Error cleaning up cache:", err)
+	}
 }
