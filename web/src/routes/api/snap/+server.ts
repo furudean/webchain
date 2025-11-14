@@ -11,7 +11,7 @@ import { get_allowed_fetch_urls } from "$lib/crawler"
 
 const CACHE_DIR = path.resolve(process.cwd(), ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 3 * 1000 // 3 days in ms
-const MAX_CONCURRENT_SNAPS = 5
+const MAX_CONCURRENT_SNAPS = 10
 const BROWSER_KEEPALIVE_MS = 120_000
 
 let active_snap_count = 0
@@ -100,27 +100,12 @@ async function get_browser(): Promise<Browser> {
 		return browser
 	}
 	console.log("launching new browser instance for snaps")
-	browser = await puppeteer.launch({ headless: "shell" })
+	browser = await puppeteer.launch({
+		headless: true,
+		args: ["--disable-features=FedCm"] // idk but prevents crashes
+	})
 	reset_browser_close_timer()
 	return browser
-}
-
-function timeoutPromise<T>(promise: Promise<T>, ms: number): Promise<T> {
-	return new Promise((resolve, reject) => {
-		const timer = setTimeout(
-			() => reject(new Error("Screenshot timed out")),
-			ms
-		)
-		promise
-			.then((value) => {
-				clearTimeout(timer)
-				resolve(value)
-			})
-			.catch((err) => {
-				clearTimeout(timer)
-				reject(err)
-			})
-	})
 }
 
 async function take_screenshot(
@@ -134,17 +119,23 @@ async function take_screenshot(
 			"User-Agent": "WebchainSpider (+https://github.com/furudean/webchain)",
 			"Accept-Language": "en-US,en;q=0.9,*;q=0.5"
 		})
-		await timeoutPromise(
-			page.goto(url_param, {
-				waitUntil: "networkidle0",
-				timeout: 25000 // navigation timeout
-			}),
-			25000
-		)
-		const screenshot = await timeoutPromise(
-			page.screenshot({ encoding: "binary", type: "webp" }),
-			15000
-		)
+
+		const response = await page.goto(url_param, {
+			waitUntil: "networkidle0",
+			timeout: 30_000
+		})
+
+		if (!response || response.status() !== 200) {
+			await page.close()
+			throw new Error(
+				`Failed to load page, status code: ${response ? response.status() : "unknown"}`
+			)
+		}
+
+		const screenshot = await page.screenshot({
+			encoding: "binary",
+			type: "webp"
+		})
 		await page.close()
 		console.log("done snap of", url_param)
 		return screenshot
@@ -213,10 +204,6 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		return text("nice try, but i thought about that", { status: 400 })
 	}
 
-	if (active_snap_count >= MAX_CONCURRENT_SNAPS) {
-		return text("too many concurrent screenshot requests", { status: 429 })
-	}
-
 	const cache_hit = await get_cached_snap(url_param)
 	const if_none_match = request.headers.get("if-none-match")
 
@@ -243,6 +230,9 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 
 	let fetch_promise = snap_fetch_promises.get(url_param)
 	if (!fetch_promise) {
+		if (active_snap_count >= MAX_CONCURRENT_SNAPS) {
+			return text("too many concurrent screenshot requests", { status: 429 })
+		}
 		fetch_promise = (async () => {
 			active_snap_count++
 			try {

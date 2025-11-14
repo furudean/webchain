@@ -7,8 +7,7 @@ HOST=webchain.milkmedicine.net
 DESTINATION="/home/node/webchain.milkmedicine.net"
 SERVICE_NAME="webchain-site.service"
 
-npm install --target_arch=x64 --target_platform=linux
-npm run build --target_arch=x64 --target_platform=linux
+npm run build
 
 rsync -zhave ssh --progress build "$HOST:/home/node/"
 
