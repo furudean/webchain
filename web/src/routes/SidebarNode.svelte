@@ -4,6 +4,8 @@
 	import type Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
 	import { date_fmt, date_time_fmt } from "$lib/date"
+	import { browser } from "$app/environment"
+	import { onMount } from "svelte"
 
 	let {
 		at,
@@ -23,6 +25,9 @@
 		render_children?: boolean
 	} = $props()
 
+	let snap_load_finished = $state(!browser)
+	let snap_image_element: HTMLImageElement | null = $state(null)
+
 	const node = $derived.by(() => {
 		const node = nodes.find((n) => n.at === at)
 		if (!node) {
@@ -40,6 +45,10 @@
 			hovered_node.set(undefined)
 		}
 	}
+
+	onMount(() => {
+		snap_load_finished = snap_image_element?.complete === true
+	})
 </script>
 
 <li
@@ -108,8 +117,26 @@
 		</summary>
 		<div class="node-content">
 			<a href={node.url.href} rel="external">
-				{node.html_metadata?.title || node.label}
+				<img
+					src="/api/snap?url={encodeURIComponent(node.at)}"
+					class="snap"
+					data-loading={snap_load_finished ? undefined : "true"}
+					alt="Screenshot of {node.label}"
+					height="600"
+					width="800"
+					loading="lazy"
+					bind:this={snap_image_element}
+					onload={() => {
+						snap_load_finished = true
+					}}
+					onerror={() => {
+						snap_load_finished = true
+					}}
+				/>
+
+				<h2>{node.html_metadata?.title || node.label}</h2>
 			</a>
+
 			{#if node.html_metadata?.description}
 				<p>{node.html_metadata.description}</p>
 			{/if}
@@ -267,6 +294,12 @@
 		background: var(--color-solid);
 	}
 
+	.node-content h2 {
+		all: unset;
+		display: block;
+		margin-top: 0.4rem;
+	}
+
 	.node-content p {
 		margin: 0;
 		margin-top: 0.4rem;
@@ -307,5 +340,30 @@
 	.crawl-warning pre {
 		margin: 0;
 		text-wrap: wrap;
+	}
+
+	.snap {
+		display: block;
+		max-width: 80%;
+		height: auto;
+		font-weight: normal;
+		font-size: 0.9rem;
+		font-family: "Fantasque Sans Mono", monospace;
+		text-decoration: none;
+		color: var(--color-border);
+		background: var(--color-bg);
+	}
+
+	@keyframes loading {
+		0% {
+			opacity: 0.5;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	.snap[data-loading="true"] {
+		animation: loading 400ms infinite alternate;
 	}
 </style>
