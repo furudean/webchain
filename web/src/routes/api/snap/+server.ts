@@ -31,7 +31,7 @@ function get_cache_path(url: string): string {
 
 async function get_cached_snap(
 	url: string
-): Promise<{ data: Buffer; item: SnapSidecar } | null> {
+): Promise<{ data: Buffer; item: SnapSidecar; expired: boolean } | null> {
 	try {
 		const metaPath = get_cache_path(url) + ".json"
 		const imgPath = get_cache_path(url) + ".webp"
@@ -40,8 +40,8 @@ async function get_cached_snap(
 			fs.readFile(imgPath)
 		])
 		const sidecar: SnapSidecar = JSON.parse(metaRaw)
-		if (Date.now() > sidecar.expires) return null
-		return { data: imgRaw, item: sidecar }
+		const expired = Date.now() > sidecar.expires
+		return { data: imgRaw, item: sidecar, expired }
 	} catch {
 		return null
 	}
@@ -174,6 +174,7 @@ interface MakeSnapResponseParams {
 	request: Request
 	url_origin: string
 	not_modified?: boolean
+	stale?: boolean
 }
 
 async function make_snap_response({
@@ -182,15 +183,20 @@ async function make_snap_response({
 	disk_cache,
 	request,
 	url_origin,
-	not_modified = false
+	not_modified = false,
+	stale = false
 }: MakeSnapResponseParams): Promise<Response> {
 	const headers = new Headers()
 	headers.set("ETag", item.etag)
 	headers.set("X-Original-URL", item.original_url)
-	headers.set("Cache-Control", `public, max-age=${CACHE_DURATION_MS / 1000}`)
+	headers.set(
+		"Cache-Control",
+		`public, max-age=${CACHE_DURATION_MS / 1000}, stale-while-revalidate=${CACHE_DURATION_MS / 1000}`
+	)
 	headers.set("Expires", new Date(item.expires).toUTCString())
 	headers.set("Access-Control-Allow-Origin", url_origin)
 	headers.set("x-disk-cache", disk_cache)
+	if (stale) headers.set("Warning", '110 - "Response is stale"')
 	if (not_modified) {
 		return new Response(null, { status: 304, headers })
 	}
@@ -225,8 +231,8 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	const if_none_match = request.headers.get("if-none-match")
 
 	if (cache_hit) {
-		const { data, item } = cache_hit
-		if (item.etag && if_none_match === item.etag) {
+		const { data, item, expired } = cache_hit
+		if (item.etag && if_none_match === item.etag && !expired) {
 			return await make_snap_response({
 				data: null,
 				item,
@@ -236,12 +242,42 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 				not_modified: true
 			})
 		}
+		if (!expired) {
+			return await make_snap_response({
+				data,
+				item,
+				disk_cache: "HIT",
+				request,
+				url_origin: url.origin
+			})
+		}
+		// Serve stale cache, trigger background refresh if not already running
+		let refresh_promise = snap_fetch_promises.get(url_param)
+		if (!refresh_promise) {
+			refresh_promise = (async () => {
+				active_snap_count++
+				try {
+					const browser = await get_browser()
+					const screenshot = await take_screenshot(url_param, browser)
+					const item = await cache_snap(url_param, Buffer.from(screenshot))
+					return { data: Buffer.from(screenshot), item }
+				} catch (err) {
+					console.error("failed to refresh screenshot for", url_param, err)
+					throw err
+				} finally {
+					active_snap_count--
+					snap_fetch_promises.delete(url_param)
+				}
+			})()
+			snap_fetch_promises.set(url_param, refresh_promise)
+		}
 		return await make_snap_response({
 			data,
 			item,
 			disk_cache: "HIT",
 			request,
-			url_origin: url.origin
+			url_origin: url.origin,
+			stale: true
 		})
 	}
 
@@ -271,11 +307,8 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	try {
 		fetch_result = await fetch_promise
 	} catch (err) {
-		if (snap_fetch_promises.get(url_param) === fetch_promise) {
-			snap_fetch_promises.delete(url_param)
-		}
 		if (err instanceof Response) return err
-		return text("Failed to capture screenshot", { status: 503 })
+		return text("failed to capture screenshot", { status: 503 })
 	}
 
 	return await make_snap_response({
