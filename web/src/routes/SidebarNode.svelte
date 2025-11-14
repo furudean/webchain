@@ -4,6 +4,8 @@
 	import type Graph from "./Graph.svelte"
 	import SidebarNode from "./SidebarNode.svelte"
 	import { date_fmt, date_time_fmt } from "$lib/date"
+	import { browser } from "$app/environment"
+	import { onMount } from "svelte"
 
 	let {
 		at,
@@ -23,6 +25,9 @@
 		render_children?: boolean
 	} = $props()
 
+	let image_loaded = $state(!browser)
+	let snap_image_element: HTMLImageElement | null = $state(null)
+
 	const node = $derived.by(() => {
 		const node = nodes.find((n) => n.at === at)
 		if (!node) {
@@ -40,6 +45,10 @@
 			hovered_node.set(undefined)
 		}
 	}
+
+	onMount(() => {
+		image_loaded = snap_image_element?.complete === true
+	})
 </script>
 
 <li
@@ -111,11 +120,20 @@
 				<img
 					src="/api/snap?url={encodeURIComponent(node.at)}"
 					class="snap"
+					data-loading={image_loaded ? undefined : "true"}
 					alt="Screenshot of {node.label}"
 					height="600"
 					width="800"
 					loading="lazy"
+					bind:this={snap_image_element}
+					onload={() => {
+						image_loaded = true
+					}}
+					onerror={() => {
+						image_loaded = true
+					}}
 				/>
+
 				<h2>{node.html_metadata?.title || node.label}</h2>
 			</a>
 
@@ -334,5 +352,18 @@
 		text-decoration: none;
 		color: var(--color-border);
 		background: var(--color-bg);
+	}
+
+	@keyframes loading {
+		0% {
+			opacity: 0.5;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	.snap[data-loading="true"] {
+		animation: loading 400ms infinite alternate;
 	}
 </style>
