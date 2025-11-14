@@ -10,7 +10,7 @@ import { compress_if_accepted } from "$lib/compress"
 import { get_allowed_fetch_urls } from "$lib/crawler"
 
 const CACHE_DIR = path.resolve(process.cwd(), ".snap-cache")
-const CACHE_DURATION_MS = 60 * 60 * 24 * 3 * 1000 // 3 days in ms
+const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
 const MAX_CONCURRENT_SNAPS = 10
 
 interface SnapSidecar {
@@ -21,7 +21,6 @@ interface SnapSidecar {
 }
 
 function get_cache_path(url: string): string {
-	// Use SHA256 hash for safe, fixed-length filenames
 	const hash = createHash("sha256").update(url).digest("hex")
 	return path.join(CACHE_DIR, hash)
 }
@@ -47,9 +46,9 @@ async function get_cached_snap(
 async function cache_snap(
 	url: string,
 	data: Buffer,
-	abortSignal?: AbortSignal
+	abort_signal?: AbortSignal
 ): Promise<SnapSidecar> {
-	if (abortSignal?.aborted) throw new Error("Cache write aborted")
+	if (abort_signal?.aborted) throw new Error("cache write aborted")
 	await fs.mkdir(CACHE_DIR, { recursive: true })
 	const etag = createHash("sha256")
 		.update(new Uint8Array(data))
@@ -61,7 +60,7 @@ async function cache_snap(
 		etag,
 		expires: Date.now() + CACHE_DURATION_MS
 	}
-	if (abortSignal?.aborted) throw new Error("Cache write aborted")
+	if (abort_signal?.aborted) throw new Error("cache write aborted")
 	await Promise.all([
 		fs.writeFile(
 			get_cache_path(url) + ".json",
@@ -83,17 +82,15 @@ export const OPTIONS: RequestHandler = async ({ url }) => {
 	})
 }
 
+const abort_signals = new Set<AbortController>()
 let browser: Browser | null = null
 
-// Track active abort controllers for requests
-const abortcontrollers = new Set<AbortController>()
-
-// Gracefully close browser and abort requests on SIGINT
+// close browser and abort requests on SIGINT
 if (typeof process !== "undefined" && process.on) {
 	process.on("SIGINT", async () => {
 		console.log("sigint: aborting active screenshot requests")
-		for (const controller of abortcontrollers) {
-			controller.abort()
+		for (const signal of abort_signals) {
+			signal.abort()
 		}
 		if (browser) {
 			console.log("sigint: closing browser instance")
@@ -292,7 +289,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		let refresh_promise = snap_fetch_promises.get(url_param)
 		if (!refresh_promise) {
 			const abort = new AbortController()
-			abortcontrollers.add(abort)
+			abort_signals.add(abort)
 			refresh_promise = (async () => {
 				const release = await snap_semaphore.acquire()
 				try {
@@ -317,7 +314,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 					throw err
 				} finally {
 					release()
-					abortcontrollers.delete(abort)
+					abort_signals.delete(abort)
 					snap_fetch_promises.delete(url_param)
 				}
 			})()
@@ -336,10 +333,10 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	let fetch_promise = snap_fetch_promises.get(url_param)
 	if (!fetch_promise) {
 		if (snap_semaphore.count === 0) {
-			return text("too many concurrent screenshot requests", { status: 429 })
+			return text("too many concurrent requests", { status: 429 })
 		}
 		const abort = new AbortController()
-		abortcontrollers.add(abort)
+		abort_signals.add(abort)
 		fetch_promise = (async () => {
 			const release = await snap_semaphore.acquire()
 			try {
@@ -357,14 +354,13 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 				return { data: Buffer.from(screenshot), item }
 			} catch (err) {
 				if (abort.signal.aborted) {
-					console.error("Request aborted for", url_param)
-					throw text("Request aborted", { status: 503 })
+					throw text("request aborted by server", { status: 503 })
 				}
 				console.error("Failed to fetch/capture screenshot for", url_param, err)
-				throw text("Failed to capture screenshot", { status: 503 })
+				throw text("failed to capture screenshot", { status: 503 })
 			} finally {
 				release()
-				abortcontrollers.delete(abort)
+				abort_signals.delete(abort)
 				snap_fetch_promises.delete(url_param)
 			}
 		})()
@@ -411,6 +407,6 @@ async function cleanup_expired_cache() {
 			}
 		}
 	} catch (err) {
-		console.error("Error cleaning up cache:", err)
+		console.error("error cleaning up cache:", err)
 	}
 }
