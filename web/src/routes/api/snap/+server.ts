@@ -45,7 +45,12 @@ async function get_cached_snap(
 	}
 }
 
-async function cache_snap(url: string, data: Buffer): Promise<SnapSidecar> {
+async function cache_snap(
+	url: string,
+	data: Buffer,
+	abortSignal?: AbortSignal
+): Promise<SnapSidecar> {
+	if (abortSignal?.aborted) throw new Error("Cache write aborted")
 	await fs.mkdir(CACHE_DIR, { recursive: true })
 	const etag = createHash("sha256")
 		.update(new Uint8Array(data))
@@ -57,6 +62,7 @@ async function cache_snap(url: string, data: Buffer): Promise<SnapSidecar> {
 		etag,
 		expires: Date.now() + CACHE_DURATION_MS
 	}
+	if (abortSignal?.aborted) throw new Error("Cache write aborted")
 	await Promise.all([
 		fs.writeFile(
 			get_cache_path(url) + ".json",
@@ -81,9 +87,16 @@ export const OPTIONS: RequestHandler = async ({ url }) => {
 let browser: Browser | null = null
 let browser_close_timer: NodeJS.Timeout | null = null
 
-// Gracefully close browser on SIGINT
+// Track active abort controllers for requests
+const abortcontrollers = new Set<AbortController>()
+
+// Gracefully close browser and abort requests on SIGINT
 if (typeof process !== "undefined" && process.on) {
 	process.on("SIGINT", async () => {
+		console.log("sigint: aborting active screenshot requests")
+		for (const controller of abortcontrollers) {
+			controller.abort()
+		}
 		if (browser) {
 			console.log("sigint: closing browser instance")
 			try {
@@ -125,15 +138,22 @@ async function get_browser(): Promise<Browser> {
 
 async function take_screenshot(
 	url_param: string,
-	browser: Browser
+	browser: Browser,
+	abortSignal?: AbortSignal
 ): Promise<Uint8Array<ArrayBufferLike>> {
+	const page = await browser.newPage()
 	try {
 		console.log("taking snap of", url_param)
-		const page = await browser.newPage()
 		await page.setExtraHTTPHeaders({
 			"User-Agent": "WebchainSpider (+https://github.com/furudean/webchain)",
 			"Accept-Language": "en-US,en;q=0.9,*;q=0.5"
 		})
+
+		if (abortSignal) {
+			abortSignal.addEventListener("abort", () => {
+				page.close().catch(() => {})
+			})
+		}
 
 		const response = await page.goto(url_param, {
 			waitUntil: "networkidle0",
@@ -155,6 +175,11 @@ async function take_screenshot(
 		console.log("done snap of", url_param)
 		return screenshot
 	} catch (err) {
+		await page.close().catch(() => {})
+		if (abortSignal?.aborted) {
+			console.error("Screenshot aborted for", url_param)
+			throw new Error("Screenshot aborted")
+		}
 		console.error("screenshot error for", url_param, err)
 		throw new Error("failed to take screenshot")
 	}
@@ -281,18 +306,33 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		// Serve stale cache, trigger background refresh if not already running
 		let refresh_promise = snap_fetch_promises.get(url_param)
 		if (!refresh_promise) {
+			const abort = new AbortController()
+			abortcontrollers.add(abort)
 			refresh_promise = (async () => {
 				const release = await snap_semaphore.acquire()
 				try {
 					const browser = await get_browser()
-					const screenshot = await take_screenshot(url_param, browser)
-					const item = await cache_snap(url_param, Buffer.from(screenshot))
+					const screenshot = await take_screenshot(
+						url_param,
+						browser,
+						abort.signal
+					)
+					const item = await cache_snap(
+						url_param,
+						Buffer.from(screenshot),
+						abort.signal
+					)
 					return { data: Buffer.from(screenshot), item }
 				} catch (err) {
+					if (abort.signal.aborted) {
+						console.error("Refresh aborted for", url_param)
+						throw err
+					}
 					console.error("failed to refresh screenshot for", url_param, err)
 					throw err
 				} finally {
 					release()
+					abortcontrollers.delete(abort)
 					snap_fetch_promises.delete(url_param)
 				}
 			})()
@@ -313,18 +353,33 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		if (snap_semaphore.count === 0) {
 			return text("too many concurrent screenshot requests", { status: 429 })
 		}
+		const abort = new AbortController()
+		abortcontrollers.add(abort)
 		fetch_promise = (async () => {
 			const release = await snap_semaphore.acquire()
 			try {
 				const browser = await get_browser()
-				const screenshot = await take_screenshot(url_param, browser)
-				const item = await cache_snap(url_param, Buffer.from(screenshot))
+				const screenshot = await take_screenshot(
+					url_param,
+					browser,
+					abort.signal
+				)
+				const item = await cache_snap(
+					url_param,
+					Buffer.from(screenshot),
+					abort.signal
+				)
 				return { data: Buffer.from(screenshot), item }
 			} catch (err) {
+				if (abort.signal.aborted) {
+					console.error("Request aborted for", url_param)
+					throw text("Request aborted", { status: 503 })
+				}
 				console.error("Failed to fetch/capture screenshot for", url_param, err)
 				throw text("Failed to capture screenshot", { status: 503 })
 			} finally {
 				release()
+				abortcontrollers.delete(abort)
 				snap_fetch_promises.delete(url_param)
 			}
 		})()
