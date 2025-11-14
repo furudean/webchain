@@ -11,7 +11,7 @@ import { get_allowed_fetch_urls } from "$lib/crawler"
 
 const CACHE_DIR = path.resolve(process.cwd(), ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 3 * 1000 // 3 days in ms
-const MAX_CONCURRENT_SNAPS = 10
+const MAX_CONCURRENT_SNAPS = 5
 const BROWSER_KEEPALIVE_MS = 120_000
 
 interface SnapSidecar {
@@ -160,7 +160,7 @@ async function take_screenshot(
 			timeout: 30_000
 		})
 
-		if (response?.ok()) {
+		if (!response?.ok()) {
 			await page.close()
 			throw new Error(
 				`failed to load page, status code: ${response ? response.status() : "unknown"}`
