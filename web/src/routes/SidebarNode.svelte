@@ -350,20 +350,21 @@
 		font-size: 0.9rem;
 		font-family: "Fantasque Sans Mono", monospace;
 		text-decoration: none;
-		color: var(--color-border);
-		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		background: var(--color-solid);
+		color: var(--color-text);
 	}
 
 	@keyframes loading {
 		0% {
-			opacity: 0.5;
+			opacity: 1;
 		}
 		100% {
-			opacity: 1;
+			opacity: 0.5;
 		}
 	}
 
 	.snap[data-loading="true"] {
-		animation: loading 400ms infinite alternate;
+		animation: loading 300ms infinite alternate;
 	}
 </style>
