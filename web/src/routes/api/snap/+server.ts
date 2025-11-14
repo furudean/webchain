@@ -83,6 +83,23 @@ export const OPTIONS: RequestHandler = async ({ url }) => {
 let browser: Browser | null = null
 let browser_close_timer: NodeJS.Timeout | null = null
 
+// Gracefully close browser on SIGINT
+if (typeof process !== "undefined" && process.on) {
+	process.on("SIGINT", async () => {
+		if (browser) {
+			console.log("sigint: closing browser instance")
+			try {
+				await browser.close()
+			} catch (err) {
+				console.error("error closing browser on SIGINT:", err)
+				process.exit(1)
+			}
+			browser = null
+		}
+		process.exit(0)
+	})
+}
+
 async function get_browser(): Promise<Browser> {
 	function reset_browser_close_timer() {
 		if (browser_close_timer) clearTimeout(browser_close_timer)
