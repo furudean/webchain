@@ -27,7 +27,7 @@ function get_cache_path(url: string): string {
 
 async function get_cached_snap(
 	url: string
-): Promise<{ data: Buffer; item: SnapSidecar; expired: boolean } | null> {
+): Promise<{ data: Buffer; sidecar: SnapSidecar; expired: boolean } | null> {
 	try {
 		const metaPath = get_cache_path(url) + ".json"
 		const imgPath = get_cache_path(url) + ".webp"
@@ -37,7 +37,7 @@ async function get_cached_snap(
 		])
 		const sidecar: SnapSidecar = JSON.parse(metaRaw)
 		const expired = Date.now() > sidecar.expires
-		return { data: imgRaw, item: sidecar, expired }
+		return { data: imgRaw, sidecar: sidecar, expired }
 	} catch {
 		return null
 	}
@@ -54,7 +54,7 @@ async function cache_snap(
 		.update(new Uint8Array(data))
 		.digest("hex")
 		.slice(0, 16)
-	const item: SnapSidecar = {
+	const sidecar: SnapSidecar = {
 		original_url: url,
 		content_type: "image/webp",
 		etag,
@@ -64,11 +64,11 @@ async function cache_snap(
 	await Promise.all([
 		fs.writeFile(
 			get_cache_path(url) + ".json",
-			JSON.stringify(item, null, "\t")
+			JSON.stringify(sidecar, null, "\t")
 		),
 		fs.writeFile(get_cache_path(url) + ".webp", data)
 	])
-	return item
+	return sidecar
 }
 
 export const OPTIONS: RequestHandler = async ({ url }) => {
@@ -198,12 +198,51 @@ const snap_semaphore = new Semaphore(MAX_CONCURRENT_SNAPS)
 
 const snap_fetch_promises = new Map<
 	string,
-	Promise<{ data: Buffer; item: SnapSidecar }>
+	Promise<{ data: Buffer; sidecar: SnapSidecar }>
 >()
+
+async function initialize_cache_from_disk() {
+	try {
+		await fs.mkdir(CACHE_DIR, { recursive: true })
+		const files = await fs.readdir(CACHE_DIR)
+		for (const file of files) {
+			if (file.endsWith(".json")) {
+				const meta_path = path.join(CACHE_DIR, file)
+				const img_path = meta_path.replace(/\.json$/, ".webp")
+				try {
+					const meta = await fs.readFile(meta_path, "utf8")
+					const sidecar: SnapSidecar = JSON.parse(meta)
+					const data = await fs.readFile(img_path)
+					// only preload non-expired cache
+					if (Date.now() <= sidecar.expires) {
+						snap_fetch_promises.set(
+							sidecar.original_url,
+							Promise.resolve({ data, sidecar })
+						)
+					}
+				} catch {
+					console.warn("corrupt snap cache entry:", meta_path)
+					await fs.unlink(meta_path)
+					await fs.unlink(img_path)
+				}
+			}
+		}
+		console.log(
+			`loaded ${snap_fetch_promises.size} snap cache entries from disk`
+		)
+	} catch (err) {
+		console.error("error preloading disk cache:", err)
+	}
+}
+
+// Immediately preload cache on module load
+initialize_cache_from_disk().catch((err) =>
+	console.error("Failed to preload disk cache:", err)
+)
 
 interface MakeSnapResponseParams {
 	data: Buffer | null
-	item: SnapSidecar
+	sidecar: SnapSidecar
 	disk_cache: "HIT" | "MISS"
 	request: Request
 	url_origin: string
@@ -213,7 +252,7 @@ interface MakeSnapResponseParams {
 
 async function make_snap_response({
 	data,
-	item,
+	sidecar,
 	disk_cache,
 	request,
 	url_origin,
@@ -221,20 +260,20 @@ async function make_snap_response({
 	stale = false
 }: MakeSnapResponseParams): Promise<Response> {
 	const headers = new Headers()
-	headers.set("ETag", item.etag)
-	headers.set("X-Original-URL", item.original_url)
+	headers.set("ETag", sidecar.etag)
+	headers.set("X-Original-URL", sidecar.original_url)
 	headers.set(
 		"Cache-Control",
 		`public, max-age=${CACHE_DURATION_MS / 1000}, stale-while-revalidate=${CACHE_DURATION_MS / 1000}`
 	)
-	headers.set("Expires", new Date(item.expires).toUTCString())
+	headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	headers.set("Access-Control-Allow-Origin", url_origin)
 	headers.set("x-disk-cache", disk_cache)
 	if (stale) headers.set("Warning", '110 - "Response is stale"')
 	if (not_modified) {
 		return new Response(null, { status: 304, headers })
 	}
-	headers.set("Content-Type", item.content_type)
+	headers.set("Content-Type", sidecar.content_type)
 	if (data) {
 		const { body, encoding } = await compress_if_accepted(data, request)
 		if (encoding) headers.set("Content-Encoding", encoding)
@@ -265,11 +304,11 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	const if_none_match = request.headers.get("if-none-match")
 
 	if (cache_hit) {
-		const { data, item, expired } = cache_hit
-		if (item.etag && if_none_match === item.etag && !expired) {
+		const { data, sidecar, expired } = cache_hit
+		if (sidecar.etag && if_none_match === sidecar.etag && !expired) {
 			return await make_snap_response({
 				data: null,
-				item,
+				sidecar: sidecar,
 				disk_cache: "HIT",
 				request,
 				url_origin: url.origin,
@@ -279,7 +318,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		if (!expired) {
 			return await make_snap_response({
 				data,
-				item,
+				sidecar: sidecar,
 				disk_cache: "HIT",
 				request,
 				url_origin: url.origin
@@ -299,12 +338,12 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 						browser,
 						abort.signal
 					)
-					const item = await cache_snap(
+					const sidecar = await cache_snap(
 						url_param,
 						Buffer.from(screenshot),
 						abort.signal
 					)
-					return { data: Buffer.from(screenshot), item }
+					return { data: Buffer.from(screenshot), sidecar }
 				} catch (err) {
 					if (abort.signal.aborted) {
 						console.error("Refresh aborted for", url_param)
@@ -322,7 +361,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		}
 		return await make_snap_response({
 			data,
-			item,
+			sidecar,
 			disk_cache: "HIT",
 			request,
 			url_origin: url.origin,
@@ -346,12 +385,12 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 					browser,
 					abort.signal
 				)
-				const item = await cache_snap(
+				const sidecar = await cache_snap(
 					url_param,
 					Buffer.from(screenshot),
 					abort.signal
 				)
-				return { data: Buffer.from(screenshot), item }
+				return { data: Buffer.from(screenshot), sidecar }
 			} catch (err) {
 				if (abort.signal.aborted) {
 					throw text("request aborted by server", { status: 503 })
@@ -366,7 +405,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		})()
 		snap_fetch_promises.set(url_param, fetch_promise)
 	}
-	let fetch_result: { data: Buffer; item: SnapSidecar }
+	let fetch_result: { data: Buffer; sidecar: SnapSidecar }
 	try {
 		fetch_result = await fetch_promise
 	} catch (err) {
@@ -376,11 +415,23 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 
 	return await make_snap_response({
 		data: fetch_result.data,
-		item: fetch_result.item,
+		sidecar: fetch_result.sidecar,
 		disk_cache: "MISS",
 		request,
 		url_origin: url.origin
 	})
+}
+
+// Periodically clean up expired cache files every hour
+if (typeof setInterval !== "undefined") {
+	setInterval(
+		() => {
+			cleanup_expired_cache().catch((err) =>
+				console.error("Periodic cache cleanup error:", err)
+			)
+		},
+		60 * 60 * 1000
+	) // every hour
 }
 
 async function cleanup_expired_cache() {
