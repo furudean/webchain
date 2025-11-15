@@ -157,6 +157,10 @@ async function take_screenshot(
 			"Accept-Language": "en-US,en;q=0.9,*;q=0.5"
 		})
 		await page.setCacheEnabled(false)
+		await page.setViewport({
+			width: 1024,
+			height: 768
+		})
 
 		if (abortSignal) {
 			abortSignal.addEventListener("abort", () => {

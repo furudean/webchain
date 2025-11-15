@@ -19,6 +19,10 @@ const config = {
 
 		alias: {
 			"$doc/*": "../doc/*"
+		},
+
+		version: {
+			name: Date.now().toString()
 		}
 	}
 }
