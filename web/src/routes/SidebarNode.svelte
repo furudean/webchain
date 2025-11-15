@@ -308,7 +308,6 @@
 	.node-content h2 {
 		all: unset;
 		display: block;
-		margin-top: 0.4rem;
 	}
 
 	.node-content p {
@@ -364,6 +363,7 @@
 		border: 1px solid var(--color-border);
 		background: var(--color-solid);
 		color: var(--color-text);
+		margin-bottom: 0.4rem;
 	}
 
 	@keyframes loading {
