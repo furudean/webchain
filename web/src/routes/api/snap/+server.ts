@@ -11,7 +11,7 @@ import { get_allowed_fetch_urls } from "$lib/crawler"
 
 const CACHE_DIR = path.resolve(process.cwd(), ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
-const MAX_CONCURRENT_SNAPS = 10
+const MAX_CONCURRENT_SNAPS = 5
 
 // immediately preload cache on module load
 initialize_cache_from_disk().catch((err) =>
