@@ -13,6 +13,23 @@ const CACHE_DIR = path.resolve(process.cwd(), ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
 const MAX_CONCURRENT_SNAPS = 10
 
+// immediately preload cache on module load
+initialize_cache_from_disk().catch((err) =>
+	console.error("Failed to preload disk cache:", err)
+)
+
+// periodically clean up expired cache files every hour
+if (typeof setInterval !== "undefined") {
+	setInterval(
+		() => {
+			vacuum_cache().catch((err) =>
+				console.error("Periodic cache cleanup error:", err)
+			)
+		},
+		24 * 60 * 60 * 1000
+	)
+}
+
 interface SnapSidecar {
 	original_url: string
 	content_type: string
@@ -235,11 +252,6 @@ async function initialize_cache_from_disk() {
 	}
 }
 
-// Immediately preload cache on module load
-initialize_cache_from_disk().catch((err) =>
-	console.error("Failed to preload disk cache:", err)
-)
-
 interface MakeSnapResponseParams {
 	data: Buffer | null
 	sidecar: SnapSidecar
@@ -248,6 +260,7 @@ interface MakeSnapResponseParams {
 	url_origin: string
 	not_modified?: boolean
 	stale?: boolean
+	no_cache?: boolean
 }
 
 async function make_snap_response({
@@ -257,18 +270,30 @@ async function make_snap_response({
 	request,
 	url_origin,
 	not_modified = false,
-	stale = false
+	stale = false,
+	no_cache = false
 }: MakeSnapResponseParams): Promise<Response> {
 	const headers = new Headers()
-	headers.set("ETag", sidecar.etag)
+	headers.set("ETag", `"${sidecar.etag}"`)
 	headers.set("X-Original-URL", sidecar.original_url)
-	headers.set(
-		"Cache-Control",
-		`public, max-age=${CACHE_DURATION_MS / 1000}, stale-while-revalidate=${CACHE_DURATION_MS / 1000}`
-	)
-	headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	headers.set("Access-Control-Allow-Origin", url_origin)
 	headers.set("x-disk-cache", disk_cache)
+
+	if (no_cache) {
+		headers.set(
+			"Cache-Control",
+			"no-store, no-cache, must-revalidate, proxy-revalidate"
+		)
+		headers.set("Pragma", "no-cache")
+		headers.set("Expires", "0")
+	} else {
+		headers.set(
+			"Cache-Control",
+			`public, max-age=${CACHE_DURATION_MS / 1000}, stale-while-revalidate=${CACHE_DURATION_MS / 1000}`
+		)
+		headers.set("Expires", new Date(sidecar.expires).toUTCString())
+	}
+
 	if (stale) headers.set("Warning", '110 - "Response is stale"')
 	if (not_modified) {
 		return new Response(null, { status: 304, headers })
@@ -287,6 +312,7 @@ async function make_snap_response({
 
 export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	const url_param = url.searchParams.get("url")
+	const force_refresh = url.searchParams.has("refresh")
 
 	if (!url_param) {
 		return text("url parameter required", { status: 400 })
@@ -300,73 +326,75 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		return text("nice try, but i thought about that", { status: 400 })
 	}
 
-	const cache_hit = await get_cached_snap(url_param)
-	const if_none_match = request.headers.get("if-none-match")
+	if (!force_refresh) {
+		const cache_hit = await get_cached_snap(url_param)
+		const if_none_match = request.headers.get("if-none-match")
 
-	if (cache_hit) {
-		const { data, sidecar, expired } = cache_hit
-		if (sidecar.etag && if_none_match === sidecar.etag && !expired) {
+		if (cache_hit) {
+			const { data, sidecar, expired } = cache_hit
+			if (sidecar.etag && if_none_match === sidecar.etag && !expired) {
+				return await make_snap_response({
+					data: null,
+					sidecar: sidecar,
+					disk_cache: "HIT",
+					request,
+					url_origin: url.origin,
+					not_modified: true
+				})
+			}
+			if (!expired) {
+				return await make_snap_response({
+					data,
+					sidecar: sidecar,
+					disk_cache: "HIT",
+					request,
+					url_origin: url.origin
+				})
+			}
+			// Serve stale cache, trigger background refresh if not already running
+			let refresh_promise = snap_fetch_promises.get(url_param)
+			if (!refresh_promise) {
+				const abort = new AbortController()
+				abort_signals.add(abort)
+				refresh_promise = (async () => {
+					const release = await snap_semaphore.acquire()
+					try {
+						const browser = await get_browser()
+						const screenshot = await take_screenshot(
+							url_param,
+							browser,
+							abort.signal
+						)
+						const sidecar = await cache_snap(
+							url_param,
+							Buffer.from(screenshot),
+							abort.signal
+						)
+						return { data: Buffer.from(screenshot), sidecar }
+					} catch (err) {
+						if (abort.signal.aborted) {
+							console.error("Refresh aborted for", url_param)
+							throw err
+						}
+						console.error("failed to refresh screenshot for", url_param, err)
+						throw err
+					} finally {
+						release()
+						abort_signals.delete(abort)
+						snap_fetch_promises.delete(url_param)
+					}
+				})()
+				snap_fetch_promises.set(url_param, refresh_promise)
+			}
 			return await make_snap_response({
-				data: null,
-				sidecar: sidecar,
+				data,
+				sidecar,
 				disk_cache: "HIT",
 				request,
 				url_origin: url.origin,
-				not_modified: true
+				stale: true
 			})
 		}
-		if (!expired) {
-			return await make_snap_response({
-				data,
-				sidecar: sidecar,
-				disk_cache: "HIT",
-				request,
-				url_origin: url.origin
-			})
-		}
-		// Serve stale cache, trigger background refresh if not already running
-		let refresh_promise = snap_fetch_promises.get(url_param)
-		if (!refresh_promise) {
-			const abort = new AbortController()
-			abort_signals.add(abort)
-			refresh_promise = (async () => {
-				const release = await snap_semaphore.acquire()
-				try {
-					const browser = await get_browser()
-					const screenshot = await take_screenshot(
-						url_param,
-						browser,
-						abort.signal
-					)
-					const sidecar = await cache_snap(
-						url_param,
-						Buffer.from(screenshot),
-						abort.signal
-					)
-					return { data: Buffer.from(screenshot), sidecar }
-				} catch (err) {
-					if (abort.signal.aborted) {
-						console.error("Refresh aborted for", url_param)
-						throw err
-					}
-					console.error("failed to refresh screenshot for", url_param, err)
-					throw err
-				} finally {
-					release()
-					abort_signals.delete(abort)
-					snap_fetch_promises.delete(url_param)
-				}
-			})()
-			snap_fetch_promises.set(url_param, refresh_promise)
-		}
-		return await make_snap_response({
-			data,
-			sidecar,
-			disk_cache: "HIT",
-			request,
-			url_origin: url.origin,
-			stale: true
-		})
 	}
 
 	let fetch_promise = snap_fetch_promises.get(url_param)
@@ -418,23 +446,12 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		sidecar: fetch_result.sidecar,
 		disk_cache: "MISS",
 		request,
-		url_origin: url.origin
+		url_origin: url.origin,
+		no_cache: force_refresh
 	})
 }
 
-// Periodically clean up expired cache files every hour
-if (typeof setInterval !== "undefined") {
-	setInterval(
-		() => {
-			cleanup_expired_cache().catch((err) =>
-				console.error("Periodic cache cleanup error:", err)
-			)
-		},
-		60 * 60 * 1000
-	) // every hour
-}
-
-async function cleanup_expired_cache() {
+async function vacuum_cache() {
 	try {
 		await fs.mkdir(CACHE_DIR, { recursive: true })
 		const files = await fs.readdir(CACHE_DIR)
@@ -452,8 +469,8 @@ async function cleanup_expired_cache() {
 						])
 					}
 				} catch {
-					// If corrupt, remove meta file
-					await fs.unlink(metaPath).catch(() => {})
+					// if corrupt, remove meta file
+					await fs.unlink(metaPath)
 				}
 			}
 		}
