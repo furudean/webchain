@@ -15,7 +15,7 @@ const paths = env_paths("webchain-web-server")
 
 const CACHE_DIR = path.resolve(dev ? process.cwd() : paths.cache, ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
-const MAX_CONCURRENT_SNAPS = 5
+const MAX_CONCURRENT_SNAPS = 3
 
 // immediately preload cache on module load
 initialize_cache_from_disk().catch((err) =>
@@ -130,7 +130,7 @@ async function get_browser(): Promise<Browser> {
 			args: [
 				"--single-process",
 				"--no-zygote",
-				"--no-sandbox",
+				// "--no-sandbox",
 				"--disable-features=FedCm",
 				"--disable-crash-reporter",
 				"--disable-crashpad-for-testing"
