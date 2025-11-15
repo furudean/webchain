@@ -13,7 +13,7 @@ import { dev } from "$app/environment"
 
 const paths = env_paths("webchain-web-server")
 
-const CACHE_DIR = path.resolve(dev ? process.cwd() : paths.cache, ".snap-cache")
+const CACHE_DIR = path.join(dev ? process.cwd() : paths.cache, ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
 const MAX_CONCURRENT_SNAPS = 3
 
