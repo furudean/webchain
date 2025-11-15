@@ -12,8 +12,14 @@ import {
 	STALE_THRESHOLD,
 	type CachedItem
 } from "."
+import { dev } from "$app/environment"
+import env_paths from "env-paths"
 
-const CACHE_DIR = path.resolve(path.join(process.cwd(), ".favicon_cache"))
+const paths = env_paths("webchain-web-server")
+
+const CACHE_DIR = path.resolve(
+	(dev ? process.cwd() : paths.cache, ".favicon_cache")
+)
 const CACHE_INDEX_FILE = path.join(CACHE_DIR, "index.json")
 const FAVICON_CACHE = new Map<string, CachedItem>()
 
