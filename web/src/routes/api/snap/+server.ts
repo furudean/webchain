@@ -123,16 +123,28 @@ if (typeof process !== "undefined" && process.on) {
 	})
 }
 
+let browser_promise: Promise<Browser> | null = null
+
 async function get_browser(): Promise<Browser> {
-	if (browser) {
-		return browser
-	}
+	if (browser) return browser
+	if (browser_promise) return browser_promise
+
 	console.log("launching persistent browser instance for snaps")
-	browser = await puppeteer.launch({
-		headless: true,
-		args: ["--disable-features=FedCm"]
-	})
-	return browser
+	browser_promise = puppeteer
+		.launch({
+			headless: true,
+			args: ["--disable-features=FedCm"]
+		})
+		.then((launched_browser) => {
+			browser = launched_browser
+			browser_promise = null
+			return browser
+		})
+		.catch((err) => {
+			browser_promise = null
+			throw err
+		})
+	return browser_promise
 }
 
 async function take_screenshot(
