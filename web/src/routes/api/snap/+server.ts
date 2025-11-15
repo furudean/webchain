@@ -147,6 +147,7 @@ async function take_screenshot(
 			"User-Agent": "WebchainSpider (+https://github.com/furudean/webchain)",
 			"Accept-Language": "en-US,en;q=0.9,*;q=0.5"
 		})
+		await page.setCacheEnabled(false)
 
 		if (abortSignal) {
 			abortSignal.addEventListener("abort", () => {
