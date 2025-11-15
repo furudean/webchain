@@ -105,12 +105,10 @@ let browser: Browser | null = null
 // close browser and abort requests on SIGINT
 if (typeof process !== "undefined" && process.on) {
 	process.on("SIGINT", async () => {
-		console.log("sigint: aborting active screenshot requests")
 		for (const signal of abort_signals) {
 			signal.abort()
 		}
 		if (browser) {
-			console.log("sigint: closing browser instance")
 			try {
 				await browser.close()
 			} catch (err) {
