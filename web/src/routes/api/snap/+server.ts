@@ -30,6 +30,25 @@ if (typeof setInterval !== "undefined") {
 	)
 }
 
+// close browser and abort requests on SIGINT
+if (typeof process !== "undefined" && process.on) {
+	process.on("SIGINT", async () => {
+		for (const signal of abort_signals) {
+			signal.abort()
+		}
+		if (browser) {
+			try {
+				await browser.close()
+			} catch (err) {
+				console.error("error closing browser on SIGINT:", err)
+				process.exit(1)
+			}
+			browser = null
+		}
+		process.exit(0)
+	})
+}
+
 interface SnapSidecar {
 	original_url: string
 	content_type: string
@@ -101,26 +120,6 @@ export const OPTIONS: RequestHandler = async ({ url }) => {
 
 const abort_signals = new Set<AbortController>()
 let browser: Browser | null = null
-
-// close browser and abort requests on SIGINT
-if (typeof process !== "undefined" && process.on) {
-	process.on("SIGINT", async () => {
-		for (const signal of abort_signals) {
-			signal.abort()
-		}
-		if (browser) {
-			try {
-				await browser.close()
-			} catch (err) {
-				console.error("error closing browser on SIGINT:", err)
-				process.exit(1)
-			}
-			browser = null
-		}
-		process.exit(0)
-	})
-}
-
 let browser_promise: Promise<Browser> | null = null
 
 async function get_browser(): Promise<Browser> {
@@ -270,7 +269,6 @@ interface MakeSnapResponseParams {
 	request: Request
 	url_origin: string
 	not_modified?: boolean
-	stale?: boolean
 	no_cache?: boolean
 }
 
@@ -281,7 +279,6 @@ async function make_snap_response({
 	request,
 	url_origin,
 	not_modified = false,
-	stale = false,
 	no_cache = false
 }: MakeSnapResponseParams): Promise<Response> {
 	const headers = new Headers()
@@ -305,7 +302,6 @@ async function make_snap_response({
 		headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	}
 
-	if (stale) headers.set("Warning", '110 - "Response is stale"')
 	if (not_modified) {
 		return new Response(null, { status: 304, headers })
 	}
@@ -319,6 +315,27 @@ async function make_snap_response({
 		)
 	}
 	return new Response(null, { status: 500, headers })
+}
+
+async function fetch_and_cache_snap(
+	url_param: string,
+	abort: AbortController
+): Promise<{ data: Buffer; sidecar: SnapSidecar }> {
+	const release = await snap_semaphore.acquire()
+	try {
+		const browser = await get_browser()
+		const screenshot = await take_screenshot(url_param, browser, abort.signal)
+		const sidecar = await cache_snap(
+			url_param,
+			Buffer.from(screenshot),
+			abort.signal
+		)
+		return { data: Buffer.from(screenshot), sidecar }
+	} finally {
+		release()
+		abort_signals.delete(abort)
+		snap_fetch_promises.delete(url_param)
+	}
 }
 
 export const GET: RequestHandler = async ({ url, request, fetch }) => {
@@ -346,7 +363,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 			if (sidecar.etag && if_none_match === sidecar.etag && !expired) {
 				return await make_snap_response({
 					data: null,
-					sidecar: sidecar,
+					sidecar,
 					disk_cache: "HIT",
 					request,
 					url_origin: url.origin,
@@ -356,45 +373,27 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 			if (!expired) {
 				return await make_snap_response({
 					data,
-					sidecar: sidecar,
+					sidecar,
 					disk_cache: "HIT",
 					request,
 					url_origin: url.origin
 				})
 			}
-			// Serve stale cache, trigger background refresh if not already running
+			// serve stale cache, trigger background refresh if not already running
 			let refresh_promise = snap_fetch_promises.get(url_param)
 			if (!refresh_promise) {
 				const abort = new AbortController()
 				abort_signals.add(abort)
-				refresh_promise = (async () => {
-					const release = await snap_semaphore.acquire()
-					try {
-						const browser = await get_browser()
-						const screenshot = await take_screenshot(
-							url_param,
-							browser,
-							abort.signal
-						)
-						const sidecar = await cache_snap(
-							url_param,
-							Buffer.from(screenshot),
-							abort.signal
-						)
-						return { data: Buffer.from(screenshot), sidecar }
-					} catch (err) {
+				refresh_promise = fetch_and_cache_snap(url_param, abort).catch(
+					(err) => {
 						if (abort.signal.aborted) {
 							console.error("Refresh aborted for", url_param)
 							throw err
 						}
 						console.error("failed to refresh screenshot for", url_param, err)
 						throw err
-					} finally {
-						release()
-						abort_signals.delete(abort)
-						snap_fetch_promises.delete(url_param)
 					}
-				})()
+				)
 				snap_fetch_promises.set(url_param, refresh_promise)
 			}
 			return await make_snap_response({
@@ -402,8 +401,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 				sidecar,
 				disk_cache: "HIT",
 				request,
-				url_origin: url.origin,
-				stale: true
+				url_origin: url.origin
 			})
 		}
 	}
@@ -415,33 +413,13 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		}
 		const abort = new AbortController()
 		abort_signals.add(abort)
-		fetch_promise = (async () => {
-			const release = await snap_semaphore.acquire()
-			try {
-				const browser = await get_browser()
-				const screenshot = await take_screenshot(
-					url_param,
-					browser,
-					abort.signal
-				)
-				const sidecar = await cache_snap(
-					url_param,
-					Buffer.from(screenshot),
-					abort.signal
-				)
-				return { data: Buffer.from(screenshot), sidecar }
-			} catch (err) {
-				if (abort.signal.aborted) {
-					throw text("request aborted by server", { status: 503 })
-				}
-				console.error("Failed to fetch/capture screenshot for", url_param, err)
-				throw text("failed to capture screenshot", { status: 503 })
-			} finally {
-				release()
-				abort_signals.delete(abort)
-				snap_fetch_promises.delete(url_param)
+		fetch_promise = fetch_and_cache_snap(url_param, abort).catch((err) => {
+			if (abort.signal.aborted) {
+				throw text("request aborted by server", { status: 503 })
 			}
-		})()
+			console.error("Failed to fetch/capture screenshot for", url_param, err)
+			throw text("failed to capture screenshot", { status: 503 })
+		})
 		snap_fetch_promises.set(url_param, fetch_promise)
 	}
 	let fetch_result: { data: Buffer; sidecar: SnapSidecar }
