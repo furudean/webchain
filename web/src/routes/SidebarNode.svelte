@@ -125,23 +125,26 @@
 		</summary>
 		<div class="node-content">
 			<a href={node.url.href} rel="external">
-				<img
-					src="/api/snap?url={encodeURIComponent(node.at)}&version={version}"
-					class="snap"
-					data-loading={snap_load_finished ? undefined : "true"}
-					alt="Screenshot of {node.label}"
-					height="768"
-					width="1024"
-					loading="lazy"
-					bind:this={snap_image_element}
-					onload={() => {
-						snap_load_finished = true
-					}}
-					onerror={() => {
-						snap_load_finished = true
-					}}
-				/>
-
+				{#if node.depth !== 0}
+					<img
+						src="/api/snap?url={encodeURIComponent(node.at)}&version={version}"
+						class="snap"
+						data-loading={snap_load_finished ? undefined : "true"}
+						alt="Screenshot of {node.label}"
+						height="768"
+						width="1024"
+						loading="lazy"
+						bind:this={snap_image_element}
+						onload={() => {
+							snap_load_finished = true
+						}}
+						onerror={() => {
+							snap_load_finished = true
+						}}
+					/>
+				{:else}
+					<!-- avoid infinite recursion! -->
+				{/if}
 				<h2>{node.html_metadata?.title || node.label}</h2>
 			</a>
 
