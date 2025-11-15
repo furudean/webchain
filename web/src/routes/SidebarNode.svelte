@@ -83,7 +83,10 @@
 
 					if (next_index >= 0 && next_index < nodes.length) {
 						event.preventDefault()
-						nodes.at(next_index)?.focus()
+						const next_node = nodes.at(next_index)
+						if (next_node) {
+							next_node.click()
+						}
 					}
 				}
 			}}
