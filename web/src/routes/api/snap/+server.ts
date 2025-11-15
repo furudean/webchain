@@ -17,11 +17,6 @@ const CACHE_DIR = path.resolve(dev ? process.cwd() : paths.cache, ".snap-cache")
 const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
 const MAX_CONCURRENT_SNAPS = 3
 
-// immediately preload cache on module load
-initialize_cache_from_disk().catch((err) =>
-	console.error("Failed to preload disk cache:", err)
-)
-
 // periodically clean up expired cache files every hour
 if (typeof setInterval !== "undefined") {
 	setInterval(
@@ -128,15 +123,13 @@ async function get_browser(): Promise<Browser> {
 		.launch({
 			headless: true,
 			args: [
-				// "--single-process",
+				"--single-process",
 				"--no-zygote",
 				"--no-sandbox",
 				"--disable-features=FedCm",
 				"--disable-crash-reporter",
 				"--disable-crashpad-for-testing"
 			],
-			handleSIGINT: false,
-			handleSIGHUP: false,
 			handleSIGTERM: false
 		})
 		.then((launched_browser) => {
@@ -227,40 +220,6 @@ const snap_fetch_promises = new Map<
 	string,
 	Promise<{ data: Buffer; sidecar: SnapSidecar }>
 >()
-
-async function initialize_cache_from_disk() {
-	try {
-		await fs.mkdir(CACHE_DIR, { recursive: true })
-		const files = await fs.readdir(CACHE_DIR)
-		for (const file of files) {
-			if (file.endsWith(".json")) {
-				const meta_path = path.join(CACHE_DIR, file)
-				const img_path = meta_path.replace(/\.json$/, ".webp")
-				try {
-					const meta = await fs.readFile(meta_path, "utf8")
-					const sidecar: SnapSidecar = JSON.parse(meta)
-					const data = await fs.readFile(img_path)
-					// only preload non-expired cache
-					if (Date.now() <= sidecar.expires) {
-						snap_fetch_promises.set(
-							sidecar.original_url,
-							Promise.resolve({ data, sidecar })
-						)
-					}
-				} catch {
-					console.warn("corrupt snap cache entry:", meta_path)
-					await fs.unlink(meta_path)
-					await fs.unlink(img_path)
-				}
-			}
-		}
-		console.log(
-			`loaded ${snap_fetch_promises.size} snap cache entries from disk`
-		)
-	} catch (err) {
-		console.error("error preloading disk cache:", err)
-	}
-}
 
 interface MakeSnapResponseParams {
 	data: Buffer | null
