@@ -163,15 +163,15 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		}
 
 		if (item.etag && if_none_match === item.etag) {
+			const headers = response_headers({
+				item,
+				allowed_origin: url.origin,
+				is_stale
+			})
+			headers.set("x-disk-cache", is_stale ? "STALE" : "HIT")
 			return new Response(null, {
 				status: 304,
-				headers: {
-					ETag: item.etag,
-					"Cache-Control": is_stale
-						? `public, max-age=0, stale-while-revalidate=${STALE_THRESHOLD}`
-						: "public",
-					"x-disk-cache": is_stale ? "STALE" : "HIT"
-				}
+				headers
 			})
 		}
 
