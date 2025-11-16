@@ -75,8 +75,8 @@ html {
 }
 
 ::selection {
-	color: var(--color-text-primary);
-	background-color: var(--color-primary);
+	color: #fff;
+	background-color: rgba(0, 0, 255, 0.7);
 }
 
 h1 {
