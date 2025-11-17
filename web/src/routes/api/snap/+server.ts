@@ -202,7 +202,9 @@ async function take_screenshot(
 		console.error("screenshot error for", url_param, err)
 		throw new Error("failed to take screenshot")
 	} finally {
-		await context.close()
+		context.close().catch(() => {
+			console.error("OH NO!!! failed to close browser context for ", url_param)
+		})
 	}
 }
 
