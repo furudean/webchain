@@ -39,10 +39,13 @@ function response_headers({
 	if (is_stale) {
 		headers.set(
 			"Cache-Control",
-			`public, max-age=0, stale-while-revalidate=${STALE_THRESHOLD}`
+			`public, max-age=0, must-revalidate, stale-while-revalidate=${STALE_THRESHOLD}`
 		)
 	} else {
-		headers.set("Cache-Control", `public, max-age=${FAVICON_CACHE_DURATION}`)
+		headers.set(
+			"Cache-Control",
+			`public, max-age=${FAVICON_CACHE_DURATION}, stale-while-revalidate=${STALE_THRESHOLD}`
+		)
 		if (item.expires) {
 			headers.set("Expires", new Date(item.expires).toUTCString())
 		}
@@ -52,6 +55,7 @@ function response_headers({
 
 	return headers
 }
+// ...existing code...
 
 async function create_empty_response({
 	url,
