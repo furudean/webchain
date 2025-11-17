@@ -181,7 +181,6 @@ async function take_screenshot(
 		})
 
 		if (!response?.ok()) {
-			await page.close()
 			throw new Error(
 				`failed to load page, status code: ${response ? response.status() : "unknown"}`
 			)
@@ -197,12 +196,10 @@ async function take_screenshot(
 			)
 		])
 
-		await page.close()
 		console.log("done snap of", url_param)
 		return screenshot
 	} catch (err) {
 		console.error("screenshot error for", url_param, err)
-		await page.close().catch(() => {})
 		throw new Error("failed to take screenshot")
 	} finally {
 		await context.close()
