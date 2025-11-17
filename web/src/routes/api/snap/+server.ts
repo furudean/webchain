@@ -124,42 +124,22 @@ async function get_browser(): Promise<Browser> {
 			headless: true,
 			userDataDir: ".chrome",
 			args: [
-				"--no-first-run",
-				"--disable-infobars",
-				"--hide-crash-restore-bubble",
-				"--disk-cache-size=50000000",
-				"--disable-site-isolation-trials",
-				"--disable-dev-profile",
-				"--aggressive-cache-discard",
-				"--disable-application-cache",
-				"--disable-offline-load-stale-cache",
-				"--disable-gpu-shader-disk-cache",
-				// performance
-				"--disable-gpu",
-				"--disable-setuid-sandbox",
-				"--no-sandbox",
-				"--no-zygote",
-				"--disable-web-security",
-				"--disable-extensions",
-				"--disable-plugins",
-				"--disable-breakpad",
-				"--disable-client-side-phishing-detection",
-				"--disable-sync",
-				"--disable-translate",
-				"--no-experiments",
-				"--disable-default-apps",
-				"--mute-audio",
-				"--no-default-browser-check",
-				"--disable-background-timer-throttling",
-				"--disable-backgrounding-occluded-windows",
-				"--disable-notifications",
-				"--disable-background-networking",
-				"--disable-component-update",
-				"--disable-domain-reliability",
-				"--autoplay-policy=user-gesture-required",
-				"--disable-component-extensions-with-background-pages",
-				"--disable-crash-reporter",
-				"--disable-crashpad-for-testing"
+				"--no-sandbox", // Disables Chrome's security sandbox
+				"--no-zygote", // Disables zygote (chrome process for faster startup) process
+				"--disable-setuid-sandbox", // Disables setuid sandbox (often used with --no-sandbox)
+				"--disable-gpu", // Disables GPU hardware acceleration
+				"--disable-software-rasterizer", // Reduces CPU usage for rendering
+				"--disable-background-timer-throttling", // Prevents Chrome from slowing down timers in background tabs
+				"--disable-backgrounding-occluded-windows", // Keeps occluded windows active
+				"--disable-renderer-backgrounding", // Prevents renderer processes from backgrounding
+
+				"--disable-extensions", // Disables browser extensions
+				"--disable-default-apps", // Prevents loading of default Chrome apps
+				"--disable-component-extensions-with-background-pages", // Disables component extensions with background pages
+				"--disable-background-networking", // Disables background network requests
+				"--disable-sync", // Disables Google Account syncing
+
+				"--disable-breakpad" // Disables crash reporting
 			],
 			handleSIGTERM: false
 		})
@@ -179,14 +159,17 @@ async function take_screenshot(
 	url_param: string,
 	browser: Browser
 ): Promise<Uint8Array<ArrayBufferLike>> {
-	const page = await browser.newPage()
+	const context = await browser.createBrowserContext()
+	const page = await context.newPage()
+	page.setDefaultNavigationTimeout(30000)
+	page.setDefaultTimeout(30000)
+
 	try {
 		console.log("taking snap of", url_param)
 		await page.setExtraHTTPHeaders({
 			"User-Agent": "WebchainSpider (+https://github.com/furudean/webchain)",
 			"Accept-Language": "en-US,en;q=0.9,*;q=0.5"
 		})
-		await page.setCacheEnabled(false)
 		await page.setViewport({
 			width: 1024,
 			height: 768
@@ -204,17 +187,25 @@ async function take_screenshot(
 			)
 		}
 
-		const screenshot = await page.screenshot({
-			encoding: "binary",
-			type: "webp"
-		})
+		const screenshot = await Promise.race([
+			page.screenshot({
+				encoding: "binary",
+				type: "webp"
+			}),
+			new Promise<never>((_, reject) =>
+				setTimeout(() => reject(new Error("screenshot timed out")), 15_000)
+			)
+		])
+
 		await page.close()
 		console.log("done snap of", url_param)
 		return screenshot
 	} catch (err) {
-		await page.close().catch(() => {})
 		console.error("screenshot error for", url_param, err)
+		await page.close().catch(() => {})
 		throw new Error("failed to take screenshot")
+	} finally {
+		await context.close()
 	}
 }
 
