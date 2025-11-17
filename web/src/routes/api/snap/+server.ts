@@ -123,9 +123,6 @@ async function get_browser(): Promise<Browser> {
 		.launch({
 			headless: true,
 			args: [
-				"--single-process",
-				"--no-zygote",
-				"--no-sandbox",
 				"--disable-features=FedCm",
 				"--disable-crash-reporter",
 				"--disable-crashpad-for-testing"
