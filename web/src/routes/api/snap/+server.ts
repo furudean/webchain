@@ -226,6 +226,7 @@ interface MakeSnapResponseParams {
 	url_origin: string
 	not_modified?: boolean
 	no_cache?: boolean
+	stale?: boolean
 }
 
 async function make_snap_response({
@@ -235,7 +236,8 @@ async function make_snap_response({
 	request,
 	url_origin,
 	not_modified = false,
-	no_cache = false
+	no_cache = false,
+	stale = false
 }: MakeSnapResponseParams): Promise<Response> {
 	const headers = new Headers()
 	headers.set("ETag", `"${sidecar.etag}"`)
@@ -250,6 +252,12 @@ async function make_snap_response({
 		)
 		headers.set("Pragma", "no-cache")
 		headers.set("Expires", "0")
+	} else if (stale) {
+		headers.set(
+			"Cache-Control",
+			`public, max-age=0, must-revalidate, stale-while-revalidate=${CACHE_DURATION_MS / 1000}`
+		)
+		headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	} else {
 		headers.set(
 			"Cache-Control",
@@ -343,7 +351,8 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 				sidecar,
 				disk_cache: "HIT",
 				request,
-				url_origin: url.origin
+				url_origin: url.origin,
+				stale: true
 			})
 		}
 	}
