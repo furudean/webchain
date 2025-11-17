@@ -24,3 +24,4 @@ vite.config.ts.timestamp-*
 
 .favicon_cache
 .snap-cache
+.chrome

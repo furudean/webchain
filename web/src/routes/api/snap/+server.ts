@@ -122,6 +122,7 @@ async function get_browser(): Promise<Browser> {
 	browser_promise = puppeteer
 		.launch({
 			headless: true,
+			userDataDir: ".chrome",
 			args: [
 				"--no-first-run",
 				"--disable-infobars",
