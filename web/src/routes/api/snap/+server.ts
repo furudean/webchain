@@ -312,8 +312,9 @@ async function fetch_and_cache_snap(
 	try {
 		const browser = await get_browser()
 		const screenshot = await take_screenshot(url_param, browser)
-		const sidecar = await cache_snap(url_param, Buffer.from(screenshot))
-		return { data: Buffer.from(screenshot), sidecar }
+		const buffer = Buffer.from(screenshot)
+		const sidecar = await cache_snap(url_param, buffer)
+		return { data: buffer, sidecar }
 	} finally {
 		release()
 		snap_fetch_promises.delete(url_param)
