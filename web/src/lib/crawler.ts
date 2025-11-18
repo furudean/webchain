@@ -4,7 +4,7 @@ const REFRESH_INTERVAL = 5 * 60_000 // 5 minutes
 
 let allowed_fetch_urls: Set<string> | null = null
 let last_fetch = 0
-let current_fetch: Promise<Response> | null = null
+let ongoing_fetch: Promise<Partial<CrawlResponse> | undefined> | null = null
 
 export async function get_allowed_fetch_urls(
 	fetch_fn: typeof fetch
@@ -14,14 +14,20 @@ export async function get_allowed_fetch_urls(
 		return allowed_fetch_urls
 	}
 	try {
-		const request = current_fetch ?? fetch_fn("/crawler/current.json")
-		const response = await request
-		current_fetch = null
-		if (!response.ok)
-			throw new Error(`failed to fetch crawler data: ${response.status}`)
-		const crawl: Partial<CrawlResponse> = await response.json()
-		const ats = crawl.nodes?.map((node) => node.at)
-		if (!ats) throw new Error("No nodes in crawl response")
+		// merge incoming request if another is ongoing
+		const request =
+			ongoing_fetch ??
+			fetch_fn("/crawler/current.json").then((response) => {
+				if (!response.ok)
+					throw new Error(`failed to fetch crawler data: ${response.status}`)
+				return response.json() as Promise<Partial<CrawlResponse>>
+			})
+		ongoing_fetch = request
+		const crawl = await request
+		ongoing_fetch = null
+
+		const ats = crawl?.nodes?.map((node) => node.at)
+		if (!ats) throw new Error("no nodes in crawl response")
 		allowed_fetch_urls = new Set(ats)
 		last_fetch = now
 		return allowed_fetch_urls
