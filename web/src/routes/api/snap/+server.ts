@@ -176,7 +176,7 @@ async function take_screenshot(
 		})
 
 		const response = await page.goto(url_param, {
-			waitUntil: "networkidle2",
+			waitUntil: "networkidle0",
 			timeout: 30_000
 		})
 
