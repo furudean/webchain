@@ -31,7 +31,7 @@ async def get_robots_txt(
         ) as head_response:
             content_type = head_response.headers.get("Content-Type", "")
             if not content_type.startswith("text/plain"):
-                raise InvalidContentType(url=url, content_type=content_type)
+                raise InvalidContentType(content_type=content_type)
     except aiohttp.ClientResponseError as e:
         if 400 <= e.status < 500:
             logger.debug(f"HEAD request failed for {robots_url}: {head_response.status}")
