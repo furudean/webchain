@@ -201,6 +201,7 @@ async def crawl(
             depth=depth,
             indexed=index_error is None,
             index_error=index_error,
+            robots_ok=(not isinstance(index_error, RobotsExclusionError)),
         )
         nodes = [node]
 

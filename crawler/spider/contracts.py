@@ -17,6 +17,7 @@ class CrawledNode:
     depth: int
     indexed: bool
     index_error: Exception | None = None
+    robots_ok: bool | None = None
     unqualified: list[str] = field(default_factory=list)
     """nominations that were already a part of the graph or exceeded the nominations limit"""
     first_seen: str | None = None

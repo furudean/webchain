@@ -12,6 +12,7 @@ export interface CrawledNode {
 	depth: number
 	indexed: boolean
 	index_error: string | null
+	robots_ok: boolean
 	first_seen: string | null
 	last_updated: string | null
 	html_metadata: HtmlMetadata | null
