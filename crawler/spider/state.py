@@ -17,6 +17,7 @@ class NodeChangeMask(IntFlag):
     ONLINE_TO_OFFLINE = 1 << 5
     UNQUALIFIED_MODIFIED = 1 << 6
     METADATA_MODIFIED = 1 << 7
+    ROBOTS_OK_MODIFIED = 1 << 8
 
 
 def copy_offline_subtree(at: str, visited: Set[str], old_nodes_by_at) -> list[CrawledNode]:
@@ -81,6 +82,8 @@ def compare_nodes(old_node: CrawledNode | None, new_node: CrawledNode | None) ->
     if new_node.indexed:
         if set(new_node.children) != set(old_node.children):
             mask |= NodeChangeMask.CHILDREN_MODIFIED
+    if new_node.robots_ok != old_node.robots_ok:
+        mask |= NodeChangeMask.ROBOTS_OK_MODIFIED
     if hasattr(new_node, "unqualified") and hasattr(old_node, "unqualified"):
         if new_node.unqualified != old_node.unqualified:
             mask |= NodeChangeMask.UNQUALIFIED_MODIFIED
@@ -170,6 +173,7 @@ def patch_state(old_response: CrawlResponse, new_response: CrawlResponse) -> Cra
             | NodeChangeMask.OFFLINE_TO_ONLINE
             | NodeChangeMask.ONLINE_TO_OFFLINE
             | NodeChangeMask.UNQUALIFIED_MODIFIED
+            | NodeChangeMask.ROBOTS_OK_MODIFIED
             # do not trigger patch for METADATA_MODIFIED alone
         ):
             if new_node:

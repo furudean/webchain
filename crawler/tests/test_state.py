@@ -737,3 +737,28 @@ def test_parent_change_keep_metadata(
     assert patched.nodes[1].parent == "http://newparent"
     assert patched.nodes[1].first_seen == old_crawl.end
     assert patched.nodes[1].last_updated == new_crawl.end
+
+
+def test_compare_robots_ok_modified():
+    old = CrawledNode(
+        at="http://node",
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
+        robots_ok=True,
+    )
+    new = CrawledNode(
+        at="http://node",
+        children=[],
+        parent=None,
+        indexed=True,
+        first_seen=None,
+        depth=0,
+        robots_ok=False,
+    )
+
+    mask = compare_nodes(old, new)
+
+    assert mask == NodeChangeMask.ROBOTS_OK_MODIFIED
