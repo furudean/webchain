@@ -23,7 +23,7 @@ const FAVICON_CACHE = new Map<string, CachedItem>()
 
 let cache_loading_promise: Promise<void> | null = null
 
-console.log("storing snap cache in:", CACHE_DIR)
+console.log("storing favicon cache in:", CACHE_DIR)
 
 function to_array_buffer(buffer: Buffer): ArrayBuffer {
 	const array_buffer = new ArrayBuffer(buffer.length)
