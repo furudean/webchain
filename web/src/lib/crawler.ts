@@ -6,7 +6,7 @@ let allowed_fetch_urls: Set<string> | null = null
 let last_fetch = 0
 let ongoing_fetch: Promise<Partial<CrawlResponse> | undefined> | null = null
 
-export async function get_allowed_fetch_urls(
+export async function get_webchain_urls(
 	fetch_fn: typeof fetch
 ): Promise<Set<string>> {
 	const now = Date.now()

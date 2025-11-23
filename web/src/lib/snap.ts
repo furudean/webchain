@@ -14,8 +14,6 @@ export const CACHE_DIR = path.join(
 	".snap-cache"
 )
 
-console.log("storing snap cache in:", CACHE_DIR)
-
 export const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
 export const MAX_CONCURRENT_SNAPS = 3
 
@@ -25,7 +23,9 @@ const in_flight_snaps = new Map<
 >()
 
 export interface SnapSidecar {
-	original_url: string
+	url: string
+	sidecar_path: string
+	image_path: string
 	content_type: string
 	etag: string
 	expires: number
@@ -64,41 +64,51 @@ async function cache_snap(
 		.update(new Uint8Array(data))
 		.digest("hex")
 		.slice(0, 16)
+	const disk_cache_path = disk_cache_location_for_snap(url)
+	const image_path = disk_cache_path + ".webp"
+	const sidecar_path = disk_cache_path + ".json"
 	const sidecar: SnapSidecar = {
-		original_url: url,
+		url,
 		content_type: "image/webp",
+		sidecar_path,
+		image_path,
 		etag,
-		expires: Date.now() + 60 * 60 * 24 * 1000 // 1 day
+		expires: Date.now() + CACHE_DURATION_MS
 	}
 	await Promise.all([
-		fs.writeFile(
-			disk_cache_location_for_snap(url) + ".json",
-			JSON.stringify(sidecar, null, "\t")
-		),
-		fs.writeFile(disk_cache_location_for_snap(url) + ".webp", data)
+		fs.writeFile(image_path, data),
+		fs.writeFile(sidecar_path, JSON.stringify(sidecar, null, "\t"))
 	])
 	return sidecar
 }
 
+async function read_cache_index(): Promise<SnapSidecar[]> {
+	const snaps: SnapSidecar[] = []
+
+	const files = await fs.readdir(CACHE_DIR)
+
+	for (const file of files) {
+		if (file.endsWith(".json")) {
+			const sidecar_path = path.join(CACHE_DIR, file)
+			const sidecar_file = await fs.readFile(sidecar_path, "utf8")
+			const sidecar: SnapSidecar = JSON.parse(sidecar_file)
+			snaps.push(sidecar)
+		}
+	}
+
+	return snaps
+}
+
 export async function vacuum_cache() {
 	try {
-		await fs.mkdir(CACHE_DIR, { recursive: true })
-		const files = await fs.readdir(CACHE_DIR)
-		for (const file of files) {
-			if (file.endsWith(".json")) {
-				const sidecar_path = path.join(CACHE_DIR, file)
-				try {
-					const sidecar_file = await fs.readFile(sidecar_path, "utf8")
-					const sidecar: SnapSidecar = JSON.parse(sidecar_file)
-					if (Date.now() > sidecar.expires) {
-						await Promise.all([
-							fs.unlink(sidecar_path),
-							fs.unlink(sidecar_path.replace(/\.json$/, ".webp"))
-						])
-					}
-				} catch {
-					await fs.unlink(sidecar_path).catch(() => {})
-				}
+		const index = await read_cache_index()
+		for (const sidecar of index) {
+			if (Date.now() > sidecar.expires) {
+				console.log("removing expired snap cache for", sidecar.url)
+				await Promise.all([
+					fs.unlink(sidecar.sidecar_path),
+					fs.unlink(sidecar.image_path)
+				])
 			}
 		}
 	} catch (err) {
@@ -163,6 +173,8 @@ async function take_screenshot(
 	const page = await context.newPage()
 	page.setDefaultNavigationTimeout(30000)
 	page.setDefaultTimeout(30000)
+
+	console.log("taking snapshot for", url_param)
 
 	try {
 		await page.setExtraHTTPHeaders({
@@ -234,4 +246,19 @@ export async function atomic_fetch_and_cache_snap(
 		release()
 		in_flight_snaps.delete(url_param)
 	}
+}
+
+export async function fetch_and_cache_outdated_snaps(): Promise<void> {
+	const index = await read_cache_index()
+	const expired = index.filter((snap) => Date.now() > snap.expires)
+	console.log(`found ${expired.length} expired snaps to refetch`)
+
+	if (expired.length === 0) return
+
+	const results = await Promise.allSettled(
+		expired.map((snap) => atomic_fetch_and_cache_snap(snap.url))
+	)
+
+	const ok = results.filter((r) => r.status === "fulfilled").length
+	console.log(`refetched ${ok}/${expired.length} expired snaps`)
 }
