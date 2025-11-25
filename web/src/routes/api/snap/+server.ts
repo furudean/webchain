@@ -58,13 +58,13 @@ async function make_snap_response({
 	} else if (stale) {
 		headers.set(
 			"Cache-Control",
-			`public, max-age=0, must-revalidate, stale-while-revalidate=${CACHE_DURATION_MS / 1000}`
+			"public, max-age=0, must-revalidate, stale-while-revalidate=3600"
 		)
 		headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	} else {
 		headers.set(
 			"Cache-Control",
-			`public, max-age=${CACHE_DURATION_MS / 1000}, stale-while-revalidate=${CACHE_DURATION_MS / 1000}`
+			"public, max-age=3600, stale-while-revalidate=3600"
 		)
 		headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	}
