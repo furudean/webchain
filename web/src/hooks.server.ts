@@ -18,6 +18,10 @@ export const init: ServerInit = async () => {
 
 	await load_favicon_cache()
 
+	fetch_and_cache_outdated_snaps().catch((err) =>
+		console.error("initial snap cache update error:", err)
+	)
+
 	// periodically check for expired cached snaps to refresh
 	setInterval(
 		() => {
