@@ -48,7 +48,7 @@ async function make_snap_response({
 	headers.set("Access-Control-Allow-Origin", url_origin)
 	headers.set("x-disk-cache", disk_cache)
 
-	const ttl = Math.max(0, sidecar.expires - Date.now())
+	const ttl = Math.max(0, Math.floor((sidecar.expires - Date.now()) / 1000))
 
 	if (no_cache) {
 		headers.set(
