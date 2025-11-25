@@ -251,7 +251,9 @@ export async function atomic_fetch_and_cache_snap(
 export async function fetch_and_cache_outdated_snaps(): Promise<void> {
 	const index = await read_cache_index()
 	const expired = index.filter((snap) => Date.now() > snap.expires)
-	console.log(`found ${expired.length} expired snaps to refetch`)
+	console.log(
+		`found ${expired.length}/${index.length} expired snaps to refetch`
+	)
 
 	if (expired.length === 0) return
 
