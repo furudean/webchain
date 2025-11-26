@@ -1,6 +1,6 @@
 import { write_cache_file } from "./storage"
 import { parse_page_for_icons } from "./icon-discovery"
-import { FAVICON_CACHE_DURATION, type CachedItem } from "."
+import { FAVICON_CACHE_DURATION_MS, type CachedItem } from "."
 
 const favicon_fetch_promises = new Map<
 	string,
@@ -106,7 +106,7 @@ export async function fetch_and_cache_favicon(
 				data: buffer,
 				content_type,
 				file_url: best_icon.url,
-				expires: Date.now() + FAVICON_CACHE_DURATION
+				expires: Date.now() + FAVICON_CACHE_DURATION_MS
 			})
 
 			return { data: buffer, item: cache_item }

@@ -8,8 +8,8 @@ import {
 	safe_read_buffer
 } from "$lib/fs"
 import {
-	EMPTY_FAVICON_CACHE_DURATION,
-	STALE_THRESHOLD,
+	EMPTY_FAVICON_CACHE_DURATION_MS,
+	STALE_THRESHOLD_MS,
 	type CachedItem
 } from "."
 import { dev } from "$app/environment"
@@ -112,7 +112,7 @@ export async function write_cache_file({
 		path: filename,
 		timestamp,
 		expires,
-		stale_after: timestamp + STALE_THRESHOLD,
+		stale_after: timestamp + STALE_THRESHOLD_MS,
 		original_url: file_url,
 		content_type,
 		etag: generate_etag(data)
@@ -168,7 +168,7 @@ export async function get_cached_file(key: string): Promise<
 export function cache_empty_favicon(url: string): CachedItem {
 	const item = {
 		timestamp: Date.now(),
-		expires: Date.now() + EMPTY_FAVICON_CACHE_DURATION
+		expires: Date.now() + EMPTY_FAVICON_CACHE_DURATION_MS
 	}
 	FAVICON_CACHE.set(url, item)
 

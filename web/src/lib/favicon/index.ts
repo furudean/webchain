@@ -8,9 +8,9 @@ export interface CachedItem {
 	etag?: string
 }
 
-export const FAVICON_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000 // 7 days
-export const EMPTY_FAVICON_CACHE_DURATION = 10 * 60 * 1000 // 10 minutes
-export const STALE_THRESHOLD = 60 * 60 * 1000 // 1 hour
+export const FAVICON_CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+export const EMPTY_FAVICON_CACHE_DURATION_MS = 10 * 60 * 1000 // 10 minutes
+export const STALE_THRESHOLD_MS = 60 * 60 * 1000 // 1 hour
 
 export {
 	is_stale_but_valid,

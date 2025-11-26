@@ -7,8 +7,7 @@ import {
 	fetch_and_cache_favicon,
 	refresh_favicon_in_background,
 	type CachedItem,
-	FAVICON_CACHE_DURATION,
-	STALE_THRESHOLD
+	STALE_THRESHOLD_MS
 } from "$lib/favicon"
 import { is_valid_url } from "$lib/url"
 import pixel from "./1x1.png?arraybuffer"
@@ -17,8 +16,7 @@ import { compress_if_accepted } from "$lib/compress"
 
 function response_headers({
 	item,
-	allowed_origin,
-	is_stale = false
+	allowed_origin
 }: {
 	item: CachedItem
 	allowed_origin: string
@@ -36,26 +34,17 @@ function response_headers({
 		headers.set("ETag", item.etag)
 	}
 
-	if (is_stale) {
-		headers.set(
-			"Cache-Control",
-			`public, max-age=0, must-revalidate, stale-while-revalidate=${STALE_THRESHOLD}`
-		)
-	} else {
-		headers.set(
-			"Cache-Control",
-			`public, max-age=${FAVICON_CACHE_DURATION}, stale-while-revalidate=${STALE_THRESHOLD}`
-		)
-		if (item.expires) {
-			headers.set("Expires", new Date(item.expires).toUTCString())
-		}
-	}
+	const ttl = Math.max(0, Math.floor(item.expires / 1000))
+	headers.set(
+		"Cache-Control",
+		`public, max-age=${ttl}, stale-while-revalidate=${STALE_THRESHOLD_MS / 1000}`
+	)
+	headers.set("Expires", new Date(item.expires).toUTCString())
 
 	headers.set("Access-Control-Allow-Origin", allowed_origin)
 
 	return headers
 }
-// ...existing code...
 
 async function create_empty_response({
 	url,
@@ -114,7 +103,7 @@ async function compressed_response({
 }): Promise<Response> {
 	const binary = data instanceof ArrayBuffer ? new Uint8Array(data) : data
 	const { body, encoding } = await compress_if_accepted(binary, request)
-	const headers = response_headers({ item, allowed_origin: origin, is_stale })
+	const headers = response_headers({ item, allowed_origin: origin })
 	headers.set("x-disk-cache", is_stale ? "STALE" : "HIT")
 	if (encoding) {
 		headers.set("Content-Encoding", encoding)
