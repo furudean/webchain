@@ -104,12 +104,11 @@ export async function vacuum_cache() {
 		const index = await read_cache_index()
 		for (const sidecar of index) {
 			if (Date.now() > sidecar.expires) {
-				try {
-					await fs.unlink(sidecar.image_path)
-					console.log("removed expired snap cache for", sidecar.url)
-				} catch {
-					/* ignore */
-				}
+				console.log("removing expired snap cache for", sidecar.url)
+				await Promise.all([
+					fs.unlink(sidecar.sidecar_path),
+					fs.unlink(sidecar.image_path)
+				])
 			}
 		}
 	} catch (err) {
