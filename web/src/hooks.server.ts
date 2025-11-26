@@ -42,6 +42,6 @@ export const init: ServerInit = async () => {
 				console.error("periodic cache cleanup error:", err)
 			)
 		},
-		24 * 60 * 60 * 1000 // every 24 hours
+		7 * 24 * 60 * 60 * 1000 // every 7 days
 	)
 }
