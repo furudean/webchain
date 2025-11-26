@@ -9,8 +9,11 @@ import {
 	CACHE_DIR as FAVICON_CACHE_DIR,
 	load_cache_index as load_favicon_cache
 } from "$lib/favicon/storage"
+import { building } from "$app/environment"
 
 export const init: ServerInit = async () => {
+	if (building) return
+
 	await fs.mkdir(SNAP_CACHE_DIR, { recursive: true })
 	console.log("storing snap cache in:", SNAP_CACHE_DIR)
 	await fs.mkdir(FAVICON_CACHE_DIR, { recursive: true })
