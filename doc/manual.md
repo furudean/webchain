@@ -18,7 +18,8 @@ nominations.
 
 ## Nominating sites
 
-To nominate a site, you add markup to your webpage. A full example is shown below:
+To nominate a site, you add markup to your webpage. A full example is shown
+below:
 
 ```html
 <!DOCTYPE html>
@@ -91,6 +92,7 @@ If your page is not being crawled, please verify that:
 - You can visit the page yourself in a web browser
 - Your page contains valid webchain markup as described above
 - An existing member of the webchain has nominated your page
+- The page that nominated your page is indexed by the crawler
 
 Your page must also be reachable by the crawler. Some common issues and
 solutions are described in the table below:
