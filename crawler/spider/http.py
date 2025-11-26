@@ -4,6 +4,8 @@ import os
 import aiohttp
 import tenacity
 
+from spider.error import InvalidContentType, InvalidStatusCode
+
 logger = logging.getLogger(__name__)
 
 UA = "WebchainSpider (+https://github.com/furudean/webchain)"
@@ -16,22 +18,6 @@ def get_session() -> aiohttp.ClientSession:
         cookie_jar=aiohttp.DummyCookieJar(),
         trust_env=True,
     )
-
-
-class WebchainError(Exception):
-    pass
-
-
-class InvalidContentType(WebchainError):
-    def __init__(self, content_type: str):
-        super().__init__(f"Invalid content type: {content_type}")
-        self.content_type = content_type
-
-
-class InvalidStatusCode(WebchainError):
-    def __init__(self, status: int, message: str | None = None):
-        super().__init__(f"Status {status} not retryable: {message}")
-        self.status = status
 
 
 async def load_page_html(

@@ -11,9 +11,10 @@ from bs4 import BeautifulSoup, Tag
 from bs4.element import PageElement
 from ordered_set import OrderedSet
 
+from spider.error import RobotsExclusionError
 from spider.http import UA, get_session, load_page_html
 from spider.contracts import CrawlResponse, CrawledNode
-from spider.robots import RobotsExclusionError, allowed_by_robots_txt
+from spider.robots import allowed_by_robots_txt
 
 logger = getLogger(__name__)
 

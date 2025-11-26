@@ -10,10 +10,6 @@ from spider.http import InvalidContentType
 logger = logging.getLogger(__name__)
 
 
-class RobotsExclusionError(Exception):
-    pass
-
-
 async def get_robots_txt(
     url: str,
     session: aiohttp.ClientSession,

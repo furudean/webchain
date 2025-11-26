@@ -1,6 +1,7 @@
 import dataclasses
 from spider.state import patch_state, compare_nodes, NodeChangeMask
 from spider.crawl import CrawlResponse, CrawledNode
+from spider.error import ParentNotCrawledError
 import pytest
 
 from spider.contracts import HtmlMetadata
@@ -478,6 +479,11 @@ def test_patch_offline_subtree(old_crawl: CrawlResponse, new_crawl: CrawlRespons
     assert "http://child" in ats
     assert "http://grandchild" in ats
     assert all(not node.indexed for node in patched.nodes if node.at != "http://node")
+    assert all(
+        isinstance(node.index_error, ParentNotCrawledError)
+        for node in patched.nodes
+        if node.at != "http://node"
+    )
 
 
 def test_logical_order(old_crawl: CrawlResponse, new_crawl: CrawlResponse):

@@ -1,5 +1,6 @@
 import dataclasses
 from typing import Set
+from spider.error import ParentNotCrawledError
 from spider.crawl import CrawlResponse, CrawledNode
 import logging
 from enum import IntFlag
@@ -20,13 +21,21 @@ class NodeChangeMask(IntFlag):
     ROBOTS_OK_MODIFIED = 1 << 8
 
 
-def copy_offline_subtree(at: str, visited: Set[str], old_nodes_by_at) -> list[CrawledNode]:
+def copy_offline_subtree(
+    at: str, visited: Set[str], old_nodes_by_at: dict[str, CrawledNode]
+) -> list[CrawledNode]:
     # copy offline subtree from old crawl
     if at in visited or at not in old_nodes_by_at:
         return []
     visited.add(at)
     old_node = old_nodes_by_at[at]
-    node_copy = dataclasses.replace(old_node, indexed=False)
+    node_copy = dataclasses.replace(
+        old_node,
+        indexed=False,
+        index_error=ParentNotCrawledError(
+            f"Descendents of unindexed nodes are ignored. See node {old_node.parent} for details."
+        ),
+    )
     nodes = [node_copy]
     for child_at in old_node.children:
         nodes.extend(copy_offline_subtree(child_at, visited, old_nodes_by_at))
