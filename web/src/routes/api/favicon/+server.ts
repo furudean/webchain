@@ -11,7 +11,7 @@ import {
 } from "$lib/favicon"
 import { is_valid_url } from "$lib/url"
 import pixel from "./1x1.png?arraybuffer"
-import { get_webchain_urls } from "$lib/crawler"
+import { robots_ok, get_current_crawl, is_webchain_node } from "$lib/crawler"
 import { compress_if_accepted } from "$lib/compress"
 
 function response_headers({
@@ -141,8 +141,12 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 		return text("invalid url parameter", { status: 400 })
 	}
 
-	if (!(await get_webchain_urls(fetch)).has(url_param)) {
+	if (!(await is_webchain_node(url_param, fetch))) {
 		return text("nice try, but i thought about that", { status: 400 })
+	}
+
+	if (!(await robots_ok(url_param, fetch))) {
+		return text("website disallows crawling", { status: 400 })
 	}
 
 	const cache_hit = await get_cached_file(url_param)

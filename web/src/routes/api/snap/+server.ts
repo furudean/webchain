@@ -2,7 +2,7 @@ import type { RequestHandler } from "./$types"
 import { is_valid_url } from "$lib/url"
 import { text } from "@sveltejs/kit"
 import { compress_if_accepted } from "$lib/compress"
-import { get_webchain_urls } from "$lib/crawler"
+import { robots_ok, is_webchain_node } from "$lib/crawler"
 
 import {
 	get_cached_snap,
@@ -97,8 +97,12 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		return text("invalid url parameter", { status: 400 })
 	}
 
-	if (!(await get_webchain_urls(fetch))) {
+	if (!(await is_webchain_node(url_param, fetch))) {
 		return text("nice try, but i thought about that", { status: 400 })
+	}
+
+	if (!(await robots_ok(url_param, fetch))) {
+		return text("website disallows crawling", { status: 400 })
 	}
 
 	if (!force_refresh) {

@@ -125,7 +125,7 @@
 		</summary>
 		<div class="node-content">
 			<a href={node.url.href} rel="external">
-				{#if node.depth !== 0}
+				{#if node.depth !== 0 && node.robots_ok !== false}
 					<img
 						src="/api/snap?url={encodeURIComponent(node.at)}&version={version}"
 						class="snap"

@@ -1,17 +1,17 @@
-import type { CrawlResponse } from "./node"
+import type { CrawledNode, CrawlResponse } from "./node"
 
 const REFRESH_INTERVAL = 5 * 60_000 // 5 minutes
 
-let allowed_fetch_urls: Set<string> | null = null
+let current_crawl: CrawledNode[] | undefined = undefined
 let last_fetch = 0
 let ongoing_fetch: Promise<Partial<CrawlResponse> | undefined> | null = null
 
-export async function get_webchain_urls(
+export async function get_current_crawl(
 	fetch_fn: typeof fetch
-): Promise<Set<string>> {
+): Promise<typeof current_crawl> {
 	const now = Date.now()
-	if (allowed_fetch_urls && now - last_fetch < REFRESH_INTERVAL) {
-		return allowed_fetch_urls
+	if (current_crawl && now - last_fetch < REFRESH_INTERVAL) {
+		return current_crawl
 	}
 	try {
 		// merge incoming request if another is ongoing
@@ -26,13 +26,28 @@ export async function get_webchain_urls(
 		const crawl = await request
 		ongoing_fetch = null
 
-		const ats = crawl?.nodes?.map((node) => node.at)
-		if (!ats) throw new Error("no nodes in crawl response")
-		allowed_fetch_urls = new Set(ats)
+		current_crawl = crawl?.nodes
 		last_fetch = now
-		return allowed_fetch_urls
+		return current_crawl
 	} catch (err) {
 		console.error("failed to refresh allowed favicon URLs", err)
 		throw err
 	}
+}
+
+export async function is_webchain_node(url: string, fetch_fn: typeof fetch) {
+	const crawl = await get_current_crawl(fetch_fn)
+	if (!crawl) throw new Error("no crawl data available")
+	return crawl.find((node) => node.at === url) !== undefined
+}
+
+/**
+ * best effort check whether we are allowed to crawl the given URL based on the current crawl data
+ */
+export async function robots_ok(at: string, fetch_fn: typeof fetch) {
+	const crawl = await get_current_crawl(fetch_fn)
+	if (!crawl) return true
+	const current_node = crawl.find((node) => node.at === at)
+
+	return current_node?.robots_ok !== false
 }
