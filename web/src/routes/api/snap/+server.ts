@@ -7,7 +7,6 @@ import { get_webchain_urls } from "$lib/crawler"
 import {
 	get_cached_snap,
 	type SnapSidecar,
-	CACHE_DURATION_MS,
 	atomic_fetch_and_cache_snap
 } from "$lib/snap"
 
@@ -44,7 +43,7 @@ async function make_snap_response({
 	stale = false
 }: MakeSnapResponseParams): Promise<Response> {
 	const headers = new Headers()
-	headers.set("ETag", `"${sidecar.etag}"`)
+	headers.set("ETag", sidecar.etag)
 	headers.set("Access-Control-Allow-Origin", url_origin)
 	headers.set("x-disk-cache", disk_cache)
 

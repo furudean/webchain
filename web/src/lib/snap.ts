@@ -72,7 +72,7 @@ async function cache_snap(
 		content_type: "image/webp",
 		sidecar_path,
 		image_path,
-		etag,
+		etag: '"' + etag + '"',
 		expires: Date.now() + CACHE_DURATION_MS
 	}
 	await Promise.all([
