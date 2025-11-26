@@ -11,7 +11,7 @@ import {
 } from "$lib/favicon"
 import { is_valid_url } from "$lib/url"
 import pixel from "./1x1.png?arraybuffer"
-import { robots_ok, get_current_crawl, is_webchain_node } from "$lib/crawler"
+import { robots_ok, is_webchain_node } from "$lib/crawler"
 import { compress_if_accepted } from "$lib/compress"
 
 function response_headers({
