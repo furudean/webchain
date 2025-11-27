@@ -9,8 +9,8 @@ export interface CachedItem {
 }
 
 export const FAVICON_CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
-export const EMPTY_FAVICON_CACHE_DURATION_MS = 10 * 60 * 1000 // 10 minutes
-export const STALE_THRESHOLD_MS = 60 * 60 * 1000 // 1 hour
+export const EMPTY_FAVICON_CACHE_DURATION_MS = 30 * 60 * 1000 // 30 minutes
+export const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 export {
 	is_stale_but_valid,

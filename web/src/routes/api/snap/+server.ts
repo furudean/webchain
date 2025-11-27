@@ -47,8 +47,6 @@ async function make_snap_response({
 	headers.set("Access-Control-Allow-Origin", url_origin)
 	headers.set("x-disk-cache", disk_cache)
 
-	const ttl = Math.max(0, Math.floor((sidecar.expires - Date.now()) / 1000))
-
 	if (no_cache) {
 		headers.set(
 			"Cache-Control",
@@ -59,13 +57,14 @@ async function make_snap_response({
 	} else if (stale) {
 		headers.set(
 			"Cache-Control",
-			`public, max-age=0, must-revalidate, stale-while-revalidate=300`
+			`public, max-age=0, must-revalidate, stale-while-revalidate=86400`
 		)
 		headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	} else {
+		const ttl = Math.max(0, Math.floor((sidecar.expires - Date.now()) / 1000))
 		headers.set(
 			"Cache-Control",
-			`public, max-age=${ttl}, stale-while-revalidate=300`
+			`public, max-age=${ttl}, stale-while-revalidate=86400`
 		)
 		headers.set("Expires", new Date(sidecar.expires).toUTCString())
 	}
