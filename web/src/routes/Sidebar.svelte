@@ -35,7 +35,7 @@
 
 		const now = new Date().getTime()
 		const cohort_window = 1000 * 60 * 60 * 24 * 3.5 // 3.5 days
-		const stale_threshold = 1000 * 60 * 60 * 24 * 7 // 7 days
+		const stale_threshold = 1000 * 60 * 60 * 24 * 14 // 14 days
 
 		if (now - newest_timestamp > stale_threshold) {
 			return []
