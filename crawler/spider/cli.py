@@ -67,12 +67,17 @@ async def tree(url: str, robots_txt: bool):
     print("")
 
     for node in crawled.nodes:
-        print(
-            "    " * node.depth
-            + node.at
-            + (" (not crawled)" if not node.indexed else "")
-            + (f" (limit={crawled.nominations_limit})" if node.depth == 0 else "")
-        )
+        line = "    " * node.depth + node.at
+
+        if node.index_error:
+            line += f" (not crawled: {type(node.index_error).__name__})"
+        elif not node.indexed:
+            line += " (not crawled)"
+
+        if node.depth == 0:
+            line += f" (limit={crawled.nominations_limit})"
+
+        print(line)
 
     if any(node.unqualified for node in crawled.nodes):
         print("")
