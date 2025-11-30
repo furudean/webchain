@@ -1,6 +1,7 @@
 import type { PageServerLoad } from "./$types"
 import type { CrawledNode, DisplayNode } from "$lib/node"
 import { string_to_color } from "$lib/color"
+import punycode from "punycode.js"
 
 export const load: PageServerLoad = async ({
 	fetch
@@ -31,19 +32,20 @@ export const load: PageServerLoad = async ({
 		} = await crawl_request.json()
 		const { start, end } = await heartbeat_request.json()
 
-		const no_www = /^www\./i
-
 		return {
 			nodes: nodes.map((node, index): DisplayNode => {
 				const url = new URL(node.at)
+				const label =
+					punycode.toUnicode(url.hostname.replace(/^www\./i, "")) +
+					url.pathname.replace(/\/$/, "")
+
 				return {
 					...node,
 					index,
 					generated_color:
 						node.html_metadata?.theme_color || string_to_color(node.at),
 					url,
-					label:
-						url.hostname.replace(no_www, "") + url.pathname.replace(/\/$/, ""),
+					label,
 					url_param: url.hostname + url.pathname.replace(/\/$/, ""),
 					first_seen: node.first_seen ? new Date(node.first_seen) : null,
 					last_updated: node.last_updated ? new Date(node.last_updated) : null
