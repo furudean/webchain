@@ -1,7 +1,7 @@
 import type { PageServerLoad } from "./$types"
 import type { CrawledNode, DisplayNode } from "$lib/node"
 import { string_to_color } from "$lib/color"
-import punycode from "punycode.js"
+import tr46 from "tr46"
 
 export const load: PageServerLoad = async ({
 	fetch
@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({
 			nodes: nodes.map((node, index): DisplayNode => {
 				const url = new URL(node.at)
 				const label =
-					punycode.toUnicode(url.hostname.replace(/^www\./i, "")) +
+					tr46.toUnicode(url.hostname.replace(/^www\./i, "")).domain +
 					url.pathname.replace(/\/$/, "")
 
 				return {
