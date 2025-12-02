@@ -23,7 +23,7 @@
 	let graph: GraphType | undefined = $state()
 	let renderer: SigmaType | undefined = $state()
 	let layout: ForceSupervisorType | undefined = $state()
-	let graph_promise: Promise<void> | undefined = $state()
+	let graph_promise: Promise<() => void> | undefined = $state()
 
 	let graph_element: HTMLElement
 	let graph_container: HTMLElement
@@ -93,7 +93,7 @@
 		return value.trim()
 	}
 
-	async function init_graph(): Promise<void> {
+	async function init_graph(): Promise<() => void> {
 		if (!is_webgl_supported()) throw new Error("webgl not supported")
 
 		const { default: Sigma } = await import("sigma")
@@ -202,7 +202,6 @@
 		})
 
 		let dragged_node: string | null = null
-		let is_dragging = false
 
 		layout = new ForceSupervisor(graph, {
 			isNodeFixed(node, attr) {
@@ -219,21 +218,49 @@
 		if (!document.hidden) {
 			layout.start()
 		}
-		window.addEventListener("visibilitychange", (e) => {
+		function visibility_change_handler() {
 			if (document.hidden) {
 				layout?.stop()
 			} else {
 				layout?.start()
 			}
-		})
-		window.addEventListener("focus", () => layout?.start())
+		}
+		window.addEventListener("visibilitychange", visibility_change_handler)
+		function focus_handler() {
+			layout?.start()
+		}
+		window.addEventListener("focus", focus_handler)
+
+		// make sure that we stop dragging if mouse is released outside of the graph
+		function handle_mouse_up() {
+			dragged_node = null
+			if (graph_element) graph_element.style.cursor = ""
+		}
+		window.addEventListener("mouseup", handle_mouse_up)
+
+		const media_query = window.matchMedia("(prefers-color-scheme: dark)")
+
+		function handle_color_scheme_change() {
+			// make sure the graph colors are updated when the color scheme changes
+			renderer?.refresh()
+		}
+
+		media_query.addEventListener("change", handle_color_scheme_change)
 
 		renderer.on("enterNode", (e) => {
+			if (dragged_node) {
+				e.preventSigmaDefault()
+				return
+			}
 			graph_element.style.cursor = "grab"
 			hovered_node.set(e.node)
 		})
 
 		renderer.on("leaveNode", async (e) => {
+			if (dragged_node) {
+				e.preventSigmaDefault()
+				return
+			}
 			hovered_node.set(undefined)
 			graph_element.style.cursor = ""
 		})
@@ -249,7 +276,6 @@
 
 		renderer.on("downNode", (e) => {
 			if (!graph || !renderer) return
-			is_dragging = true
 			dragged_node = e.node
 			hovered_node.set(e.node)
 			set_highlighted_node(e.node, hashmap.get(e.node)?.url_param)
@@ -259,7 +285,7 @@
 
 		renderer.on("moveBody", ({ event }) => {
 			if (!graph || !renderer) return
-			if (!is_dragging || !dragged_node) return
+			if (!dragged_node) return
 
 			const pos = renderer.viewportToGraph(event)
 
@@ -272,16 +298,13 @@
 		})
 
 		renderer.on("upNode", () => {
-			is_dragging = false
 			dragged_node = null
 			graph_element.style.cursor = "grab"
 		})
-		renderer.on("leaveStage", ({ event }) => {
-			graph_element.style.cursor = ""
-		})
+
 		renderer.on("upStage", (e) => {
-			if (is_dragging) {
-				e.preventSigmaDefault()
+			e.preventSigmaDefault()
+			if (dragged_node) {
 				set_highlighted_node(undefined)
 			}
 		})
@@ -302,31 +325,28 @@
 		camera.setState({
 			ratio: renderer.getSetting("maxCameraRatio") ?? 0.75
 		})
-		setTimeout(() => {
-			center_on_nodes(undefined, {
-				duration: 650,
-				easing: "cubicInOut"
-			})
-		}, 400)
+		center_on_nodes(undefined, {
+			duration: 650,
+			easing: "cubicInOut"
+		})
+
+		return function clean_up() {
+			layout?.kill()
+			renderer?.kill()
+			window.removeEventListener("visibilitychange", visibility_change_handler)
+			window.removeEventListener("focus", focus_handler)
+			window.removeEventListener("mouseup", handle_mouse_up)
+			media_query.removeEventListener("change", handle_color_scheme_change)
+		}
 	}
 
 	onMount(() => {
 		graph_promise = init_graph()
 		graph_promise.catch(console.error)
 
-		const media_query = window.matchMedia("(prefers-color-scheme: dark)")
-
-		function handle_color_scheme_change() {
-			// make sure the graph colors are updated when the color scheme changes
-			renderer?.refresh()
-		}
-
-		media_query.addEventListener("change", handle_color_scheme_change)
-
-		return () => {
-			layout?.kill()
-			renderer?.kill()
-			media_query.removeEventListener("change", handle_color_scheme_change)
+		return async () => {
+			const clean_up_graph = await graph_promise
+			clean_up_graph?.()
 		}
 	})
 
@@ -336,9 +356,7 @@
 		for (const node of graph.nodes()) {
 			graph.setNodeAttribute(node, "highlighted", node === highlighted_node)
 		}
-	})
 
-	$effect(() => {
 		// refresh the renderer when display_node changes (hovered or highlighted)
 		renderer?.refresh()
 
