@@ -41,6 +41,7 @@
 	<link rel="webchain-nomination" href="https://www.himawari.fun/" />
 	<link rel="webchain-nomination" href="https://nekopath.fun/" />
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
+	<link rel="webchain-nomination" href="https://ribo.zone/" />
 
 	<!-- set the nominations limit for each node - seed only -->
 	<meta name="webchain-nominations-limit" content="5" />
