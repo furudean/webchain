@@ -43,7 +43,7 @@
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
 
 	<!-- set the nominations limit for each node - seed only -->
-	<meta name="webchain-nominations-limit" content="4" />
+	<meta name="webchain-nominations-limit" content="5" />
 
 	{#if current_node}
 		<title>{current_node.label} · milkmedicine webchain</title>
