@@ -8,6 +8,7 @@ const static_routes = Object.keys(
 )
 	.filter((route) => !route.includes("[slug]"))
 	.map((page) => page.replace("/src/routes", "").replace("+page.svelte", ""))
+	.filter((route) => route !== "/")
 
 function create_url_element(
 	url: URL,
