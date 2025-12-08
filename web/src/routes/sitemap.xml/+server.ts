@@ -22,7 +22,7 @@ function create_url_element(
 	`
 }
 
-export const GET: RequestHandler = async ({ url, fetch: fetch_fn }) => {
+export const GET: RequestHandler = async ({ url }) => {
 	const documents = await doc_entries()
 
 	const url_elements = [
