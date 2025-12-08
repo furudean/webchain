@@ -1,6 +1,5 @@
 import { html } from "common-tags"
 import type { RequestHandler } from "./$types"
-import { get_current_crawl } from "$lib/crawler"
 import { entries as doc_entries } from "../doc/[slug]/+page.server"
 
 const static_routes = Object.keys(
@@ -8,7 +7,6 @@ const static_routes = Object.keys(
 )
 	.filter((route) => !route.includes("[slug]"))
 	.map((page) => page.replace("/src/routes", "").replace("+page.svelte", ""))
-	.filter((route) => route !== "/")
 
 function create_url_element(
 	url: URL,
@@ -25,7 +23,6 @@ function create_url_element(
 }
 
 export const GET: RequestHandler = async ({ url, fetch: fetch_fn }) => {
-	const webchain_urls = (await get_current_crawl(fetch_fn)) ?? []
 	const documents = await doc_entries()
 
 	const url_elements = [
@@ -34,12 +31,6 @@ export const GET: RequestHandler = async ({ url, fetch: fetch_fn }) => {
 		),
 		...documents.map((doc) =>
 			create_url_element(new URL(`/doc/${doc.slug}`, url.protocol + url.host))
-		),
-		...webchain_urls.map((node) =>
-			create_url_element(
-				new URL(node.at),
-				node.last_updated ? new Date(node.last_updated) : undefined
-			)
 		)
 	]
 
