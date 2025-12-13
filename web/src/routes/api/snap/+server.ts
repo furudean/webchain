@@ -85,27 +85,33 @@ async function make_snap_response({
 }
 
 export const GET: RequestHandler = async ({ url, request, fetch }) => {
-	const url_param = url.searchParams.get("url")
+	const url_param = url.searchParams.get("url") // remote path
+	const path_param = url.searchParams.get("path") // local path
 	const force_refresh = url.searchParams.has("refresh")
 
-	if (!url_param) {
-		return text("url parameter required", { status: 400 })
+	if (path_param === null && url_param === null) {
+		return text("'url' or 'path' parameter required", { status: 400 })
 	}
 
-	if (!is_valid_url(url_param)) {
+	const query_url =
+		url_param || new URL(path_param!, url.protocol + url.host).href
+
+	if (!is_valid_url(query_url)) {
 		return text("invalid url parameter", { status: 400 })
 	}
 
-	if (!(await is_webchain_node(url_param, fetch))) {
-		return text("nice try, but i thought about that", { status: 400 })
-	}
+	if (url_param) {
+		if (!(await is_webchain_node(query_url, fetch))) {
+			return text("nice try, but i thought about that", { status: 400 })
+		}
 
-	if (!(await robots_ok(url_param, fetch))) {
-		return text("website disallows crawling", { status: 400 })
+		if (!(await robots_ok(query_url, fetch))) {
+			return text("website disallows crawling", { status: 400 })
+		}
 	}
 
 	if (!force_refresh) {
-		const cache_hit = await get_cached_snap(url_param)
+		const cache_hit = await get_cached_snap(query_url)
 		const if_none_match = request.headers.get("if-none-match")
 
 		if (cache_hit) {
@@ -131,8 +137,8 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 			}
 
 			// serve stale cache, queue background refresh
-			atomic_fetch_and_cache_snap(url_param).catch((err) => {
-				console.error("failed to refresh screenshot for", url_param, err)
+			atomic_fetch_and_cache_snap(query_url).catch((err) => {
+				console.error("failed to refresh screenshot for", query_url, err)
 			})
 
 			return await make_snap_response({
@@ -149,9 +155,9 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	let fetch_result: Awaited<ReturnType<typeof atomic_fetch_and_cache_snap>>
 
 	try {
-		fetch_result = await atomic_fetch_and_cache_snap(url_param)
+		fetch_result = await atomic_fetch_and_cache_snap(query_url)
 	} catch (err) {
-		console.error("failed to fetch and cache snap for", url_param, err)
+		console.error("failed to fetch and cache snap for", query_url, err)
 		if (err instanceof Response) return err
 		return text("failed to capture screenshot", { status: 503 })
 	}

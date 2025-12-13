@@ -12,42 +12,23 @@
 		nodes = [],
 		nominations_limit = -1,
 		crawl_date,
-		graph_component
+		graph_component,
+		recent_nodes
 	}: {
 		nodes: DisplayNode[]
 		nominations_limit: number | null
 		crawl_date: Date | null
 		graph_component: Graph
+		recent_nodes: string[]
 	} = $props()
 
 	let sidebar_nodes_element = $state<HTMLElement | null>(null)
 
+	// svelte-ignore state_referenced_locally
 	const init_at = nodes.find(
 		(n) => n.url_param === page.url.searchParams.get("node")
 	)?.at
 	const highlighted_node = $derived(browser ? page.state.node : init_at)
-
-	const recent_nodes = $derived.by(() => {
-		const newest_timestamp = Math.max(
-			...nodes.map((n) => n.first_seen?.getTime() ?? 0)
-		)
-		if (!newest_timestamp) return []
-
-		const now = new Date().getTime()
-		const cohort_window = 1000 * 60 * 60 * 24 * 3.5 // 3.5 days
-		const stale_threshold = 1000 * 60 * 60 * 24 * 14 // 14 days
-
-		if (now - newest_timestamp > stale_threshold) {
-			return []
-		}
-
-		return nodes
-			.filter(
-				(node) =>
-					(node.first_seen?.getTime() ?? 0) > newest_timestamp - cohort_window
-			)
-			.map((n) => n.at)
-	})
 
 	const sorts = [
 		{ key: "tree", value: "nomination" },
@@ -115,12 +96,24 @@
 		/>webchain
 	</h1>
 
-	<p style="max-width: 20rem">a distributed webring for friends and enemies</p>
+	<p class="limit-len">a distributed webring for friends and enemies</p>
+
+	<nav>
+		<ul>
+			<li>
+				<a href="/gallery">/gallery</a>
+			</li>
+			<li>
+				<a href="/doc">/docs</a>
+			</li>
+		</ul>
+	</nav>
 
 	<QnA {nodes} {nominations_limit}></QnA>
 
-	<div class="sorts">
-		{new Intl.NumberFormat("en-US").format(nodes.length)} links ·
+	<div class="sorts limit-len">
+		{new Intl.NumberFormat("en-US").format(nodes.length)} links
+		<span class="sep">·</span>
 		{#if browser}
 			<!-- if javascript, we can do whatever we want \o/ -->
 			<label for="sort">ordered by</label>
@@ -243,7 +236,8 @@
 	}
 
 	.sorts {
-		margin-top: 1rem;
+		margin: 1rem 0;
+		line-height: 1;
 	}
 
 	ul {
@@ -287,5 +281,32 @@
 		font-size: 0.8rem;
 		color: var(--color-shy);
 		margin: 2rem 0;
+	}
+
+	.limit-len {
+		max-width: 20rem;
+	}
+
+	select {
+		margin: 0;
+	}
+
+	nav ul {
+		display: flex;
+		gap: 1rem;
+		list-style-type: none;
+		margin: 1rem 0;
+	}
+
+	nav :any-link {
+		color: var(--color-primary);
+	}
+
+	nav ul li {
+		display: inline-block;
+	}
+
+	.sep {
+		user-select: none;
 	}
 </style>
