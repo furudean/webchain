@@ -25,8 +25,6 @@ const pages = Object.fromEntries(
 	).map(([key, value]) => [basename(key), value])
 ) as Record<string, (() => Promise<string>) | undefined>
 
-export const prerender = true
-
 export const entries: EntryGenerator = () => {
 	return Object.keys(pages).map((slug) => ({ slug }))
 }
