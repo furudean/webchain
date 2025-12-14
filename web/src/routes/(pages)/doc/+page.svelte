@@ -5,10 +5,14 @@
 </script>
 
 <svelte:head>
-	<title>docs · milkmedicine webchain</title>
+	<title>documentation · milkmedicine webchain</title>
 </svelte:head>
 
-<h1>Docs index</h1>
+<h1>documents index</h1>
+<p>
+	Some pages that may help you if you want to understand the webchain concept,
+	or how it works.
+</p>
 <ul>
 	{#each data.routes as route}
 		<li>

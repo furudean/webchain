@@ -6,7 +6,7 @@
 
 <svelte:head>
 	{#if data.frontmatter?.title}
-		<title>{data.frontmatter.title}</title>
+		<title>{data.frontmatter.title} · milkmedicine webchain</title>
 	{/if}
 </svelte:head>
 
