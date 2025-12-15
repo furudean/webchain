@@ -3,7 +3,6 @@
 	import { date_fmt } from "$lib/date"
 	import { browser } from "$app/environment"
 	import { onMount } from "svelte"
-	import { version } from "$app/environment"
 
 	let {
 		node,
@@ -26,7 +25,7 @@
 <li id="node-{node.url_param}">
 	<a href={node.url.href} rel="external">
 		<img
-			src="/api/snap?url={encodeURIComponent(node.at)}&version={version}"
+			src="/api/snap?url={encodeURIComponent(node.at)}"
 			class="snap"
 			data-loading={snap_load_finished ? undefined : "true"}
 			alt="Screenshot of {node.label}"
