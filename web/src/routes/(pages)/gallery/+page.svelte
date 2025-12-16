@@ -40,7 +40,7 @@
 <style>
 	ul {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
 		gap: 2rem 1rem;
 		padding: 0;
 		list-style: none;
