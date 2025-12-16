@@ -6,12 +6,10 @@
 
 	let {
 		node,
-		parent_node,
-		recent_nodes
+		parent_node
 	}: {
 		node: DisplayNode
 		parent_node: DisplayNode | undefined
-		recent_nodes: string[]
 	} = $props()
 
 	let snap_load_finished = $state(!browser)

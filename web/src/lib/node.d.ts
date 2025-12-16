@@ -26,6 +26,7 @@ export interface DisplayNode extends CrawledNode {
 	url_param: string
 	first_seen: Date | null
 	last_updated: Date | null
+	is_recent: boolean
 }
 
 export interface CrawlResponse {

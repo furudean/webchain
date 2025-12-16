@@ -13,7 +13,6 @@
 		highlighted_node,
 		nominations_limit,
 		graph_component,
-		recent_nodes,
 		render_children = true
 	}: {
 		at: string
@@ -21,7 +20,6 @@
 		highlighted_node: string | undefined
 		nominations_limit: number | null
 		graph_component: Graph
-		recent_nodes: string[]
 		render_children?: boolean
 	} = $props()
 
@@ -106,7 +104,7 @@
 
 				<span class="label-contents">
 					{node.label}
-					{#if recent_nodes.includes(at)}
+					{#if node.is_recent}
 						<span class="new" title="This node was recently added">new</span>
 					{/if}
 					{#if [$hovered_node, highlighted_node].includes(node.at)}
@@ -187,7 +185,6 @@
 				{highlighted_node}
 				{nominations_limit}
 				{graph_component}
-				{recent_nodes}
 			/>
 		{/each}
 	</ul>

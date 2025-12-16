@@ -12,14 +12,12 @@
 		nodes = [],
 		nominations_limit = -1,
 		crawl_date,
-		graph_component,
-		recent_nodes
+		graph_component
 	}: {
 		nodes: DisplayNode[]
 		nominations_limit: number | null
 		crawl_date: Date | null
 		graph_component: Graph
-		recent_nodes: string[]
 	} = $props()
 
 	let sidebar_nodes_element = $state<HTMLElement | null>(null)
@@ -164,7 +162,6 @@
 					{highlighted_node}
 					{nominations_limit}
 					{graph_component}
-					{recent_nodes}
 					render_children={true}
 				/>
 			{:else}
@@ -176,7 +173,6 @@
 						{highlighted_node}
 						{nominations_limit}
 						{graph_component}
-						{recent_nodes}
 						render_children={false}
 					/>
 				{/each}

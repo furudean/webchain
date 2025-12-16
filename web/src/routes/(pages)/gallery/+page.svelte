@@ -19,10 +19,7 @@
 {#if data.nodes.length > 0}
 	<ul>
 		{#each sorted_nodes as node}
-			<Node
-				{node}
-				parent_node={data.nodes.find((n) => node.parent === n.at)}
-				recent_nodes={data.recent_nodes}
+			<Node {node} parent_node={data.nodes.find((n) => node.parent === n.at)}
 			></Node>
 		{/each}
 	</ul>
