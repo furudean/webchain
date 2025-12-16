@@ -19,15 +19,19 @@
 {#if data.nodes.length > 0}
 	<ul>
 		{#each sorted_nodes as node}
-			<Node {node} parent_node={data.nodes.find((n) => node.parent === n.at)}
+			<Node
+				{node}
+				parent_node={data.nodes.find((n) => node.parent === n.at)}
+				children={data.nodes.filter((n) => node.children.includes(n.at))}
 			></Node>
 		{/each}
 	</ul>
 {/if}
 {#if data.end}
+	<hr />
 	<p>
 		<a href="/crawler/current.json" class="crawl-info">
-			last crawled <time datetime={data.end.toISOString()}
+			webchain last crawled on <time datetime={data.end.toISOString()}
 				>{date_time_fmt.format(data.end).toLowerCase()}</time
 			>
 		</a>
@@ -41,5 +45,11 @@
 		gap: 2rem 1rem;
 		padding: 0;
 		list-style: none;
+	}
+
+	.crawl-info {
+		font-size: 0.85em;
+		opacity: 0.8;
+		color: inherit;
 	}
 </style>

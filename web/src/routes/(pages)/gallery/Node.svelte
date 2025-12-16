@@ -6,10 +6,12 @@
 
 	let {
 		node,
-		parent_node
+		parent_node,
+		children
 	}: {
 		node: DisplayNode
 		parent_node: DisplayNode | undefined
+		children: DisplayNode[]
 	} = $props()
 
 	let snap_load_finished = $state(!browser)
@@ -48,18 +50,30 @@
 			style:background-color={node.generated_color}
 		/>
 		<span>{node.html_metadata?.title || node.label}</span>
+		{#if node.is_recent}
+			<span class="new" title="This node was recently added">new</span>
+		{/if}
 	</a>
 
 	{#if node.html_metadata?.description}
 		<p>{node.html_metadata.description}</p>
 	{/if}
 
-	{#if !node.indexed}
-		<div class="crawl-warning">
-			this page was not crawled. is this your page?
-			<a href="/doc/manual.md#my-page-is-not-being-crawled!">see the manual</a>
-		</div>
+	{#if children.length > 0}
+		<p class="nominates">
+			nominates {children.length} site{children.length === 1 ? "" : "s"}…
+		</p>
+		<ol class="nominates">
+			{#each children as child}
+				<li>
+					<a href="#node-{child.url_param}" data-sveltekit-replacestate
+						>{child.label}</a
+					>
+				</li>
+			{/each}
+		</ol>
 	{/if}
+
 	<p class="small">
 		{#if parent_node}
 			nominated by <a
@@ -98,6 +112,27 @@
 		margin: 0.4rem 0;
 	}
 
+	.nominates {
+		font-size: 0.85em;
+	}
+
+	p.nominates {
+		margin-bottom: 0;
+	}
+
+	ol.nominates {
+		margin-top: 0;
+		padding-left: 0;
+		margin-left: 2.5em;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		column-gap: 2em;
+	}
+
+	a {
+		word-break: break-all;
+	}
+
 	a[rel="external"] {
 		font-weight: bold;
 		word-break: break-word;
@@ -120,15 +155,7 @@
 
 	.small {
 		font-size: 0.85em;
-		opacity: 0.8;
-		font-style: italic;
-	}
-
-	.crawl-warning {
-		border: 1px solid var(--color-border);
-		font-size: 0.85em;
-		padding: 0.25em;
-		margin: 0.4rem 0;
+		opacity: 0.6;
 	}
 
 	.snap {
@@ -160,5 +187,25 @@
 
 	.sep {
 		user-select: none;
+	}
+
+	.new {
+		background-color: var(--color-primary);
+		color: var(--color-text-primary);
+		border: 1px solid currentColor;
+		font-family: "Fantasque Sans Mono", monospace;
+		border-radius: 0.3rem;
+		padding: 0.075rem 0.15rem;
+		line-height: 1;
+		font-size: 0.75rem;
+		align-self: center;
+		box-sizing: border-box;
+		user-select: none;
+		text-wrap: nowrap;
+		text-decoration: none;
+	}
+
+	a:hover {
+		text-decoration-style: double;
 	}
 </style>
