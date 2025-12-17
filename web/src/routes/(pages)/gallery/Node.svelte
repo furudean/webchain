@@ -59,19 +59,20 @@
 		<p>{node.html_metadata.description}</p>
 	{/if}
 
-	<hr />
-
-	<p class="nominates">
-		<code>{node.label}</code> nominates {children.length > 0
-			? children.length
-			: "no"} site{children.length === 1 ? "" : "s"}
-	</p>
 	{#if children.length > 0}
+		<p class="nominates">
+			<span class="site-label">{node.label}</span> nominates {children.length >
+			0
+				? children.length
+				: "no"} site{children.length === 1 ? "" : "s"}
+		</p>
 		<ol class="nominates">
 			{#each children as child}
 				<li>
-					<a href="#node-{child.url_param}" data-sveltekit-replacestate
-						><code>{child.label}</code></a
+					<a
+						href="#node-{child.url_param}"
+						data-sveltekit-replacestate
+						class="site-label">{child.label}</a
 					>
 				</li>
 			{/each}
@@ -82,7 +83,8 @@
 		{#if parent_node}
 			nominated by <a
 				href="#node-{parent_node.url_param}"
-				data-sveltekit-replacestate><code>{parent_node.label}</code></a
+				data-sveltekit-replacestate
+				class="site-label">{parent_node.label}</a
 			>
 		{/if}
 		{#if parent_node && node.first_seen}
@@ -113,7 +115,7 @@
 	}
 
 	p {
-		margin: 0.4rem 0;
+		margin: 0.6rem 0;
 	}
 
 	.nominates {
@@ -159,16 +161,15 @@
 
 	.small {
 		font-size: 0.85em;
+		opacity: 0.75;
 	}
 
 	.snap {
 		display: block;
-		box-sizing: border-box;
 		max-width: 100%;
 		height: auto;
 		font-weight: normal;
 		font-size: 0.9rem;
-		font-family: "Fantasque Sans Mono", monospace;
 		text-decoration: none;
 		border: 1px solid var(--color-border);
 		color: var(--color-text);
@@ -216,7 +217,8 @@
 		margin: 0.5em 0;
 	}
 
-	code {
-		font-size: 1em;
+	.site-label {
+		font-family: "Fantasque Sans Mono", monospace;
+		font-variant-ligatures: none;
 	}
 </style>
