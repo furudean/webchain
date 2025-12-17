@@ -213,10 +213,6 @@
 		text-decoration-style: double;
 	}
 
-	hr {
-		margin: 0.5em 0;
-	}
-
 	.site-label {
 		font-family: "Fantasque Sans Mono", monospace;
 		font-variant-ligatures: none;
