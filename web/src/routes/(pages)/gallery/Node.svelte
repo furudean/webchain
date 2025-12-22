@@ -189,10 +189,6 @@
 		animation: loading 300ms infinite alternate;
 	}
 
-	.sep {
-		user-select: none;
-	}
-
 	.new {
 		background-color: var(--color-primary);
 		color: var(--color-text-primary);

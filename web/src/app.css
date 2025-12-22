@@ -200,3 +200,7 @@ textarea {
 article {
 	max-width: 35rem;
 }
+
+.sep {
+	user-select: none;
+}

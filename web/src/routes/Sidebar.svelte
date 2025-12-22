@@ -5,8 +5,8 @@
 	import SidebarNode from "./SidebarNode.svelte"
 	import { date_time_fmt } from "$lib/date"
 	import { browser } from "$app/environment"
-	import { goto } from "$app/navigation"
 	import QnA from "./QnA.svelte"
+	import SelectSort, { type Sort } from "$lib/SelectSort.svelte"
 
 	let {
 		nodes = [],
@@ -26,54 +26,44 @@
 	const init_at = nodes.find(
 		(n) => n.url_param === page.url.searchParams.get("node")
 	)?.at
-	const highlighted_node = $derived(browser ? page.state.node : init_at)
+	let highlighted_node = $derived(browser ? page.state.node : init_at)
 
-	const sorts = [
-		{ key: "tree", value: "nomination" },
-		{ key: "new", value: "newest" },
-		{ key: "old", value: "oldest" },
-		{ key: "asc", value: "alphabetic (↓)" },
-		{ key: "desc", value: "alphabetic (↑)" }
-	] as const
-	const current_sort: (typeof sorts)[number] = $derived.by(() => {
-		const param = page.url.searchParams.get("sort")
+	const sorts: Sort[] = [
+		{ key: "tree", value: "nomination", fn: () => 0 },
+		{
+			key: "new",
+			value: "newest",
+			fn: (a: DisplayNode, b: DisplayNode) =>
+				(b.first_seen?.getTime() ?? 0) - (a.first_seen?.getTime() ?? 0)
+		},
+		{
+			key: "old",
+			value: "oldest",
+			fn: (a: DisplayNode, b: DisplayNode) =>
+				(a.first_seen?.getTime() ?? 0) - (b.first_seen?.getTime() ?? 0)
+		},
+		{
+			key: "asc",
+			value: "alphabetic (↓)",
+			fn: (a: DisplayNode, b: DisplayNode) =>
+				(a.label ?? "").localeCompare(b.label ?? "", "en-US")
+		},
+		{
+			key: "desc",
+			value: "alphabetic (↑)",
+			fn: (a: DisplayNode, b: DisplayNode) =>
+				(b.label ?? "").localeCompare(a.label ?? "", "en-US")
+		}
+	]
 
-		const found = sorts.find((sort) => sort.key === param)
+	let sort_value = $state(page.url.searchParams.get("sort"))
+
+	const current_sort = $derived.by(() => {
+		const found = sorts.find((sort) => sort.key === sort_value)
 		if (found) return found
 
 		return sorts[0]
 	})
-
-	function node_sort(type: "new" | "old" | "asc" | "desc") {
-		switch (type) {
-			case "new":
-				return (a: DisplayNode, b: DisplayNode) =>
-					(b.first_seen?.getTime() ?? 0) - (a.first_seen?.getTime() ?? 0)
-			case "old":
-				return (a: DisplayNode, b: DisplayNode) =>
-					(a.first_seen?.getTime() ?? 0) - (b.first_seen?.getTime() ?? 0)
-			case "asc":
-				return (a: DisplayNode, b: DisplayNode) =>
-					(a.label ?? "").localeCompare(b.label ?? "", "en-US")
-			case "desc":
-				return (a: DisplayNode, b: DisplayNode) =>
-					(b.label ?? "").localeCompare(a.label ?? "", "en-US")
-			default:
-				return () => 0
-		}
-	}
-
-	function url_with_sort(type: string): string {
-		const params = new URLSearchParams(page.url.searchParams)
-
-		if (type === "tree") {
-			params.delete("sort")
-		} else {
-			params.set("sort", type)
-		}
-
-		return params.keys() ? "?" + params.toString() : ""
-	}
 
 	$effect(() => {
 		if (highlighted_node) {
@@ -112,44 +102,7 @@
 	<div class="sorts limit-len">
 		{new Intl.NumberFormat("en-US").format(nodes.length)} links
 		<span class="sep">·</span>
-		{#if browser}
-			<!-- if javascript, we can do whatever we want \o/ -->
-			<label for="sort">ordered by</label>
-			<select
-				id="sort"
-				aria-label="Sort nodes"
-				onchange={(e) => {
-					const select = e.currentTarget as HTMLSelectElement
-					goto(url_with_sort(select.value), {
-						replaceState: true,
-						noScroll: true,
-						keepFocus: true,
-						state: { node: highlighted_node }
-					})
-				}}
-			>
-				{#each sorts as sort_option}
-					<option
-						value={sort_option.key}
-						selected={sort_option === current_sort}
-					>
-						{sort_option.value}
-					</option>
-				{/each}
-			</select>
-		{:else}
-			<!-- if server rendered only, selects can't do actions on change. links still work -->
-			<div class="chips">
-				ordered by
-				{#each sorts as sort_option}
-					<a
-						href={url_with_sort(sort_option.key)}
-						aria-current={sort_option === current_sort ? "page" : undefined}
-						>{sort_option.value}</a
-					>
-				{/each}
-			</div>
-		{/if}
+		<SelectSort bind:sort_value {sorts}></SelectSort>
 	</div>
 
 	{#if nodes.length > 0}
@@ -166,7 +119,7 @@
 				/>
 			{:else}
 				<!-- List is flat -->
-				{#each [...nodes].sort(node_sort(current_sort.key)) as node (node.at)}
+				{#each nodes.toSorted(current_sort.fn) as node (node.at)}
 					<SidebarNode
 						at={node.at}
 						{nodes}
@@ -241,33 +194,6 @@
 		padding: 0;
 	}
 
-	.chips {
-		max-width: 20rem;
-		display: inline-flex;
-		flex-wrap: wrap;
-		gap: 0.5ch;
-		padding: 0;
-		list-style-type: none;
-	}
-
-	.chips a {
-		line-height: 1;
-		display: inline-block;
-		padding: 0.25em 0.5em;
-		border: 1px solid var(--color-border);
-		background-color: var(--color-bg-secondary);
-		color: var(--color-text);
-		text-decoration: none;
-		font-size: 0.8rem;
-	}
-
-	.chips a[aria-current="page"] {
-		border-color: var(--color-primary);
-		background-color: var(--color-primary);
-		color: var(--color-text-primary);
-		font-weight: bold;
-	}
-
 	#nodes {
 		margin: 0.5rem 0;
 	}
@@ -283,10 +209,6 @@
 		max-width: 20rem;
 	}
 
-	select {
-		margin: 0;
-	}
-
 	nav ul {
 		display: flex;
 		gap: 1rem;
@@ -300,9 +222,5 @@
 
 	nav ul li {
 		display: inline-block;
-	}
-
-	.sep {
-		user-select: none;
 	}
 </style>

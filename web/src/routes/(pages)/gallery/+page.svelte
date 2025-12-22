@@ -1,13 +1,45 @@
 <script lang="ts">
+	import { page } from "$app/state"
 	import { date_time_fmt } from "$lib/date"
+	import type { DisplayNode } from "$lib/node"
+	import SelectSort, { type Sort } from "$lib/SelectSort.svelte"
 	import type { PageProps } from "./$types"
 	import Node from "./Node.svelte"
 
 	let { data }: PageProps = $props()
 
-	const sorted_nodes = $derived(
-		data.nodes.toSorted((a, b) => a.label.localeCompare(b.label, "en"))
-	)
+	const sorts: Sort[] = [
+		// { key: "tree", value: "nomination", fn: () => 0 },
+		{
+			key: "new",
+			value: "newest",
+			fn: (a: DisplayNode, b: DisplayNode) =>
+				(b.first_seen?.getTime() ?? 0) - (a.first_seen?.getTime() ?? 0)
+		},
+		{
+			key: "old",
+			value: "oldest",
+			fn: (a: DisplayNode, b: DisplayNode) =>
+				(a.first_seen?.getTime() ?? 0) - (b.first_seen?.getTime() ?? 0)
+		},
+		{
+			key: "url",
+			value: "url",
+			fn: (a: DisplayNode, b: DisplayNode) =>
+				(a.label ?? "").localeCompare(b.label ?? "", "en-US")
+		}
+	]
+
+	let sort_value = $state(page.url.searchParams.get("sort"))
+
+	const current_sort = $derived.by(() => {
+		const found = sorts.find((sort) => sort.key === sort_value)
+		if (found) return found
+
+		return sorts[0]
+	})
+
+	const sorted_nodes = $derived(data.nodes.toSorted(current_sort.fn))
 </script>
 
 <svelte:head>
@@ -15,6 +47,12 @@
 </svelte:head>
 
 <h1>gallery</h1>
+
+<div class="sorts limit-len">
+	{new Intl.NumberFormat("en-US").format(data.nodes.length)} links
+	<span class="sep">·</span>
+	<SelectSort bind:sort_value {sorts}></SelectSort>
+</div>
 
 {#if data.nodes.length > 0}
 	<ul>
@@ -39,6 +77,10 @@
 {/if}
 
 <style>
+	.sorts {
+		margin: 1rem 0;
+	}
+
 	ul {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
