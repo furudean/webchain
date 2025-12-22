@@ -30,14 +30,13 @@
 		return params.size ? "?" + params.toString() : ""
 	}
 
-	const url = $derived(page.url)
+	const page_url = $derived(page.url)
 
 	$effect(() => {
-		const param = url.searchParams.get("sort")
+		// if updated externally
+		const param = page_url.searchParams.get("sort")
 		sort_value = param
 	})
-
-	$inspect(sort_value)
 </script>
 
 {#if browser}

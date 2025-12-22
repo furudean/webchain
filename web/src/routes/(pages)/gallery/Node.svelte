@@ -24,22 +24,27 @@
 
 <li id="node-{node.url_param}">
 	<a href={node.url.href} rel="external">
-		<img
-			src="/api/snap?url={encodeURIComponent(node.at)}"
-			class="snap"
-			data-loading={snap_load_finished ? undefined : "true"}
-			alt="Screenshot of {node.label}"
-			height="768"
-			width="1024"
-			loading="lazy"
-			bind:this={snap_image_element}
-			onload={() => {
-				snap_load_finished = true
-			}}
-			onerror={() => {
-				snap_load_finished = true
-			}}
-		/>
+		{#if node.robots_ok}
+			<img
+				src="/api/snap?url={encodeURIComponent(node.at)}"
+				class="snap"
+				data-loading={snap_load_finished ? undefined : "true"}
+				alt="screenshot of {node.label}"
+				height="768"
+				width="1024"
+				loading="lazy"
+				bind:this={snap_image_element}
+				onload={() => {
+					snap_load_finished = true
+				}}
+				onerror={() => {
+					snap_load_finished = true
+				}}
+			/>
+		{:else}
+			<div class="snap">photo not allowed by robots.txt</div>
+		{/if}
+
 		<img
 			src="/api/favicon?url={encodeURIComponent(node.at)}"
 			alt="Favicon for {node.label}"
@@ -168,12 +173,18 @@
 		display: block;
 		max-width: 100%;
 		height: auto;
+		font-family: "Fantasque Sans Mono", monospace;
+		font-variant-ligatures: none;
 		font-weight: normal;
 		font-size: 0.9rem;
 		text-decoration: none;
 		border: 1px solid var(--color-border);
-		color: var(--color-text);
+		color: var(--color-shy);
 		margin-bottom: 0.4rem;
+		aspect-ratio: 4 / 3;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 
 	@keyframes loading {

@@ -76,6 +76,14 @@
 			})
 		}
 	})
+
+	let page_url = $state(page.url)
+
+	$effect(() => {
+		// if updated externally
+		const param = page_url.searchParams.get("sort")
+		sort_value = param
+	})
 </script>
 
 <aside class:open={highlighted_node} aria-label="Sidebar">
