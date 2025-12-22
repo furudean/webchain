@@ -72,6 +72,10 @@
 		margin: 0;
 	}
 
+	:any-link:hover {
+		text-decoration: double underline;
+	}
+
 	:any-link {
 		color: var(--color-primary);
 		text-decoration: none;
