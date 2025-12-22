@@ -96,7 +96,6 @@
 			<span class="sep">·</span>
 		{/if}
 		{#if node.first_seen}
-			first seen
 			<time datetime={node.first_seen.toISOString()}>
 				{date_fmt.format(node.first_seen).toLowerCase()}
 			</time>
