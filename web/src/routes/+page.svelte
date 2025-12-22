@@ -70,7 +70,6 @@
 		{graph_component}
 		nominations_limit={data.nominations_limit}
 		crawl_date={data.end}
-		recent_nodes={data.recent_nodes}
 	></Sidebar>
 </div>
 
