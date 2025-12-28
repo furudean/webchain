@@ -95,10 +95,6 @@
 						}
 					}
 				}
-				if (event.key === "Enter") {
-					event.preventDefault()
-					event.currentTarget.parentElement?.querySelector("a")?.click()
-				}
 			}}
 		>
 			<div class="label" data-indexed={node.indexed}>
