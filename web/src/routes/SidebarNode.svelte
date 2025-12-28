@@ -67,7 +67,15 @@
 				} else {
 					set_highlighted_node(node.at, node.url_param)
 				}
-				graph_component.center_on_nodes([node.at])
+				if (node.parent) {
+					graph_component.center_on_nodes([
+						node.parent,
+						node.at,
+						...node.children
+					])
+				} else {
+					graph_component.center_on_nodes([node.at, ...node.children])
+				}
 			}}
 			onkeydown={(event) => {
 				if (["ArrowDown", "ArrowUp"].includes(event.key)) {

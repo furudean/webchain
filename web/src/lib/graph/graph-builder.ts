@@ -11,7 +11,7 @@ export function build_graph(
 	for (const [id, node] of hashmap.entries()) {
 		graph.addNode(id, {
 			label: node.label,
-			size: 18 + Math.pow(node.children.length, 1.5),
+			size: 11 + Math.pow(node.children.length, 1.5),
 			x: Math.random(),
 			y: Math.random(),
 			type: node.depth === 0 ? "square" : "image",
@@ -30,7 +30,7 @@ export function build_graph(
 			)?.at
 			if (parent_id) {
 				graph.addEdge(parent_id, id, {
-					size: 4,
+					size: 3,
 					type: "arrow"
 				})
 			}

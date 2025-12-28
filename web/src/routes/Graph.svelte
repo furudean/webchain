@@ -100,12 +100,10 @@
 		const { default: Graph } = await import("graphology")
 		const { NodeImageProgram } = await import("@sigma/node-image")
 		const { NodeSquareProgram } = await import("@sigma/node-square")
-		const { default: ForceSupervisor } = await import(
-			"graphology-layout-force/worker"
-		)
-		const { default: forceAtlas2 } = await import(
-			"graphology-layout-forceatlas2"
-		)
+		const { default: ForceSupervisor } =
+			await import("graphology-layout-force/worker")
+		const { default: forceAtlas2 } =
+			await import("graphology-layout-forceatlas2")
 
 		const hashmap = new Map(Object.values(nodes).map((node) => [node.at, node]))
 
@@ -125,12 +123,10 @@
 			labelSize: 12,
 			labelFont: '"Fantasque Sans Mono", sans-serif',
 			labelColor: { attribute: "textColor" },
-			labelGridCellSize: 125,
-			labelRenderedSizeThreshold: 10,
-			stagePadding: 50,
-			minCameraRatio: 0.6,
+			minCameraRatio: 0.4,
 			maxCameraRatio: 10,
 			autoCenter: false,
+			autoRescale: false,
 
 			nodeReducer(node, data) {
 				const res: typeof data = { ...data }
@@ -325,10 +321,12 @@
 		camera.setState({
 			ratio: renderer.getSetting("maxCameraRatio") ?? 0.75
 		})
-		center_on_nodes(undefined, {
-			duration: 650,
-			easing: "cubicInOut"
-		})
+		setTimeout(() => {
+			center_on_nodes(undefined, {
+				duration: 400,
+				easing: "cubicInOut"
+			})
+		}, 300)
 
 		return function clean_up() {
 			layout?.kill()
@@ -395,7 +393,7 @@
 		tooltip_style = {
 			top: `${y}px`,
 			left: `${x}px`,
-			transform: `translate(-50%, -50%) scale(${scale})`
+			transform: `translate(-50%, -50%) scale(${scale * 0.4})`
 		}
 	}
 </script>
@@ -509,16 +507,17 @@
 	.tooltip {
 		position: fixed;
 		font-family: "Fantasque Sans Mono", monospace;
-		font-size: 0.7rem;
 		pointer-events: none;
 		color: var(--color-graph-tooltip);
 		text-shadow:
 			0 0 2px var(--color-bg),
 			0 0 2px var(--color-bg),
 			0 0 2px var(--color-bg);
-		width: 70ch;
+		width: 60ch;
 		transform-origin: center;
 		transform: translate(-50%, -50%);
+		/* overflow: hidden; */
+		user-select: none;
 	}
 
 	.tooltip pre {
