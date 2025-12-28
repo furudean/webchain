@@ -21,13 +21,13 @@
 	function url_with_sort(type: string | undefined | null): string {
 		const params = new URLSearchParams(page.url.searchParams)
 
-		if (!type || type === sorts[0].key) {
-			params.delete("sort")
-		} else {
+		if (type) {
 			params.set("sort", type)
+		} else {
+			params.delete("sort")
 		}
 
-		return params.size ? "?" + params.toString() : ""
+		return "?" + params.toString()
 	}
 
 	const page_url = $derived(page.url)
@@ -51,7 +51,7 @@
 			sort_value = select.value!
 
 			replaceState(url_with_sort(sort_value), {
-				node: sort_value ? sort_value : undefined
+				sort: sort_value ? sort_value : undefined
 			})
 		}}
 	>

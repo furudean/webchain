@@ -1,5 +1,5 @@
 import { writable } from "svelte/store"
-import { goto } from "$app/navigation"
+import { replaceState } from "$app/navigation"
 import { page } from "$app/state"
 
 export const hovered_node = writable<string | undefined>(undefined)
@@ -15,10 +15,9 @@ export async function set_highlighted_node(
 	} else {
 		url.searchParams.delete("node")
 	}
-	await goto("?" + url.searchParams, {
-		state: { node },
-		replaceState: true,
-		keepFocus: true,
-		noScroll: true
+
+	// eslint-disable-next-line svelte/no-navigation-without-resolve
+	replaceState("?" + url.searchParams.toString(), {
+		node
 	})
 }
