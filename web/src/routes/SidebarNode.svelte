@@ -214,7 +214,7 @@
 
 	li:has(details[open]) + ul {
 		border-image: repeating-linear-gradient(
-				to top,
+				to bottom,
 				transparent,
 				transparent 4px,
 				var(--color-border) 4px,
