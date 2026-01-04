@@ -322,10 +322,6 @@
 		word-break: break-word;
 	}
 
-	.node-content a:hover {
-		text-decoration-style: double;
-	}
-
 	.small {
 		font-size: 0.85em;
 		opacity: 0.8;

@@ -204,3 +204,13 @@ article {
 .sep {
 	user-select: none;
 }
+
+a {
+	text-decoration: underline;
+	font-weight: 500;
+}
+
+a:hover,
+a:focus {
+	text-decoration: double underline;
+}

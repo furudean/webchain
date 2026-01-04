@@ -143,12 +143,6 @@
 		word-break: break-all;
 	}
 
-	a[rel="external"] {
-		font-weight: bold;
-		word-break: break-word;
-		text-decoration: none;
-	}
-
 	a span {
 		text-decoration: underline;
 	}
@@ -157,10 +151,14 @@
 		text-decoration-style: double;
 	}
 
+	a[rel="external"] {
+		font-weight: bold;
+		word-break: break-word;
+		text-decoration: none;
+	}
+
 	a[href^="#"] {
 		color: inherit;
-		font-weight: inherit;
-		text-decoration: underline;
 	}
 
 	.small {
@@ -213,10 +211,6 @@
 		user-select: none;
 		text-wrap: nowrap;
 		text-decoration: none;
-	}
-
-	a:hover {
-		text-decoration-style: double;
 	}
 
 	.site-label {
