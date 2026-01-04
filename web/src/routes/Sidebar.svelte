@@ -70,7 +70,7 @@
 			const open_node = sidebar_nodes_element?.querySelector(
 				`details[open]`
 			) as HTMLElement | null
-			open_node?.scrollIntoView({ block: "nearest" })
+			open_node?.scrollIntoView({ block: "center" })
 			open_node?.querySelector("summary")?.focus({
 				preventScroll: true
 			})
