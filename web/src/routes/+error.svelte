@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { page } from "$app/state"
 	import Header from "$lib/Header.svelte"
-
-	let { children } = $props()
 </script>
 
 <Header></Header>
 
 <main>
-	{@render children?.()}
+	<article>
+		<h1>{page.status} {page.error?.message}</h1>
+	</article>
 </main>
