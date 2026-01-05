@@ -56,9 +56,10 @@
 				style:background-color={node.generated_color}
 			/>
 			<span class="label">
-				{node.html_metadata?.title || node.label}
-				{#if node.is_recent}
-					<span class="new" title="This node was recently added">new</span>
+				{node.html_metadata?.title || node.label}{#if node.is_recent}<span
+						class="new"
+						title="This node was recently added">new</span
+					>
 				{/if}
 			</span>
 			{#if node.label !== node.html_metadata?.title}
@@ -245,7 +246,9 @@
 		box-sizing: border-box;
 		user-select: none;
 		text-wrap: nowrap;
-		text-decoration: none;
+		display: inline-block;
+		text-decoration: none !important;
+		margin-left: 0.4em;
 	}
 
 	.site-label {
