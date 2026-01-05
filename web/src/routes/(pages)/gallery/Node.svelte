@@ -45,19 +45,26 @@
 			<div class="snap">photo not allowed by robots.txt</div>
 		{/if}
 
-		<img
-			src="/api/favicon?url={encodeURIComponent(node.at)}"
-			alt="Favicon for {node.label}"
-			aria-hidden="true"
-			class="favicon"
-			width="16"
-			height="16"
-			style:background-color={node.generated_color}
-		/>
-		<span>{node.html_metadata?.title || node.label}</span>
-		{#if node.is_recent}
-			<span class="new" title="This node was recently added">new</span>
-		{/if}
+		<div class="title">
+			<img
+				src="/api/favicon?url={encodeURIComponent(node.at)}"
+				alt="Favicon for {node.label}"
+				aria-hidden="true"
+				class="favicon"
+				width="16"
+				height="16"
+				style:background-color={node.generated_color}
+			/>
+			<span class="label">
+				{node.html_metadata?.title || node.label}
+				{#if node.is_recent}
+					<span class="new" title="This node was recently added">new</span>
+				{/if}
+			</span>
+			{#if node.label !== node.html_metadata?.title}
+				<span class="url">{node.label}</span>
+			{/if}
+		</div>
 	</a>
 
 	{#if node.html_metadata?.description}
@@ -110,12 +117,40 @@
 	}
 
 	.favicon {
-		display: inline-block;
-		vertical-align: middle;
 		border-radius: 0.1rem;
 		border: 1px solid var(--color-shy);
 		aspect-ratio: 1 / 1;
 		color: transparent; /* hide alt text */
+		image-rendering: pixelated;
+	}
+
+	.title {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-areas:
+			"a b"
+			"a c";
+		column-gap: 0.4em;
+	}
+
+	.title > img {
+		grid-area: a;
+	}
+
+	.title > .label {
+		grid-area: b;
+		line-height: 1;
+	}
+
+	.title > .url {
+		grid-area: c;
+		font-family: "Fantasque Sans Mono", monospace;
+		font-size: 0.85em;
+		font-weight: normal;
+		color: var(--color-text);
+		opacity: 0.75;
+		text-decoration: none;
+		margin-top: 3px;
 	}
 
 	p {
