@@ -37,7 +37,7 @@
 <svelte:head>
 	<!-- common webchain metadata -->
 	<link rel="webchain" href="https://webchain.milkmedicine.net" />
-	<link rel="webchain-nomination" href="https://irc.milkmedicine.net/" />
+	<link rel="webchain-nomination" href="https://milkmedicine.net/" />
 	<link rel="webchain-nomination" href="https://www.himawari.fun/" />
 	<link rel="webchain-nomination" href="https://nekopath.fun/" />
 	<link rel="webchain-nomination" href="https://eidoli.ca" />
