@@ -225,7 +225,7 @@
 	}
 
 	nav :any-link {
-		color: var(--color-primary);
+		color: var(--a-not-visited-color);
 	}
 
 	nav ul li {
