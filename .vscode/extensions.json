@@ -1,8 +1,9 @@
 {
-    "recommendations": [
-        "svelte.svelte-vscode",
-        "editorconfig.editorconfig",
-        "ms-python.python",
-        "ms-python.autopep8"
-    ]
+	"recommendations": [
+		"svelte.svelte-vscode",
+		"editorconfig.editorconfig",
+		"ms-python.python",
+		"tamasfe.even-better-toml",
+		"charliermarsh.ruff"
+	]
 }
