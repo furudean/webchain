@@ -5,7 +5,6 @@ from urllib.parse import urljoin
 
 import aiohttp
 import tenacity
-from spider.http import InvalidContentType
 
 logger = logging.getLogger(__name__)
 
@@ -16,32 +15,23 @@ async def get_robots_txt(
 ) -> str | None:
     base_url = urljoin(url, "/")
     robots_url = urljoin(base_url, "/robots.txt")
-    try:
-        # First, try HEAD request
-        async with session.head(
-            robots_url,
-            timeout=aiohttp.ClientTimeout(total=5),
-            headers={
-                "Accept": "text/plain",
-            },
-        ) as head_response:
-            content_type = head_response.headers.get("Content-Type", "")
-            if not content_type.startswith("text/plain"):
-                raise InvalidContentType(content_type=content_type)
-    except aiohttp.ClientResponseError as e:
-        if 400 <= e.status < 500:
-            logger.debug(f"HEAD request failed for {robots_url}: {head_response.status}")
-            return None
-        logger.debug(f"HEAD request attempt failed for {robots_url}: " + type(e).__name__)
-        raise
 
     try:
-        async with session.get(robots_url, timeout=aiohttp.ClientTimeout(total=5)) as response:
+        async with session.get(
+            robots_url,
+            headers={"Accept": "text/plain"},
+            timeout=aiohttp.ClientTimeout(total=5),
+        ) as response:
             text = await response.text()
             logger.debug(f"got {robots_url}")
         return text
-    except (aiohttp.ClientError, InvalidContentType) as e:
-        logger.debug(f"failed to get robots.txt from {robots_url}: " + type(e).__name__)
+    except aiohttp.ClientResponseError as e:
+        if e.code == 404:
+            return None
+        else:
+            raise e
+    except (aiohttp.ClientError, aiohttp.ClientConnectorDNSError) as e:
+        logger.debug(f"failed to fetch {robots_url}: " + type(e).__name__)
         return None
 
 
