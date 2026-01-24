@@ -49,8 +49,8 @@ async def load_page_html(
                 raise InvalidStatusCode(e.status, e.message) from e
             logger.debug(f"{url}: " + type(e).__name__)
             raise
-        except InvalidContentType:
-            logger.info(f"non-html content-type for url {url}: {content_type}")
+        except InvalidContentType as e:
+            logger.info(f"non-html content-type for url {url}: {e.content_type}")
             raise
         except aiohttp.ClientError as e:
             logger.debug(f"{url}: " + type(e).__name__)
