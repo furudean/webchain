@@ -171,7 +171,7 @@
 		padding-left: 0;
 		margin-left: 2.5em;
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		grid-template-columns: repeat(2, 1fr);
 		column-gap: 2em;
 	}
 
