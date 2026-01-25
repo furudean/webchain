@@ -8,6 +8,8 @@
 
 	let { data }: PageProps = $props()
 
+	let grid_size = $state(300)
+
 	const sorts: Sort[] = [
 		// { key: "tree", value: "nomination", fn: () => 0 },
 		{
@@ -54,8 +56,13 @@
 	<SelectSort bind:sort_value {sorts}></SelectSort>
 </div>
 
+<div class="scale">
+	<input type="range" min="150" max="500" step="50" bind:value={grid_size} />
+	<span>{grid_size}px</span>
+</div>
+
 {#if data.nodes.length > 0}
-	<ul>
+	<ul style:--grid-size="{grid_size}px">
 		{#each sorted_nodes as node}
 			<Node
 				{node}
@@ -78,12 +85,27 @@
 
 <style>
 	.sorts {
+		float: left;
 		margin: 1rem 0;
 	}
 
+	.scale {
+		float: right;
+		margin: 1rem 0;
+		font-family: "Fantasque Sans Mono", monospace;
+	}
+
+	input[type="range"] {
+		margin: 0;
+		vertical-align: middle;
+		width: 10em;
+	}
+
 	ul {
+		clear: both;
+		--grid-size: 20rem;
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(var(--grid-size), 1fr));
 		gap: 2rem 1rem;
 		padding: 0;
 		list-style: none;

@@ -46,6 +46,8 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
+		--color-primary: #1b97ff;
+
 		--color-bg: #181a1b;
 		--color-text: #cdc5e1;
 		--color-border: #726d7cff;
@@ -217,4 +219,8 @@ a {
 a:hover,
 a:focus {
 	text-decoration: double underline;
+}
+
+input[type="range"] {
+	accent-color: var(--color-primary);
 }
