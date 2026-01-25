@@ -68,7 +68,7 @@ ignored. The exact heuristics are described in the [specification](spec.md).
 
 ### Metadata
 
-The crawler also collects metadata about each page, including the title and
+The crawler collects metadata about each page, including the title and
 description. This is extracted from the standard HTML `<title>` tag and
 `<meta name="description">` tag, if present. We also look at
 [Open Graph metadata](https://ogp.me/) and
@@ -94,7 +94,7 @@ If your page is not being crawled, please verify that:
 - An existing member of the webchain has nominated your page
 - The page that nominated your page is indexed by the crawler
 
-Your page must also be reachable by the crawler. Some common issues and
+Your page must be reachable by the crawler. Some common issues and
 solutions are described in the table below:
 
 | Problem                                      | Solution                                                                                          |
