@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types"
-import type { CrawledNode, DisplayNode } from "$lib/node"
+import type { CrawledNode, CrawlResponse, DisplayNode } from "$lib/node"
 import { string_to_color } from "$lib/color"
 import tr46 from "tr46"
 
@@ -52,6 +52,9 @@ function recent_nodes(nodes: CrawledNode[]): Set<string> {
 	)
 }
 
+let last_crawl: CrawlResponse | undefined = undefined
+let last_crawl_etag: string | null = null
+
 export const load: LayoutServerLoad = async ({
 	fetch
 }): Promise<{
@@ -60,25 +63,34 @@ export const load: LayoutServerLoad = async ({
 	start: Date | null
 	end: Date | null
 }> => {
+	const headers = new Headers()
+
+	if (last_crawl_etag) headers.append('if-none-match', last_crawl_etag)
+
 	const [crawl_request, heartbeat_request] = await Promise.all([
-		fetch("/crawler/current.json"),
+		fetch("/crawler/current.json", { headers }),
 		fetch("/crawler/heartbeat.json")
 	])
 
-	if (!crawl_request.ok || !crawl_request.ok) {
-		throw new Error("Failed to fetch data")
+	let crawl_response: CrawlResponse | undefined = undefined
+
+	if (crawl_request.status === 304 && last_crawl) {
+		crawl_response = last_crawl
+	} else if (crawl_request.ok) {
+		last_crawl_etag = crawl_request.headers.get('etag')
+		crawl_response = (await crawl_request.json()) as CrawlResponse
+		last_crawl = crawl_response
+	} else {
+		throw new Error("failed to fetch /crawler/current.json")
 	}
 
+	if (!heartbeat_request.ok) {
+		throw new Error("failed to fetch /crawler/heartbeat.json")
+	}
+
+	const nodes = crawl_response.nodes
+
 	try {
-		const {
-			nodes,
-			nominations_limit
-		}: {
-			nodes: CrawledNode[]
-			nominations_limit: number
-			start: string
-			end: string
-		} = await crawl_request.json()
 		const { start, end } = await heartbeat_request.json()
 		const recent = recent_nodes(nodes)
 		const mapped_nodes = nodes.map((node, i) =>
@@ -87,7 +99,7 @@ export const load: LayoutServerLoad = async ({
 
 		return {
 			nodes: mapped_nodes,
-			nominations_limit,
+			nominations_limit: crawl_response.nominations_limit,
 			start: new Date(start),
 			end: new Date(end)
 		}
