@@ -5,6 +5,7 @@ import aiohttp
 import tenacity
 
 from spider.error import InvalidContentType, InvalidStatusCode
+from spider.cached_session import CachedClientSession
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ UA = "WebchainSpider (+https://github.com/furudean/webchain)"
 
 
 def get_session() -> aiohttp.ClientSession:
-    return aiohttp.ClientSession(
+    return CachedClientSession(
         headers={"User-Agent": UA, "Accept-Language": "en-US, *;q=0.5"},
         raise_for_status=True,
         cookie_jar=aiohttp.DummyCookieJar(),
