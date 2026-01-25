@@ -30,7 +30,7 @@ async function get_current_crawl(
 					return response.json() as Promise<CrawlResponse>
 				}
 
-				if (response.status === 503 && current_crawl)
+				if (response.status === 304 && current_crawl)
 					return current_crawl
 
 				throw new Error(`failed to fetch crawler data: ${response.status}`)
