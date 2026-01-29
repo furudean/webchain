@@ -30,7 +30,7 @@ async def get_robots_txt(
             return None
         else:
             raise e
-    except (aiohttp.ClientError, aiohttp.ClientConnectorDNSError) as e:
+    except aiohttp.ClientError as e:
         logger.debug(f"failed to fetch {robots_url}: " + type(e).__name__)
         return None
 
