@@ -2,6 +2,7 @@ export interface HtmlMetadata {
 	title: string | null
 	description: string | null
 	theme_color: string | null
+	syndication_feeds: string[]
 }
 
 export interface CrawledNode {

@@ -1,6 +1,7 @@
 import asyncio
 import dataclasses
 from logging import getLogger
+from urllib.parse import urljoin, urlparse
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -12,7 +13,18 @@ from spider.contracts import CrawledNode, HtmlMetadata
 logger = getLogger(__name__)
 
 
-def get_html_metadata(html: str) -> HtmlMetadata | None:
+def is_absolute_url(url: str) -> bool:
+    return bool(urlparse(url).netloc)
+
+
+def as_absolute_url(href: str, domain: str) -> str:
+    if is_absolute_url(href):
+        return href
+    else:
+        return urljoin(domain, href)
+
+
+def get_html_metadata(html: str, at: str) -> HtmlMetadata | None:
     soup = BeautifulSoup(html, "lxml", multi_valued_attributes=None)
 
     if not soup.head:
@@ -48,6 +60,14 @@ def get_html_metadata(html: str) -> HtmlMetadata | None:
         soup.head.find("meta", attrs={"name": "theme-color"})
     )
 
+    syndication_links = soup.head.find_all(
+        "link", attrs={"type": ["application/rss+xml", "application/atom+xml"]}
+    )
+
+    metadata.syndication_feeds = list(
+        set(as_absolute_url(link.get("href"), domain=at) for link in syndication_links)
+    )
+
     return metadata
 
 
@@ -69,7 +89,7 @@ async def fetch_and_update_metadata(
             html = await load_page_html(node.at, referrer=node.parent, session=session)
 
             if html:
-                node_copy.html_metadata = get_html_metadata(html)
+                node_copy.html_metadata = get_html_metadata(html, at=node.at)
         except Exception as e:
             logger.warning(f"failed to fetch metadata for {node.at}: " + type(e).__name__)
 

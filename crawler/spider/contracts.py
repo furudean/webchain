@@ -6,6 +6,7 @@ class HtmlMetadata:
     title: str | None
     description: str | None
     theme_color: str | None
+    syndication_feeds: list[str] = field(default_factory=list)
 
 
 @dataclass
