@@ -7,7 +7,7 @@ let last_etag: string | null = null
 let last_fetch = 0
 let ongoing_fetch: Promise<CrawlResponse | undefined> | null = null
 
-async function get_current_crawl(
+export async function get_current_crawl(
 	fetch_fn: typeof fetch
 ): Promise<CrawlResponse> {
 	const now = Date.now()
