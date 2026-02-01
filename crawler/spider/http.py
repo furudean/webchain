@@ -4,7 +4,7 @@ import os
 import aiohttp
 import tenacity
 
-from spider.error import InvalidContentType, InvalidStatusCode
+from spider.error import InvalidStatusCode
 from spider.cached_session import CachedClientSession
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,10 @@ async def get(
             logger.info(f"invalid url {url}: " + type(e).__name__)
             return None
         except aiohttp.ClientSSLError as e:
-            logger.info(f"SSL error for url {url}: {type(e).__name__} {e}")
+            logger.info(f"SSL error {url}: {type(e).__name__} {e}")
+            return None
+        except aiohttp.ClientConnectorDNSError as e:
+            logger.info(f"dns error {url}: {type(e).__name__} {e}")
             return None
         except aiohttp.ClientResponseError as e:
             if 400 <= e.status < 500:
@@ -51,7 +54,7 @@ async def get(
             logger.debug(f"{url}: " + type(e).__name__)
             raise
         except aiohttp.ClientError as e:
-            logger.debug(f"{url}: " + type(e).__name__)
+            logger.debug(f"{url}: " + type(e).__name__, exc_info=e)
             raise
 
     attempts = int(os.environ.get("WEBCHAIN_NETWORK_ATTEMPTS", "5"))
