@@ -42,7 +42,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 	const xml = `<?xml version="1.0" encoding="UTF-8" ?>
 		<rss version="2.0">
 			<channel>
-				<title>milkmedicine rss feed</title>
+				<title>milkmedicine member sites</title>
 				<link>${base_url}</link>
 				<description>feed of milkmedicine webchain member sites</description>
 				<image>
