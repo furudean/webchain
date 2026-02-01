@@ -193,6 +193,20 @@
 	</p>
 </details>
 
+<details name="qna">
+	<summary>feeds and updates</summary>
+	<p>
+		An RSS feed of all the nodes in the webchain is available at <a
+			href="/feed.rss">/feed.rss</a
+		>.
+	</p>
+	<p>
+		You can subscribe to any changes to the feed at <a href="/feeds.opml"
+			>/feeds.opml</a
+		>.
+	</p>
+</details>
+
 <style>
 	summary {
 		margin: 0;

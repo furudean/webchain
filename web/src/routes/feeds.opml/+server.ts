@@ -32,7 +32,7 @@ function node_to_outline(node: CrawledNode): string | undefined {
 
 export const GET: RequestHandler = async ({ fetch, url }) => {
 	const crawl = await get_current_crawl(fetch)
-
+	const base_url = new URL('/', url).href
 
 	const feed = format_xml(`
 	<?xml version="1.0" encoding="utf-8"?>
@@ -41,7 +41,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 			<title>milkmedicine webchain member feeds</title>
 			<dateCreated>${new Date().toUTCString()}</dateCreated>
 			<dateModified>${new Date(crawl.end).toUTCString()}</dateModified>
-			<ownerId>${new URL('/', url).href}</ownerId>
+			<ownerId>${base_url}</ownerId>
 			<ownerName>Webchain Admin</ownerName>
 			<ownerEmail>meri@himawari.fun</ownerEmail>
 			<docs>https://opml.org/spec2.opml</docs>
@@ -55,8 +55,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 	return new Response(feed, {
 		status: 200,
 		headers: {
-			"Content-Type": "text/xml+opml",
-			// "Content-Disposition": 'attachment; filename="milkmedicine webchain member feeds.opml"'
+			"Content-Type": "text/xml"
 		}
 	})
 }

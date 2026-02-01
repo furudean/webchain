@@ -29,6 +29,20 @@
 	<meta property="og:image:width" content="1024" />
 	<meta property="og:image:height" content="768" />
 	<meta property="og:image:type" content="image/webp" />
+
+	<link
+		rel="alternate"
+		type="application/rss+xml"
+		href="/rss.xml"
+		title="milkmedicine rss feed"
+	/>
+
+	<link
+		rel="alternate"
+		type="text/xml+opml"
+		href="/feeds.opml"
+		title="milkmedicine webchain member feeds"
+	/>
 </svelte:head>
 
 {@render children?.()}
