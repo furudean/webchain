@@ -6,7 +6,16 @@ class HtmlMetadata:
     title: str | None
     description: str | None
     theme_color: str | None
-    syndication_feeds: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SyndicationFeed:
+    url: str
+    title: str | None = None
+    description: str | None = None
+    published: str | None = None
+    updated: str | None = None
+    version: str | None = None
 
 
 @dataclass
@@ -24,6 +33,7 @@ class CrawledNode:
     first_seen: str | None = None
     last_updated: str | None = None
     html_metadata: HtmlMetadata | None = None
+    syndication_feeds: list[SyndicationFeed] = field(default_factory=list)
 
 
 @dataclass

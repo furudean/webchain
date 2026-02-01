@@ -5,10 +5,12 @@ from urllib.parse import urljoin, urlparse
 
 import aiohttp
 from bs4 import BeautifulSoup
+import feedparser
+
 from spider.robots import allowed_by_robots_txt
-from spider.http import UA, get_session, load_page_html
+from spider.http import UA, get_session, get
 from spider.crawl import CrawlResponse, handle_meta_element
-from spider.contracts import CrawledNode, HtmlMetadata
+from spider.contracts import CrawledNode, HtmlMetadata, SyndicationFeed
 
 logger = getLogger(__name__)
 
@@ -60,15 +62,41 @@ def get_html_metadata(html: str, at: str) -> HtmlMetadata | None:
         soup.head.find("meta", attrs={"name": "theme-color"})
     )
 
+    return metadata
+
+
+async def get_syndication_feeds(
+    html: str, at: str, session: aiohttp.ClientSession
+) -> list[SyndicationFeed]:
+    def parse_syndication_feed(xml: str, url: str) -> SyndicationFeed | None:
+        d = feedparser.parse(xml)
+
+        return SyndicationFeed(
+            url=url,
+            title=d.feed.get("title"),
+            description=d.feed.get("description"),
+            published=d.feed.get("published"),
+            updated=d.feed.get("updated"),
+            version=d.get("version"),
+        )
+
+    async def fetch_pair(url, session):
+        xml = await get(url, session=session, referrer=at)
+        return (url, xml)
+
+    soup = BeautifulSoup(html, "lxml", multi_valued_attributes=None)
+
     syndication_links = soup.head.find_all(
         "link", attrs={"type": ["application/rss+xml", "application/atom+xml"]}
     )
 
-    metadata.syndication_feeds = list(
-        set(as_absolute_url(link.get("href"), domain=at) for link in syndication_links)
+    syndication_urls = list(
+        dict.fromkeys(as_absolute_url(link.get("href"), domain=at) for link in syndication_links)
     )
 
-    return metadata
+    syndication_data = await asyncio.gather(*[fetch_pair(url, session) for url in syndication_urls])
+
+    return [parse_syndication_feed(xml, url=url) for url, xml in syndication_data]
 
 
 async def fetch_and_update_metadata(
@@ -86,12 +114,16 @@ async def fetch_and_update_metadata(
 
     if node.indexed:
         try:
-            html = await load_page_html(node.at, referrer=node.parent, session=session)
+            html = await get(node.at, referrer=node.parent, session=session)
 
             if html:
                 node_copy.html_metadata = get_html_metadata(html, at=node.at)
+                node_copy.syndication_feeds = await get_syndication_feeds(
+                    html, at=node.at, session=session
+                )
         except Exception as e:
             logger.warning(f"failed to fetch metadata for {node.at}: " + type(e).__name__)
+            raise e
 
     return node_copy
 

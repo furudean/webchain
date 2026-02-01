@@ -1,3 +1,5 @@
+import tr46 from "tr46"
+
 export function is_valid_url(str: string): boolean {
 	let url: URL | undefined
 
@@ -16,4 +18,11 @@ export function safe_parse_url(href: string, base: string | URL): URL | null {
 	} catch {
 		return null
 	}
+}
+
+export function nice_url(url: string | URL): string {
+	url = new URL(url)
+
+	return tr46.toUnicode(url.hostname.replace(/^www\./i, "")).domain +
+		url.pathname.replace(/\/$/, "")
 }

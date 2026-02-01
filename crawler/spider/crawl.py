@@ -12,7 +12,7 @@ from bs4.element import PageElement
 from ordered_set import OrderedSet
 
 from spider.error import RobotsExclusionError
-from spider.http import UA, get_session, load_page_html
+from spider.http import UA, get_session, get
 from spider.contracts import CrawlResponse, CrawledNode
 from spider.robots import allowed_by_robots_txt
 
@@ -158,7 +158,7 @@ async def crawl(
             url, user_agent=UA, session=session
         ):
             try:
-                html = await load_page_html(url, referrer=parent, session=session)
+                html = await get(url, referrer=parent, session=session)
                 if html is None:
                     index_error = EmptyPageError(f"{url} has no content")
             except Exception as e:

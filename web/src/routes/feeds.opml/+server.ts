@@ -1,40 +1,62 @@
 import type { RequestHandler } from "./$types"
 import { get_current_crawl } from '$lib/crawler'
-import { html } from "common-tags"
+import type { CrawledNode } from "$lib/node"
+import format_xml from 'xml-formatter';
+import { nice_url } from "$lib/url";
+
+function node_to_outline(node: CrawledNode): string | undefined {
+	const label = nice_url(node.at)
+
+	const many = node.syndication_feeds?.length > 1
+
+	const outlines = node.syndication_feeds?.map(
+		(feed) => `
+			<outline text="${many ? (feed.title || feed.url) : label}"
+				title="${feed.title}"
+				description="${feed.description}"
+				xmlUrl="${feed.url}"
+				type="rss"
+				version="${feed.version}"
+				${feed.published ? `created="${new Date(feed.published).toUTCString()}"` : ''}
+				htmlUrl="${node.at}" />
+			`
+	).join('\n')
+
+	if (many) {
+		return `<outline text="${label}">${outlines}</outline>`
+	} else {
+		return outlines
+	}
+}
 
 
-export const GET: RequestHandler = async ({ fetch }) => {
+export const GET: RequestHandler = async ({ fetch, url }) => {
 	const crawl = await get_current_crawl(fetch)
 
-	const feeds = crawl.nodes.flatMap(node => node.html_metadata?.syndication_feeds).filter(Boolean) as string[]
 
-	const feed = html`
+	const feed = format_xml(`
 	<?xml version="1.0" encoding="utf-8"?>
 	<opml version="2.0">
 		<head>
-			<title>mySubscriptions.opml</title>
-			<dateCreated>Sat, 18 Jun 2005 12:11:52 GMT</dateCreated>
-			<dateModified>Tue, 02 Aug 2005 21:42:48 GMT</dateModified>
-			<ownerName>Dave Winer</ownerName>
-			<ownerEmail>dave@scripting.com</ownerEmail>
+			<title>milkmedicine webchain member feeds</title>
+			<dateCreated>${new Date().toUTCString()}</dateCreated>
+			<dateModified>${new Date(crawl.end).toUTCString()}</dateModified>
+			<ownerId>${new URL('/', url).href}</ownerId>
+			<ownerName>Webchain Admin</ownerName>
+			<ownerEmail>meri@himawari.fun</ownerEmail>
+			<docs>https://opml.org/spec2.opml</docs>
 		</head>
 		<body>
-			<outline text="CNET News.com"
-			description="Tech news and business reports by CNET News.com. Focused on information technology, core topics include computers, hardware, software, networking, and Internet media."
-			htmlUrl="http://news.com.com/"
-			language="unknown"
-			title="CNET News.com"
-			type="rss"
-			version="RSS2"
-			xmlUrl="http://news.com.com/2547-1_3-0-5.xml"/>
+			${crawl.nodes.map(node_to_outline).join('\n')}
 		</body>
 	</opml>
-	`
+	`)
 
 	return new Response(feed, {
 		status: 200,
 		headers: {
-			"Content-Type": "application/xml",
+			"Content-Type": "text/xml+opml",
+			// "Content-Disposition": 'attachment; filename="milkmedicine webchain member feeds.opml"'
 		}
 	})
 }
