@@ -221,6 +221,7 @@
 	[name="qna"] {
 		padding: 0 0.5rem;
 		border: 1px solid transparent;
+		margin: -1px 0;
 	}
 
 	[name="qna"]:has(> :focus-visible) {
