@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from "./$types"
 import type { CrawledNode, CrawlResponse, DisplayNode } from "$lib/node"
 import { string_to_color } from "$lib/color"
-import tr46 from "tr46"
+import { nice_url } from "$lib/url"
 
 function create_display_node(
 	node: CrawledNode,
@@ -9,9 +9,6 @@ function create_display_node(
 	is_recent: boolean
 ): DisplayNode {
 	const url = new URL(node.at)
-	const label =
-		tr46.toUnicode(url.hostname.replace(/^www\./i, "")).domain +
-		url.pathname.replace(/\/$/, "")
 
 	return {
 		...node,
@@ -19,7 +16,7 @@ function create_display_node(
 		generated_color:
 			node.html_metadata?.theme_color || string_to_color(node.at),
 		url,
-		label,
+		label: nice_url(url),
 		url_param: url.hostname + url.pathname.replace(/\/$/, ""),
 		first_seen: node.first_seen ? new Date(node.first_seen) : null,
 		last_updated: node.last_updated ? new Date(node.last_updated) : null,

@@ -2,7 +2,15 @@ export interface HtmlMetadata {
 	title: string | null
 	description: string | null
 	theme_color: string | null
-	syndication_feeds: string[]
+}
+
+export interface SyndicationFeed {
+	url: string
+	title: string | null
+	description: string | null
+	published: string | null
+	updated: string | null
+	version: string | null
 }
 
 export interface CrawledNode {
@@ -17,6 +25,7 @@ export interface CrawledNode {
 	first_seen: string | null
 	last_updated: string | null
 	html_metadata: HtmlMetadata | null
+	syndication_feeds: SyndicationFeed[]
 }
 
 export interface DisplayNode extends CrawledNode {

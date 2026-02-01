@@ -21,10 +21,10 @@ def get_session() -> aiohttp.ClientSession:
     )
 
 
-async def load_page_html(
+async def get(
     url: str,
     session: aiohttp.ClientSession,
-    referrer: str | None,
+    referrer: str | None = None,
 ) -> str | None:
     async def run():
         headers = {}
@@ -35,9 +35,9 @@ async def load_page_html(
             async with session.get(
                 url, timeout=aiohttp.ClientTimeout(total=10), headers=headers
             ) as response:
-                html = await response.text()
+                result = await response.text()
                 logger.debug(f"got {url}")
-            return html
+            return result
 
         except aiohttp.InvalidURL as e:
             logger.info(f"invalid url {url}: " + type(e).__name__)
@@ -49,9 +49,6 @@ async def load_page_html(
             if 400 <= e.status < 500:
                 raise InvalidStatusCode(e.status, e.message) from e
             logger.debug(f"{url}: " + type(e).__name__)
-            raise
-        except InvalidContentType as e:
-            logger.info(f"non-html content-type for url {url}: {e.content_type}")
             raise
         except aiohttp.ClientError as e:
             logger.debug(f"{url}: " + type(e).__name__)
