@@ -194,16 +194,14 @@
 </details>
 
 <details name="qna">
-	<summary>feeds and updates</summary>
+	<summary>feeds & updates</summary>
 	<p>
-		An RSS feed of all the nodes in the webchain is available at <a
-			href="/feed.rss">/feed.rss</a
-		>.
-	</p>
-	<p>
-		You can subscribe to any changes to the feed at <a href="/feeds.opml"
-			>/feeds.opml</a
-		>.
+		An RSS feed of webchain members is available at <a href="/rss.xml"
+			>rss.xml</a
+		>. Crawled member RSS feeds are published as a subscription list in the
+		<a href="https://opml.org/" rel="external">OPML</a>
+		format at
+		<a href="/subscriptions.xml">subscriptions.xml</a>.
 	</p>
 </details>
 

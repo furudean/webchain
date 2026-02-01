@@ -50,7 +50,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
 					<title>milkmedicine's logo</title>
 					<link>${base_url}</link>
 				</image>
-				<pubDate>${new Date().toUTCString()}</pubDate>
+				<pubDate>Sun, 01 Feb 2026 02:58:20 GMT</pubDate>
 				<lastBuildDate>${new Date(crawl.end).toUTCString()}</lastBuildDate>
 				${entries.join("\n")}
 			</channel>

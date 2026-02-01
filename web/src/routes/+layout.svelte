@@ -40,7 +40,7 @@
 	<link
 		rel="alternate"
 		type="text/xml+opml"
-		href="/feeds.opml"
+		href="/subscriptions.xml"
 		title="milkmedicine webchain member feeds"
 	/>
 </svelte:head>
