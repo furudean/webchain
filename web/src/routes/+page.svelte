@@ -12,10 +12,9 @@
 
 	const current_node: DisplayNode | undefined = $derived.by(() => {
 		// old format used to have trailing underscores
-		const url_param = page.url.searchParams.get("node")?.replace(/_$/, "")
-		return data.nodes.find(
-			(n) => n.url_param === url_param || n.at === url_param
-		)
+		const key =
+			page.state.node ?? page.url.searchParams.get("node")?.replace(/_$/, "")
+		return data.nodes.find((n) => n.url_param === key || n.at === key)
 	})
 
 	onMount(async () => {
