@@ -224,7 +224,12 @@ class CachedClientSession:
                 or resp_headers.get("ETag")
                 or resp_headers.get("Last-Modified")
             )
-            if not cc.get("no-store") and has_cache_header:
+            if (
+                resp.status >= 200
+                and resp.status < 300
+                and not cc.get("no-store")
+                and has_cache_header
+            ):
                 async with self.lock:
                     await self.save_cached(url, body, resp_headers, etag, expiry)
 
