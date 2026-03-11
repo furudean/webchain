@@ -159,7 +159,8 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	} catch (err) {
 		console.error("failed to fetch and cache snap for", query_url, err)
 		if (err instanceof Response) return err
-		return text("failed to capture screenshot", { status: 503 })
+		const reason = err instanceof Error ? err.message : String(err)
+		return text(`failed to capture screenshot: ${reason}`, { status: 503 })
 	}
 
 	return await make_snap_response({

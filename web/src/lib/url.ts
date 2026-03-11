@@ -23,6 +23,8 @@ export function safe_parse_url(href: string, base: string | URL): URL | null {
 export function nice_url(url: string | URL): string {
 	url = new URL(url)
 
-	return tr46.toUnicode(url.hostname.replace(/^www\./i, "")).domain +
+	return (
+		tr46.toUnicode(url.hostname.replace(/^www\./i, "")).domain +
 		url.pathname.replace(/\/$/, "")
+	)
 }

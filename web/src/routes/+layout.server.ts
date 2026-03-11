@@ -62,7 +62,7 @@ export const load: LayoutServerLoad = async ({
 }> => {
 	const headers = new Headers()
 
-	if (last_crawl_etag) headers.append('if-none-match', last_crawl_etag)
+	if (last_crawl_etag) headers.append("if-none-match", last_crawl_etag)
 
 	const [crawl_request, heartbeat_request] = await Promise.all([
 		fetch("/crawler/current.json", { headers }),
@@ -74,7 +74,7 @@ export const load: LayoutServerLoad = async ({
 	if (crawl_request.status === 304 && last_crawl) {
 		crawl_response = last_crawl
 	} else if (crawl_request.ok) {
-		last_crawl_etag = crawl_request.headers.get('etag')
+		last_crawl_etag = crawl_request.headers.get("etag")
 		crawl_response = (await crawl_request.json()) as CrawlResponse
 		last_crawl = crawl_response
 	} else {

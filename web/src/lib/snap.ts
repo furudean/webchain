@@ -16,6 +16,23 @@ export const CACHE_DIR = path.join(
 
 export const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
 export const MAX_CONCURRENT_SNAPS = 1
+const MAX_REQUESTS_PER_HOUR = 3
+const request_timestamps_per_url = new Map<string, number[]>()
+
+function can_make_request(url: string): boolean {
+	const now = Date.now()
+	const timestamps = request_timestamps_per_url.get(url) || []
+	const recent = timestamps.filter((ts) => now - ts < 60 * 60 * 1000)
+	request_timestamps_per_url.set(url, recent)
+	return recent.length < MAX_REQUESTS_PER_HOUR
+}
+
+function record_failure(url: string) {
+	const now = Date.now()
+	const timestamps = request_timestamps_per_url.get(url) || []
+	timestamps.push(now)
+	request_timestamps_per_url.set(url, timestamps)
+}
 
 const in_flight_snaps = new Map<
 	string,
@@ -236,12 +253,19 @@ export async function atomic_fetch_and_cache_snap(
 		return in_flight_snaps.get(url_param)!
 	}
 
+	if (!can_make_request(url_param)) {
+		console.warn("snap rate limit exceeded for", url_param)
+		throw new Error(`snap rate limit exceeded for ${url_param}`)
+	}
 	const release = await snap_semaphore.acquire()
 	const promise = get()
 	in_flight_snaps.set(url_param, promise)
 
 	try {
 		return await promise
+	} catch (err) {
+		record_failure(url_param)
+		throw err
 	} finally {
 		release()
 		in_flight_snaps.delete(url_param)

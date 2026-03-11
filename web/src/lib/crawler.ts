@@ -17,21 +17,20 @@ export async function get_current_crawl(
 
 	try {
 		const headers = new Headers()
-		if (last_etag) headers.append('if-none-match', last_etag)
+		if (last_etag) headers.append("if-none-match", last_etag)
 
 		// merge incoming request if another is ongoing
 		const request =
 			ongoing_fetch ??
 			fetch_fn("/crawler/current.json", {
-				headers,
+				headers
 			}).then((response) => {
 				if (response.ok) {
-					last_etag = response.headers.get('etag')
+					last_etag = response.headers.get("etag")
 					return response.json() as Promise<CrawlResponse>
 				}
 
-				if (response.status === 304 && current_crawl)
-					return current_crawl
+				if (response.status === 304 && current_crawl) return current_crawl
 
 				throw new Error(`failed to fetch crawler data: ${response.status}`)
 			})
