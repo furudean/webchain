@@ -7,7 +7,6 @@
 	import type { DisplayNode } from "$lib/node"
 	import { hovered_node, set_highlighted_node } from "$lib/node-state"
 	import { page } from "$app/state"
-	import type { default as ForceSupervisorType } from "graphology-layout-force/worker"
 	import { getCameraStateToFitViewportToNodes } from "@sigma/utils"
 	import { browser } from "$app/environment"
 	import Spinner from "$lib/Spinner.svelte"
@@ -22,7 +21,6 @@
 
 	let graph: GraphType | undefined = $state()
 	let renderer: SigmaType | undefined = $state()
-	let layout: ForceSupervisorType | undefined = $state()
 	let graph_promise: Promise<() => void> | undefined = $state()
 
 	let graph_element: HTMLElement
@@ -30,7 +28,7 @@
 
 	function update_camera(camera: Camera): void {
 		requestAnimationFrame(() => {
-			const size = `${40 / camera.ratio}px`
+			const size = `${35 / camera.ratio}px`
 			graph_container.style.backgroundSize = `${size} ${size}`
 			const transparency = Math.max(0, 0.4 / camera.ratio)
 			const part = "var(--octal-color)"
@@ -100,19 +98,21 @@
 		const { default: Graph } = await import("graphology")
 		const { NodeImageProgram } = await import("@sigma/node-image")
 		const { NodeSquareProgram } = await import("@sigma/node-square")
-		const { default: ForceSupervisor } =
-			await import("graphology-layout-force/worker")
 		const { default: forceAtlas2 } =
 			await import("graphology-layout-forceatlas2")
+		const { default: FA2Layout } =
+			await import("graphology-layout-forceatlas2/worker")
 
 		const hashmap = new Map(Object.values(nodes).map((node) => [node.at, node]))
 
 		graph = build_graph(hashmap, Graph)
-		const sensibleSettings = {
-			...forceAtlas2.inferSettings(graph),
-			iterations: 10_000
-		}
-		forceAtlas2.assign(graph, sensibleSettings)
+
+		// assign deterministic initial positions so FA2 always converges to the same layout
+		graph.nodes().forEach((node, i) => {
+			const angle = (2 * Math.PI * i) / graph!.order
+			graph!.setNodeAttribute(node, "x", Math.cos(angle))
+			graph!.setNodeAttribute(node, "y", Math.sin(angle))
+		})
 
 		renderer = new Sigma(graph, graph_element, {
 			nodeProgramClasses: {
@@ -123,7 +123,9 @@
 			labelSize: 12,
 			labelFont: '"Fantasque Sans Mono", sans-serif',
 			labelColor: { attribute: "textColor" },
-			minCameraRatio: 0.4,
+			labelDensity: 0.8,
+			labelGridCellSize: 150,
+			minCameraRatio: 0.2,
 			maxCameraRatio: 10,
 			autoCenter: false,
 			autoRescale: false,
@@ -197,42 +199,13 @@
 			}
 		})
 
-		let dragged_node: string | null = null
-
-		layout = new ForceSupervisor(graph, {
-			isNodeFixed(node, attr) {
-				return dragged_node === node
-			},
-			settings: {
-				// attraction: 0.0005,
-				// repulsion: 0.1,
-				// gravity: 0.0001,
-				// inertia: 0.6,
-				// maxMove: 200
-			}
-		})
-		if (!document.hidden) {
-			layout.start()
+		const fa2_settings = {
+			...forceAtlas2.inferSettings(graph),
+			scalingRatio: 22,
+			gravity: 0.075
 		}
-		function visibility_change_handler() {
-			if (document.hidden) {
-				layout?.stop()
-			} else {
-				layout?.start()
-			}
-		}
-		window.addEventListener("visibilitychange", visibility_change_handler)
-		function focus_handler() {
-			layout?.start()
-		}
-		window.addEventListener("focus", focus_handler)
-
-		// make sure that we stop dragging if mouse is released outside of the graph
-		function handle_mouse_up() {
-			dragged_node = null
-			if (graph_element) graph_element.style.cursor = ""
-		}
-		window.addEventListener("mouseup", handle_mouse_up)
+		const layout = new FA2Layout(graph, { settings: fa2_settings })
+		layout.start()
 
 		const media_query = window.matchMedia("(prefers-color-scheme: dark)")
 
@@ -244,21 +217,11 @@
 		media_query.addEventListener("change", handle_color_scheme_change)
 
 		renderer.on("enterNode", (e) => {
-			if (dragged_node) {
-				e.preventSigmaDefault()
-				return
-			}
-			graph_element.style.cursor = "grab"
 			hovered_node.set(e.node)
 		})
 
-		renderer.on("leaveNode", async (e) => {
-			if (dragged_node) {
-				e.preventSigmaDefault()
-				return
-			}
+		renderer.on("leaveNode", async () => {
 			hovered_node.set(undefined)
-			graph_element.style.cursor = ""
 		})
 
 		renderer.on("doubleClickNode", (e) => {
@@ -271,39 +234,11 @@
 		})
 
 		renderer.on("downNode", (e) => {
-			if (!graph || !renderer) return
-			dragged_node = e.node
+			if (!graph) return
 			hovered_node.set(e.node)
 			set_highlighted_node(e.node, hashmap.get(e.node)?.url_param)
-			if (!renderer.getCustomBBox()) renderer.setCustomBBox(renderer.getBBox())
-			graph_element.style.cursor = "grabbing"
 		})
 
-		renderer.on("moveBody", ({ event }) => {
-			if (!graph || !renderer) return
-			if (!dragged_node) return
-
-			const pos = renderer.viewportToGraph(event)
-
-			graph.setNodeAttribute(dragged_node, "x", pos.x)
-			graph.setNodeAttribute(dragged_node, "y", pos.y)
-
-			event.preventSigmaDefault()
-			event.original.preventDefault()
-			event.original.stopPropagation()
-		})
-
-		renderer.on("upNode", () => {
-			dragged_node = null
-			graph_element.style.cursor = "grab"
-		})
-
-		renderer.on("upStage", (e) => {
-			e.preventSigmaDefault()
-			if (dragged_node) {
-				set_highlighted_node(undefined)
-			}
-		})
 		renderer.on("clickStage", () => {
 			if (highlighted_node) {
 				set_highlighted_node(undefined)
@@ -321,19 +256,17 @@
 		camera.setState({
 			ratio: renderer.getSetting("maxCameraRatio") ?? 0.75
 		})
-		setTimeout(() => {
+		const center_timeout = setTimeout(() => {
 			center_on_nodes(undefined, {
-				duration: 400,
+				duration: 300,
 				easing: "cubicInOut"
 			})
 		}, 300)
 
 		return function clean_up() {
-			layout?.kill()
+			clearTimeout(center_timeout)
+			layout.kill()
 			renderer?.kill()
-			window.removeEventListener("visibilitychange", visibility_change_handler)
-			window.removeEventListener("focus", focus_handler)
-			window.removeEventListener("mouseup", handle_mouse_up)
 			media_query.removeEventListener("change", handle_color_scheme_change)
 		}
 	}

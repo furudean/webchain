@@ -12,8 +12,6 @@ export function build_graph(
 		graph.addNode(id, {
 			label: node.label,
 			size: 11 + Math.pow(node.children.length, 1.5),
-			x: Math.random(),
-			y: Math.random(),
 			type: node.depth === 0 ? "square" : "image",
 			image: `/api/favicon?url=${encodeURIComponent(node.at)}`,
 			url: node.at,
