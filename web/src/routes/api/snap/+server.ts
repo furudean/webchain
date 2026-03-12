@@ -106,7 +106,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 		}
 
 		if (!(await robots_ok(query_url, fetch))) {
-			return text("website disallows crawling", { status: 204 })
+			return text("website disallows crawling", { status: 422 })
 		}
 	}
 
