@@ -21,17 +21,16 @@ export const MAX_CONCURRENT_SNAPS = 3
 const FAILED_SNAP_CACHE_DURATION_MS = 60 * 60 * 1000 // 1 hour
 const MAX_SNAP_FAILURES = 3
 
-const failed_snap_urls = new Map<string, number>() // url -> expiry timestamp
-const snap_failure_counts = new Map<string, number>() // url -> failure count
+const snap_failures = new Map<string, { count: number; expires: number }>()
 
 export function is_failed_snap(url: string): boolean {
-	const expiry = failed_snap_urls.get(url)
-	if (expiry === undefined) return false
-	if (Date.now() > expiry) {
-		failed_snap_urls.delete(url)
+	const entry = snap_failures.get(url)
+	if (!entry) return false
+	if (Date.now() > entry.expires) {
+		snap_failures.delete(url)
 		return false
 	}
-	return true
+	return entry.count >= MAX_SNAP_FAILURES
 }
 
 
@@ -264,16 +263,13 @@ export async function atomic_fetch_and_cache_snap(
 
 	try {
 		const result = await promise
-		snap_failure_counts.delete(url_param)
+		snap_failures.delete(url_param)
 		return result
 	} catch (err) {
-		const failures = (snap_failure_counts.get(url_param) ?? 0) + 1
-		if (failures >= MAX_SNAP_FAILURES) {
-			snap_failure_counts.delete(url_param)
-			failed_snap_urls.set(url_param, Date.now() + FAILED_SNAP_CACHE_DURATION_MS)
-		} else {
-			snap_failure_counts.set(url_param, failures)
-		}
+		const entry = snap_failures.get(url_param)
+		const now = Date.now()
+		const count = (entry && now < entry.expires ? entry.count : 0) + 1
+		snap_failures.set(url_param, { count, expires: now + FAILED_SNAP_CACHE_DURATION_MS })
 		throw err
 	} finally {
 		release()
