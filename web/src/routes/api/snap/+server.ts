@@ -7,7 +7,8 @@ import { robots_ok, is_webchain_node } from "$lib/crawler"
 import {
 	get_cached_snap,
 	type SnapSidecar,
-	atomic_fetch_and_cache_snap
+	atomic_fetch_and_cache_snap,
+	is_failed_snap
 } from "$lib/snap"
 
 export const OPTIONS: RequestHandler = async ({ url }) => {
@@ -111,6 +112,10 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	}
 
 	if (!force_refresh) {
+		if (is_failed_snap(query_url)) {
+			return new Response(null, { status: 204 })
+		}
+
 		const cache_hit = await get_cached_snap(query_url)
 		const if_none_match = request.headers.get("if-none-match")
 
@@ -137,7 +142,7 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 			}
 
 			// serve stale cache, queue background refresh
-			atomic_fetch_and_cache_snap(query_url).catch((err) => {
+			atomic_fetch_and_cache_snap(query_url, fetch).catch((err) => {
 				console.error("failed to refresh screenshot for", query_url, err)
 			})
 
@@ -155,12 +160,10 @@ export const GET: RequestHandler = async ({ url, request, fetch }) => {
 	let fetch_result: Awaited<ReturnType<typeof atomic_fetch_and_cache_snap>>
 
 	try {
-		fetch_result = await atomic_fetch_and_cache_snap(query_url)
+		fetch_result = await atomic_fetch_and_cache_snap(query_url, fetch)
 	} catch (err) {
 		console.error("failed to fetch and cache snap for", query_url, err)
-		if (err instanceof Response) return err
-		const reason = err instanceof Error ? err.message : String(err)
-		return text(`failed to capture screenshot: ${reason}`, { status: 503 })
+		return new Response(null, { status: 204 })
 	}
 
 	return await make_snap_response({

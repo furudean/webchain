@@ -6,6 +6,7 @@ import puppeteer from "puppeteer"
 import { dev } from "$app/environment"
 import env_paths from "env-paths"
 import { Semaphore } from "./semaphore"
+import { robots_ok } from "$lib/crawler"
 
 const paths = env_paths("webchain-web-server")
 export const CACHE_DIR = path.join(
@@ -15,24 +16,24 @@ export const CACHE_DIR = path.join(
 )
 
 export const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
-export const MAX_CONCURRENT_SNAPS = 1
-const MAX_REQUESTS_PER_HOUR = 3
-const request_timestamps_per_url = new Map<string, number[]>()
+export const MAX_CONCURRENT_SNAPS = 3
 
-function can_make_request(url: string): boolean {
-	const now = Date.now()
-	const timestamps = request_timestamps_per_url.get(url) || []
-	const recent = timestamps.filter((ts) => now - ts < 60 * 60 * 1000)
-	request_timestamps_per_url.set(url, recent)
-	return recent.length < MAX_REQUESTS_PER_HOUR
+const FAILED_SNAP_CACHE_DURATION_MS = 60 * 60 * 1000 // 1 hour
+const MAX_SNAP_FAILURES = 3
+
+const failed_snap_urls = new Map<string, number>() // url -> expiry timestamp
+const snap_failure_counts = new Map<string, number>() // url -> failure count
+
+export function is_failed_snap(url: string): boolean {
+	const expiry = failed_snap_urls.get(url)
+	if (expiry === undefined) return false
+	if (Date.now() > expiry) {
+		failed_snap_urls.delete(url)
+		return false
+	}
+	return true
 }
 
-function record_failure(url: string) {
-	const now = Date.now()
-	const timestamps = request_timestamps_per_url.get(url) || []
-	timestamps.push(now)
-	request_timestamps_per_url.set(url, timestamps)
-}
 
 const in_flight_snaps = new Map<
 	string,
@@ -124,7 +125,7 @@ export async function vacuum_cache() {
 				console.log("removing expired snap cache for", sidecar.url)
 				await Promise.all([
 					fs.unlink(sidecar.sidecar_path),
-					fs.unlink(sidecar.image_path)
+					sidecar.image_path ? fs.unlink(sidecar.image_path) : Promise.resolve()
 				])
 			}
 		}
@@ -239,9 +240,13 @@ const snap_semaphore = new Semaphore(MAX_CONCURRENT_SNAPS)
  * and caching the result on disk
  */
 export async function atomic_fetch_and_cache_snap(
-	url_param: string
+	url_param: string,
+	fetch: typeof globalThis.fetch
 ): Promise<{ data: Buffer; sidecar: SnapSidecar }> {
 	async function get() {
+		if (!(await robots_ok(url_param, fetch))) {
+			throw new Error(`robots.txt disallows crawling`)
+		}
 		const browser = await get_browser()
 		const screenshot = await take_screenshot(url_param, browser)
 		const buffer = Buffer.from(screenshot)
@@ -253,18 +258,22 @@ export async function atomic_fetch_and_cache_snap(
 		return in_flight_snaps.get(url_param)!
 	}
 
-	if (!can_make_request(url_param)) {
-		console.warn("snap rate limit exceeded for", url_param)
-		throw new Error(`snap rate limit exceeded for ${url_param}`)
-	}
 	const release = await snap_semaphore.acquire()
 	const promise = get()
 	in_flight_snaps.set(url_param, promise)
 
 	try {
-		return await promise
+		const result = await promise
+		snap_failure_counts.delete(url_param)
+		return result
 	} catch (err) {
-		record_failure(url_param)
+		const failures = (snap_failure_counts.get(url_param) ?? 0) + 1
+		if (failures >= MAX_SNAP_FAILURES) {
+			snap_failure_counts.delete(url_param)
+			failed_snap_urls.set(url_param, Date.now() + FAILED_SNAP_CACHE_DURATION_MS)
+		} else {
+			snap_failure_counts.set(url_param, failures)
+		}
 		throw err
 	} finally {
 		release()
@@ -272,7 +281,7 @@ export async function atomic_fetch_and_cache_snap(
 	}
 }
 
-export async function fetch_and_cache_outdated_snaps(): Promise<void> {
+export async function fetch_and_cache_outdated_snaps(fetch: typeof globalThis.fetch): Promise<void> {
 	const index = await read_cache_index()
 	const expired = index.filter((snap) => Date.now() > snap.expires)
 	console.log(
@@ -282,7 +291,7 @@ export async function fetch_and_cache_outdated_snaps(): Promise<void> {
 	if (expired.length === 0) return
 
 	const results = await Promise.allSettled(
-		expired.map((snap) => atomic_fetch_and_cache_snap(snap.url))
+		expired.map((snap) => atomic_fetch_and_cache_snap(snap.url, fetch))
 	)
 
 	const ok = results.filter((r) => r.status === "fulfilled").length
