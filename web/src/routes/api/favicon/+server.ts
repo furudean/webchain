@@ -146,7 +146,7 @@ export const GET: RequestHandler = async ({ url, fetch, request }) => {
 	}
 
 	if (!(await robots_ok(url_param, fetch))) {
-		return text("website disallows crawling", { status: 400 })
+		return text("website disallows crawling", { status: 204 })
 	}
 
 	const cache_hit = await get_cached_file(url_param)
