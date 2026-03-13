@@ -28,9 +28,10 @@
 
 	function update_camera(camera: Camera): void {
 		requestAnimationFrame(() => {
-			const size = `${25 / camera.ratio}px`
+			const dot_size = 25 / camera.ratio
+			const size = `${dot_size}px`
 			graph_container.style.backgroundSize = `${size} ${size}`
-			const transparency = Math.max(0, 0.4 / camera.ratio)
+			const transparency = dot_size >= 5 ? Math.max(0, 0.4 / camera.ratio) : 0
 			const part = "var(--octal-color)"
 			graph_container.style.backgroundImage = `radial-gradient(rgb(${part}, ${part}, ${part}, ${transparency}) 1px, transparent 0)`
 
@@ -57,7 +58,7 @@
 			typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
 		const factor = nodes
 			? Math.max(1.25, 10 / Math.sqrt(nodes_to_center.length))
-			: 1.5
+			: 1.25
 		const camera_state = getCameraStateToFitViewportToNodes(
 			renderer,
 			nodes_to_center
