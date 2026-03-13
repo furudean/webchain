@@ -28,7 +28,7 @@
 
 	function update_camera(camera: Camera): void {
 		requestAnimationFrame(() => {
-			const size = `${35 / camera.ratio}px`
+			const size = `${25 / camera.ratio}px`
 			graph_container.style.backgroundSize = `${size} ${size}`
 			const transparency = Math.max(0, 0.4 / camera.ratio)
 			const part = "var(--octal-color)"
@@ -53,9 +53,29 @@
 		options: Partial<AnimateOptions> = {}
 	): Promise<void> {
 		if (!renderer) return
-		nodes = typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
-		const camera_state = getCameraStateToFitViewportToNodes(renderer, nodes)
-		camera_state.ratio *= 1.25 // add some padding
+		const nodes_to_center =
+			typeof nodes === "undefined" ? (graph?.nodes() ?? []) : nodes
+		const factor = nodes
+			? Math.max(1.25, 10 / Math.sqrt(nodes_to_center.length))
+			: 1.5
+		const camera_state = getCameraStateToFitViewportToNodes(
+			renderer,
+			nodes_to_center
+		)
+		camera_state.ratio = camera_state.ratio * factor
+
+		const sidebar = document.querySelector('[aria-label="Sidebar"]')
+		const sidebar_width = sidebar?.getBoundingClientRect().width ?? 0
+		if (sidebar_width > 0) {
+			const { width, height } = renderer.getDimensions()
+
+			const shifted = renderer.viewportToFramedGraph(
+				{ x: width / 2 - sidebar_width / 4, y: height / 2 },
+				{ cameraState: camera_state }
+			)
+			camera_state.x = shifted.x
+		}
+
 		await renderer.getCamera()?.animate(camera_state, options)
 	}
 
@@ -275,7 +295,15 @@
 		graph_promise = init_graph()
 		graph_promise.catch(console.error)
 
+		let resize_timer: ReturnType<typeof setTimeout>
+		function handle_resize() {
+			clearTimeout(resize_timer)
+			resize_timer = setTimeout(() => center_on_nodes(), 150)
+		}
+		window.addEventListener("resize", handle_resize)
+
 		return async () => {
+			window.removeEventListener("resize", handle_resize)
 			const clean_up_graph = await graph_promise
 			clean_up_graph?.()
 		}
@@ -326,7 +354,7 @@
 		tooltip_style = {
 			top: `${y}px`,
 			left: `${x}px`,
-			transform: `translate(-50%, -50%) scale(${scale * 0.4})`
+			transform: `translate(-50%, -50%) scale(${scale * 0.2})`
 		}
 	}
 </script>
