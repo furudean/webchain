@@ -161,7 +161,9 @@ async function get_browser(): Promise<Browser> {
 				"--disable-background-networking", // Disables background network requests
 				"--disable-sync", // Disables Google Account syncing
 
-				"--disable-breakpad" // Disables crash reporting
+				"--disable-breakpad", // Disables crash reporting
+
+				"--disable-dev-shm-usage" // use /tmp instead of /dev/shm for shared memory, which may cause issues on small vms
 			],
 			handleSIGTERM: false // we override with our own handler
 		})
@@ -203,7 +205,7 @@ async function take_screenshot(
 		})
 
 		const response = await page.goto(url_param, {
-			waitUntil: "networkidle0",
+			waitUntil: "networkidle2",
 			timeout: 30_000
 		})
 
@@ -225,7 +227,7 @@ async function take_screenshot(
 
 		return screenshot
 	} finally {
-		context.close().catch(() => {
+		await context.close().catch(() => {
 			console.error("oh no!!! failed to close browser context")
 		})
 	}
