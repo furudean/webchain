@@ -16,7 +16,7 @@ export const CACHE_DIR = path.join(
 )
 
 export const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
-export const MAX_CONCURRENT_SNAPS = 1
+export const MAX_CONCURRENT_SNAPS = 3
 
 const FAILED_SNAP_CACHE_DURATION_MS = 60 * 60 * 1000 // 1 hour
 const MAX_SNAP_FAILURES = 3
