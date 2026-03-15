@@ -16,7 +16,7 @@ export const CACHE_DIR = path.join(
 )
 
 export const CACHE_DURATION_MS = 60 * 60 * 24 * 1000 // 1 day in ms
-export const MAX_CONCURRENT_SNAPS = 3
+export const MAX_CONCURRENT_SNAPS = 1
 
 const FAILED_SNAP_CACHE_DURATION_MS = 60 * 60 * 1000 // 1 hour
 const MAX_SNAP_FAILURES = 3
@@ -32,7 +32,6 @@ export function is_failed_snap(url: string): boolean {
 	}
 	return entry.count >= MAX_SNAP_FAILURES
 }
-
 
 const in_flight_snaps = new Map<
 	string,
@@ -269,7 +268,10 @@ export async function atomic_fetch_and_cache_snap(
 		const entry = snap_failures.get(url_param)
 		const now = Date.now()
 		const count = (entry && now < entry.expires ? entry.count : 0) + 1
-		snap_failures.set(url_param, { count, expires: now + FAILED_SNAP_CACHE_DURATION_MS })
+		snap_failures.set(url_param, {
+			count,
+			expires: now + FAILED_SNAP_CACHE_DURATION_MS
+		})
 		throw err
 	} finally {
 		release()
@@ -277,7 +279,9 @@ export async function atomic_fetch_and_cache_snap(
 	}
 }
 
-export async function fetch_and_cache_outdated_snaps(fetch: typeof globalThis.fetch): Promise<void> {
+export async function fetch_and_cache_outdated_snaps(
+	fetch: typeof globalThis.fetch
+): Promise<void> {
 	const index = await read_cache_index()
 	const expired = index.filter((snap) => Date.now() > snap.expires)
 	console.log(
