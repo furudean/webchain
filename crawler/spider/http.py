@@ -73,13 +73,16 @@ async def get(
     retrying = tenacity.AsyncRetrying(
         wait=tenacity.wait_exponential(),
         stop=tenacity.stop_after_attempt(attempts),
-        retry=tenacity.retry_if_exception_type(
-            (
+        retry=tenacity.retry_if_exception(
+            lambda e: isinstance(e, (
                 aiohttp.ClientResponseError,
                 aiohttp.ClientConnectionError,
                 aiohttp.ServerConnectionError,
                 TimeoutError,
-            )
+            )) and not isinstance(e, (
+                aiohttp.ClientConnectorCertificateError,
+                aiohttp.ClientConnectorDNSError,
+            ))
         ),
         reraise=True,
         before_sleep=before_sleep,
