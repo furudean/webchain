@@ -46,7 +46,12 @@ def asyncio_click(func):
     is_flag=True,
     help="disable disk cache for http requests",
 )
-def webchain(attempts: int, verbose: bool, no_cache: bool):
+@click.option(
+    "--v4",
+    is_flag=True,
+    help="only use ipv4 when making reequests (disables happy eyeballs / ipv6)",
+)
+def webchain(attempts: int, verbose: bool, no_cache: bool, v4: bool):
     if os.environ.get("LOG_LEVEL"):
         log_level = logging._nameToLevel.get(os.environ.get("LOG_LEVEL", "").upper(), logging.INFO)
     else:
@@ -58,6 +63,9 @@ def webchain(attempts: int, verbose: bool, no_cache: bool):
 
     if no_cache:
         os.environ["WEBCHAIN_NO_CACHE"] = "1"
+
+    if v4:
+        os.environ["WEBCHAIN_IPV4"] = "1"
 
     pass
 

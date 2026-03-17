@@ -1,5 +1,6 @@
 import logging
 import os
+import socket
 
 import aiohttp
 import tenacity
@@ -14,11 +15,17 @@ UA = "WebchainSpider (+https://github.com/furudean/webchain)"
 
 
 def get_session() -> aiohttp.ClientSession:
+    connector = (
+        aiohttp.TCPConnector(family=socket.AF_INET)
+        if os.environ.get("WEBCHAIN_IPV4")
+        else None
+    )
     kwargs = dict(
         headers={"User-Agent": UA, "Accept-Language": "en-US, *;q=0.5"},
         raise_for_status=True,
         cookie_jar=aiohttp.DummyCookieJar(),
         trust_env=True,
+        connector=connector,
     )
     if os.environ.get("WEBCHAIN_NO_CACHE"):
         return aiohttp.ClientSession(**kwargs)
