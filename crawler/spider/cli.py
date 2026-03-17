@@ -6,8 +6,12 @@ import sys
 from functools import wraps
 import logging
 import click
+from rich.live import Live
+from rich.tree import Tree as RichTree
+from rich.text import Text
 
 from spider.crawl import crawl
+from spider.contracts import CrawledNode
 from spider.state import patch_state
 from spider.metadata import enrich_with_metadata
 from spider.serialize import deserialize, serialize
@@ -37,7 +41,12 @@ def asyncio_click(func):
     is_flag=True,
     help="enable verbose logging",
 )
-def webchain(attempts: int, verbose: bool):
+@click.option(
+    "--no-cache",
+    is_flag=True,
+    help="disable disk cache for http requests",
+)
+def webchain(attempts: int, verbose: bool, no_cache: bool):
     if os.environ.get("LOG_LEVEL"):
         log_level = logging._nameToLevel.get(os.environ.get("LOG_LEVEL", "").upper(), logging.INFO)
     else:
@@ -46,6 +55,9 @@ def webchain(attempts: int, verbose: bool):
 
     if "WEBCHAIN_NETWORK_ATTEMPTS" not in os.environ:
         os.environ["WEBCHAIN_NETWORK_ATTEMPTS"] = str(attempts)
+
+    if no_cache:
+        os.environ["WEBCHAIN_NO_CACHE"] = "1"
 
     pass
 
@@ -58,26 +70,67 @@ def webchain(attempts: int, verbose: bool):
 )
 @asyncio_click
 async def tree(url: str, robots_txt: bool):
-    try:
-        crawled = await crawl(url, check_robots_txt=robots_txt)
-    except Exception as e:
-        print(f"error: {e}")
-        sys.exit(1)
+    logging.getLogger().setLevel(logging.WARNING)
 
-    print("")
+    rich_nodes: dict[str, RichTree] = {}
+    labels: dict[str, Text] = {}
+    cached_urls: set[str] = set()
+    root_rich: RichTree | None = None
 
-    for node in crawled.nodes:
-        line = "    " * node.depth + node.at
+    live = Live(refresh_per_second=10)
 
-        if node.index_error:
-            line += f" (not crawled: {type(node.index_error).__name__})"
-        elif not node.indexed:
-            line += " (not crawled)"
+    def on_node_start(at: str, parent: str | None, depth: int) -> None:
+        nonlocal root_rich
+        label = Text(at, style="dim")
+        labels[at] = label
+        if depth == 0:
+            root_rich = RichTree(label, guide_style="dim")
+            rich_nodes[at] = root_rich
+            live.update(root_rich)
+        elif parent and parent in rich_nodes:
+            branch = rich_nodes[parent].add(label)
+            rich_nodes[at] = branch
 
+    def on_cache_hit(cache_url: str) -> None:
+        cached_urls.add(cache_url.rstrip("/"))
+
+    def on_node_complete(node: CrawledNode, nominations_limit: int) -> None:
+        label = labels.get(node.at)
+        if label is None:
+            return
+        label.plain = node.at
+        label.style = ""
         if node.depth == 0:
-            line += f" (limit={crawled.nominations_limit})"
+            label.append(f" (limit={nominations_limit})", style="dim")
+        if node.at in cached_urls:
+            label.append(" (disk cached)", style="dim")
+        elif node.fetch_duration is not None and node.fetch_duration > 3:
+            label.append(f" (took {node.fetch_duration:.1f}s)", style="dim")
+        if node.index_error:
+            label.append(f" (not crawled: {type(node.index_error).__name__})", style="red")
 
-        print(line)
+    def on_retry(retry_url: str, attempt: int) -> None:
+        at = retry_url.rstrip("/")
+        label = labels.get(at)
+        if label is None:
+            return
+        label.plain = at
+        max_attempts = os.environ["WEBCHAIN_NETWORK_ATTEMPTS"]
+        label.append(f" (attempt {attempt}/{max_attempts})", style="dim")
+
+    with live:
+        try:
+            crawled = await crawl(
+                url,
+                check_robots_txt=robots_txt,
+                on_node_start=on_node_start,
+                on_node_complete=on_node_complete,
+                on_retry=on_retry,
+                on_cache_hit=on_cache_hit,
+            )
+        except Exception as e:
+            live.console.print(f"error: {e}")
+            sys.exit(1)
 
     if any(node.unqualified for node in crawled.nodes):
         print("")

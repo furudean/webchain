@@ -13,7 +13,7 @@ from ordered_set import OrderedSet
 
 from spider.error import RobotsExclusionError
 from spider.http import UA, get_session, get
-from spider.contracts import CrawlResponse, CrawledNode
+from spider.contracts import CrawlResponse, CrawledNode, OnNodeStart, OnNodeComplete, OnRetry, OnCacheHit
 from spider.robots import allowed_by_robots_txt
 
 logger = getLogger(__name__)
@@ -124,7 +124,13 @@ def to_iso_timestamp(x: float) -> str:
 
 
 async def crawl(
-    seed_url: str, recursion_limit: int = 1000, check_robots_txt=False
+    seed_url: str,
+    recursion_limit: int = 1000,
+    check_robots_txt: bool = False,
+    on_node_start: OnNodeStart | None = None,
+    on_node_complete: OnNodeComplete | None = None,
+    on_retry: OnRetry | None = None,
+    on_cache_hit: OnCacheHit | None = None,
 ) -> CrawlResponse:
     """
     crawl the webchain nomination graph starting from `seed_url`.
@@ -151,17 +157,24 @@ async def crawl(
         at = without_trailing_slash(url)
         seen.add(at)
 
+        if on_node_start:
+            on_node_start(at, parent, depth)
+
         html: str | None = None
         index_error: Exception | None = None
+        fetch_duration: float | None = None
 
         if check_robots_txt is False or await allowed_by_robots_txt(
             url, user_agent=UA, session=session
         ):
+            t0 = time()
             try:
-                html = await get(url, referrer=parent, session=session)
+                html = await get(url, referrer=parent, session=session, on_retry=on_retry, on_cache_hit=on_cache_hit)
+                fetch_duration = time() - t0
                 if html is None:
                     index_error = EmptyPageError(f"{url} has no content")
             except Exception as e:
+                fetch_duration = time() - t0
                 logger.info(f"GET {url} failed after retries: {type(e).__name__} {e}")
                 html = None
                 index_error = e
@@ -203,7 +216,12 @@ async def crawl(
             indexed=index_error is None,
             index_error=index_error,
             robots_ok=(not isinstance(index_error, RobotsExclusionError)),
+            fetch_duration=fetch_duration,
         )
+
+        if on_node_complete:
+            on_node_complete(node, nominations_limit)
+
         nodes = [node]
 
         if nominations and depth < recursion_limit:

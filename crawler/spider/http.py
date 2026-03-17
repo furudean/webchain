@@ -6,6 +6,7 @@ import tenacity
 
 from spider.error import InvalidStatusCode
 from spider.cached_session import CachedClientSession
+from spider.contracts import OnRetry, OnCacheHit
 
 logger = logging.getLogger(__name__)
 
@@ -13,18 +14,23 @@ UA = "WebchainSpider (+https://github.com/furudean/webchain)"
 
 
 def get_session() -> aiohttp.ClientSession:
-    return CachedClientSession(
+    kwargs = dict(
         headers={"User-Agent": UA, "Accept-Language": "en-US, *;q=0.5"},
         raise_for_status=True,
         cookie_jar=aiohttp.DummyCookieJar(),
         trust_env=True,
     )
+    if os.environ.get("WEBCHAIN_NO_CACHE"):
+        return aiohttp.ClientSession(**kwargs)
+    return CachedClientSession(**kwargs)
 
 
 async def get(
     url: str,
     session: aiohttp.ClientSession,
     referrer: str | None = None,
+    on_retry: OnRetry | None = None,
+    on_cache_hit: OnCacheHit | None = None,
 ) -> str | None:
     async def run():
         headers = {}
@@ -37,6 +43,8 @@ async def get(
             ) as response:
                 result = await response.text()
                 logger.debug(f"got {url}")
+                if on_cache_hit and getattr(response, "from_cache", False):
+                    on_cache_hit(url)
             return result
 
         except aiohttp.InvalidURL as e:
@@ -57,6 +65,10 @@ async def get(
             logger.debug(f"{url}: " + type(e).__name__, exc_info=e)
             raise
 
+    def before_sleep(retry_state: tenacity.RetryCallState) -> None:
+        if on_retry:
+            on_retry(url, retry_state.attempt_number)
+
     attempts = int(os.environ.get("WEBCHAIN_NETWORK_ATTEMPTS", "5"))
     retrying = tenacity.AsyncRetrying(
         wait=tenacity.wait_exponential(),
@@ -70,6 +82,7 @@ async def get(
             )
         ),
         reraise=True,
+        before_sleep=before_sleep,
     )
     async for attempt in retrying:
         with attempt:

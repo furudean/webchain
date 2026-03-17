@@ -71,10 +71,11 @@ def parse_cache_control(header: str) -> Dict[str, Optional[Union[int, bool]]]:
 
 
 class CachedResponse:
-    def __init__(self, status: int, headers: Dict[str, str], body: bytes):
+    def __init__(self, status: int, headers: Dict[str, str], body: bytes, from_cache: bool = False):
         self.status = status
         self.headers = headers
         self.body = body
+        self.from_cache = from_cache
 
     async def text(self, encoding: Optional[str] = None) -> str:
         if encoding is None:
@@ -171,7 +172,7 @@ class CachedClientSession:
             entry = await self.get_cached(url)
             if entry and entry["expiry"] is not None and time.time() < entry["expiry"]:
                 logger.debug(f"cache hit: {url}")
-                yield CachedResponse(200, entry["headers"], entry["body"])
+                yield CachedResponse(200, entry["headers"], entry["body"], from_cache=True)
                 return
 
             if entry and entry.get("etag"):
@@ -202,7 +203,7 @@ class CachedClientSession:
                             url, entry["body"], entry["headers"], entry.get("etag"), expiry
                         )
                 logger.debug(f"304 for {url}, returning cached body")
-                yield CachedResponse(200, entry["headers"], entry["body"])
+                yield CachedResponse(200, entry["headers"], entry["body"], from_cache=True)
                 return
 
             body = await resp.read()
