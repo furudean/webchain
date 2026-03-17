@@ -31,7 +31,7 @@ async def get(
     referrer: str | None = None,
     on_retry: OnRetry | None = None,
     on_cache_hit: OnCacheHit | None = None,
-) -> str | None:
+) -> str:
     async def run():
         headers = {}
         if referrer is not None:
@@ -49,13 +49,13 @@ async def get(
 
         except aiohttp.InvalidURL as e:
             logger.info(f"invalid url {url}: " + type(e).__name__)
-            return None
+            raise
         except aiohttp.ClientSSLError as e:
             logger.info(f"SSL error {url}: {type(e).__name__} {e}")
-            return None
+            raise
         except aiohttp.ClientConnectorDNSError as e:
             logger.info(f"dns error {url}: {type(e).__name__} {e}")
-            return None
+            raise
         except aiohttp.ClientResponseError as e:
             if 400 <= e.status < 500:
                 raise InvalidStatusCode(e.status, e.message) from e

@@ -171,8 +171,6 @@ async def crawl(
             try:
                 html = await get(url, referrer=parent, session=session, on_retry=on_retry, on_cache_hit=on_cache_hit)
                 fetch_duration = time() - t0
-                if html is None:
-                    index_error = EmptyPageError(f"{url} has no content")
             except Exception as e:
                 fetch_duration = time() - t0
                 logger.info(f"GET {url} failed after retries: {type(e).__name__} {e}")
