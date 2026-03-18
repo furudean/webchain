@@ -1,20 +1,16 @@
 import asyncio
-from datetime import datetime
 import io
 import os
 import sys
 from functools import wraps
 import logging
 import click
-from rich.live import Live
-from rich.tree import Tree as RichTree
-from rich.text import Text
 
 from spider.crawl import crawl
-from spider.contracts import CrawledNode
 from spider.state import patch_state
 from spider.metadata import enrich_with_metadata
 from spider.serialize import deserialize, serialize
+from spider.tree import TreeCrawlUI, print_tree
 
 
 def asyncio_click(func):
@@ -72,86 +68,27 @@ def webchain():
 
 @webchain.command
 @click.argument("url", required=True)
+@click.option(
+    "--print",
+    "print_output",
+    is_flag=True,
+    default=False,
+    help="print tree to stdout instead of paging",
+)
 @common_options
 @network_options
-@asyncio_click
-async def tree(url: str, robots_txt: bool):
+def tree(url: str, robots_txt: bool, print_output: bool):
     logging.getLogger().setLevel(logging.WARNING)
 
-    max_attempts = os.environ["WEBCHAIN_NETWORK_ATTEMPTS"]
+    ui = TreeCrawlUI(url, robots_txt, exit_when_done=print_output)
+    ui.run()
 
-    rich_nodes: dict[str, RichTree] = {}
-    labels: dict[str, Text] = {}
-    cached_urls: set[str] = set()
-    root_rich: RichTree | None = None
+    if ui.error:
+        print(f"error: {ui.error}")
+        sys.exit(1)
 
-    live = Live(auto_refresh=False)
-
-    def on_node_start(at: str, parent: str | None, depth: int) -> None:
-        nonlocal root_rich
-        label = Text(at, style="dim")
-        labels[at] = label
-        if depth == 0:
-            root_rich = RichTree(label, guide_style="dim")
-            rich_nodes[at] = root_rich
-            live.update(root_rich)
-        elif parent and parent in rich_nodes:
-            branch = rich_nodes[parent].add(label)
-            rich_nodes[at] = branch
-        live.refresh()
-
-    def on_cache_hit(cache_url: str) -> None:
-        cached_urls.add(cache_url.rstrip("/"))
-        live.refresh()
-
-    def on_node_complete(node: CrawledNode, nominations_limit: int) -> None:
-        label = labels.get(node.at)
-        if label is None:
-            return
-        label.plain = node.at
-        label.style = ""
-        if node.depth == 0:
-            label.append(f" (limit={nominations_limit})", style="dim")
-        if node.at in cached_urls:
-            label.append(" (cached)", style="dim")
-        elif node.fetch_duration is not None and node.fetch_duration > 3:
-            label.append(f" (took {node.fetch_duration:.1f}s)", style="dim")
-        if node.index_error:
-            label.append(f" (not crawled: {type(node.index_error).__name__})", style="red")
-        live.refresh()
-
-    def on_retry(retry_url: str, attempt: int) -> None:
-        at = retry_url.rstrip("/")
-        label = labels.get(at)
-        if label is None:
-            return
-        label.plain = at
-        label.append(f" (attempt {attempt}/{max_attempts})", style="dim")
-        live.refresh()
-
-    with live:
-        try:
-            crawled = await crawl(
-                url,
-                check_robots_txt=robots_txt,
-                on_node_start=on_node_start,
-                on_node_complete=on_node_complete,
-                on_retry=on_retry,
-                on_cache_hit=on_cache_hit,
-            )
-        except Exception as e:
-            live.console.print(f"error: {e}")
-            sys.exit(1)
-
-    if any(node.unqualified for node in crawled.nodes):
-        print("")
-        for node in crawled.nodes:
-            if node.unqualified:
-                print(f"{len(node.unqualified)} unqualified in {node.at} -> {node.unqualified}")
-
-    duration = datetime.fromisoformat(crawled.end) - datetime.fromisoformat(crawled.start)
-
-    print(f"\ncrawled {len(crawled.nodes)} nodes in {duration.total_seconds():.2f} seconds")
+    if print_output:
+        print_tree(ui)
 
 
 @webchain.command
