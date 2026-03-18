@@ -27,55 +27,53 @@ def asyncio_click(func):
     return wrapper
 
 
+def common_options(func):
+    @click.option("--verbose", "-v", is_flag=True, default=False, help="enable verbose logging")
+    @wraps(func)
+    def wrapper(*args, verbose: bool, **kwargs):
+        if verbose:
+            logging.getLogger().setLevel(logging.DEBUG)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def network_options(func):
+    @click.option(
+        "--attempts", default=5, show_default=True, type=int, help="number of retry attempts"
+    )
+    @click.option(
+        "--no-cache", is_flag=True, default=False, help="disable disk cache from previous requests"
+    )
+    @click.option(
+        "--v4", is_flag=True, default=False, help="only use ipv4, even if ipv6 is available"
+    )
+    @click.option(
+        "--robots-txt/--no-robots-txt", default=True, help="respect robots.txt files... or don't!"
+    )
+    @wraps(func)
+    def wrapper(*args, attempts: int, no_cache: bool, v4: bool, **kwargs):
+        if "WEBCHAIN_NETWORK_ATTEMPTS" not in os.environ:
+            os.environ["WEBCHAIN_NETWORK_ATTEMPTS"] = str(attempts)
+        if no_cache:
+            os.environ["WEBCHAIN_NO_CACHE"] = "1"
+        if v4:
+            os.environ["WEBCHAIN_IPV4"] = "1"
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 @click.group()
-@click.option(
-    "--attempts",
-    default=5,
-    show_default=True,
-    type=int,
-    help="number of retry attempts for network requests",
-)
-@click.option(
-    "--verbose",
-    "-v",
-    is_flag=True,
-    help="enable verbose logging",
-)
-@click.option(
-    "--no-cache",
-    is_flag=True,
-    help="disable disk cache for http requests",
-)
-@click.option(
-    "--v4",
-    is_flag=True,
-    help="only use ipv4 when making reequests (disables happy eyeballs / ipv6)",
-)
-def webchain(attempts: int, verbose: bool, no_cache: bool, v4: bool):
-    if os.environ.get("LOG_LEVEL"):
-        log_level = logging._nameToLevel.get(os.environ.get("LOG_LEVEL", "").upper(), logging.INFO)
-    else:
-        log_level = logging.DEBUG if verbose else logging.INFO
+def webchain():
+    log_level = logging._nameToLevel.get(os.environ.get("LOG_LEVEL", "").upper(), logging.INFO)
     logging.basicConfig(level=log_level, format="%(filename)s: %(message)s")
-
-    if "WEBCHAIN_NETWORK_ATTEMPTS" not in os.environ:
-        os.environ["WEBCHAIN_NETWORK_ATTEMPTS"] = str(attempts)
-
-    if no_cache:
-        os.environ["WEBCHAIN_NO_CACHE"] = "1"
-
-    if v4:
-        os.environ["WEBCHAIN_IPV4"] = "1"
-
-    pass
 
 
 @webchain.command
 @click.argument("url", required=True)
-@click.option(
-    "--robots-txt/--no-robots-txt",
-    default=True,
-)
+@common_options
+@network_options
 @asyncio_click
 async def tree(url: str, robots_txt: bool):
     logging.getLogger().setLevel(logging.WARNING)
@@ -154,10 +152,8 @@ async def tree(url: str, robots_txt: bool):
 
 @webchain.command
 @click.argument("url", required=True)
-@click.option(
-    "--robots-txt/--no-robots-txt",
-    default=True,
-)
+@common_options
+@network_options
 @asyncio_click
 async def json(url: str, robots_txt: bool):
     try:
@@ -173,6 +169,7 @@ async def json(url: str, robots_txt: bool):
 @webchain.command
 @click.argument("path1", required=True, type=click.File())
 @click.argument("path2", required=True, type=click.File())
+@common_options
 def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
     try:
         res1 = deserialize(path1.read())
@@ -199,10 +196,8 @@ def patch(path1: io.TextIOWrapper, path2: io.TextIOWrapper) -> None:
 
 @webchain.command
 @click.argument("file", required=True, type=click.File())
-@click.option(
-    "--robots-txt/--no-robots-txt",
-    default=True,
-)
+@common_options
+@network_options
 @asyncio_click
 async def enrich(file: io.TextIOWrapper, robots_txt: bool) -> None:
     try:
