@@ -87,13 +87,7 @@ async def get(
                 aiohttp.ServerConnectionError,
                 TimeoutError,
             )) and not isinstance(e, aiohttp.ClientConnectorCertificateError)
-            and not (
-                # only skip retry for permanent DNS failures (NXDOMAIN, non-recoverable);
-                # transient timeouts (EAI_AGAIN) should still retry
-                isinstance(e, aiohttp.ClientConnectorDNSError)
-                and isinstance(e.os_error, socket.gaierror)
-                and e.os_error.args[0] in (socket.EAI_NONAME, socket.EAI_FAIL)
-            )
+            and not isinstance(e, aiohttp.ClientConnectorDNSError)
         ),
         reraise=True,
         before_sleep=before_sleep,
