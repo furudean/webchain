@@ -38,7 +38,7 @@ class TreeCrawlUI:
         self._main_loop: urwid.MainLoop | None = None
 
     def _make_unqualified_prefix(self, at: str) -> str:
-        """Indentation for unqualified items shown as children of `at`, without arm."""
+        """indentation for unqualified items"""
         path: list[str] = []
         cur = at
         while self._depth.get(cur, 0) > 0:
