@@ -33,7 +33,6 @@ class TreeCrawlUI:
 
         self._walker = urwid.SimpleFocusListWalker([])
         self._status = urwid.Text("crawling...")
-        self._footer_info = urwid.Text("")
         self._queue: queue.SimpleQueue = queue.SimpleQueue()
         self._pipe_write: int | None = None
         self._main_loop: urwid.MainLoop | None = None
@@ -112,7 +111,7 @@ class TreeCrawlUI:
         self._main_loop = urwid.MainLoop(
             urwid.Frame(
                 body=urwid.ScrollBar(urwid.ListBox(self._walker)),
-                footer=urwid.Pile([urwid.Divider("─"), self._status, self._footer_info]),
+                footer=urwid.Pile([urwid.Divider("─"), self._status]),
             ),
             palette=_PALETTE,
             unhandled_input=self._handle_input,
