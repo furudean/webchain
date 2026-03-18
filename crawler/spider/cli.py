@@ -85,7 +85,7 @@ async def tree(url: str, robots_txt: bool):
     cached_urls: set[str] = set()
     root_rich: RichTree | None = None
 
-    live = Live(refresh_per_second=10)
+    live = Live(auto_refresh=False)
 
     def on_node_start(at: str, parent: str | None, depth: int) -> None:
         nonlocal root_rich
@@ -98,9 +98,11 @@ async def tree(url: str, robots_txt: bool):
         elif parent and parent in rich_nodes:
             branch = rich_nodes[parent].add(label)
             rich_nodes[at] = branch
+        live.refresh()
 
     def on_cache_hit(cache_url: str) -> None:
         cached_urls.add(cache_url.rstrip("/"))
+        live.refresh()
 
     def on_node_complete(node: CrawledNode, nominations_limit: int) -> None:
         label = labels.get(node.at)
@@ -116,6 +118,7 @@ async def tree(url: str, robots_txt: bool):
             label.append(f" (took {node.fetch_duration:.1f}s)", style="dim")
         if node.index_error:
             label.append(f" (not crawled: {type(node.index_error).__name__})", style="red")
+        live.refresh()
 
     def on_retry(retry_url: str, attempt: int) -> None:
         at = retry_url.rstrip("/")
@@ -124,6 +127,7 @@ async def tree(url: str, robots_txt: bool):
             return
         label.plain = at
         label.append(f" (attempt {attempt}/{max_attempts})", style="dim")
+        live.refresh()
 
     with live:
         try:
