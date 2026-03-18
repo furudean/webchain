@@ -80,6 +80,8 @@ def webchain(attempts: int, verbose: bool, no_cache: bool, v4: bool):
 async def tree(url: str, robots_txt: bool):
     logging.getLogger().setLevel(logging.WARNING)
 
+    max_attempts = os.environ["WEBCHAIN_NETWORK_ATTEMPTS"]
+
     rich_nodes: dict[str, RichTree] = {}
     labels: dict[str, Text] = {}
     cached_urls: set[str] = set()
@@ -111,7 +113,7 @@ async def tree(url: str, robots_txt: bool):
         if node.depth == 0:
             label.append(f" (limit={nominations_limit})", style="dim")
         if node.at in cached_urls:
-            label.append(" (disk cached)", style="dim")
+            label.append(" (cached)", style="dim")
         elif node.fetch_duration is not None and node.fetch_duration > 3:
             label.append(f" (took {node.fetch_duration:.1f}s)", style="dim")
         if node.index_error:
@@ -123,7 +125,6 @@ async def tree(url: str, robots_txt: bool):
         if label is None:
             return
         label.plain = at
-        max_attempts = os.environ["WEBCHAIN_NETWORK_ATTEMPTS"]
         label.append(f" (attempt {attempt}/{max_attempts})", style="dim")
 
     with live:
