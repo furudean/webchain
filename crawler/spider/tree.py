@@ -121,7 +121,7 @@ class TreeCrawlUI:
         self._main_loop.run()
 
     async def _crawl(self) -> None:
-        max_attempts = os.environ.get("WEBCHAIN_NETWORK_ATTEMPTS", "5")
+        max_attempts = os.environ.get("WEBCHAIN_NETWORK_ATTEMPTS")
 
         def _update_status() -> None:
             self._status.set_text("crawling... " + " ".join(self._inflight))
