@@ -170,11 +170,18 @@ class CachedClientSession:
 
         async with self.lock:
             entry = await self.get_cached(url)
+
+            # fresh cache hit: if max-age hasn't elapsed, serve the stored response
+            # directly without hitting the network at all (RFC 9111 §4).
             if entry and entry["expiry"] is not None and time.time() < entry["expiry"]:
                 logger.debug(f"cache hit: {url}")
                 yield CachedResponse(200, entry["headers"], entry["body"], from_cache=True)
                 return
 
+            # conditional request: if the cached entry has a validator, attach it so
+            # the server can reply with 304 instead of resending the full body.
+            # prefer ETag (If-None-Match) over Last-Modified (If-Modified-Since) as
+            # ETags are more precise (RFC 9110 §13.1).
             if entry and entry.get("etag"):
                 headers.setdefault("If-None-Match", entry.get("etag"))
             elif entry and entry.get("headers", {}).get("Last-Modified"):
@@ -182,13 +189,19 @@ class CachedClientSession:
 
         resp = await self.session.get(url, headers=headers, **kwargs)
         try:
+            # 304 not modified: the server confirmed the cached copy is still current.
+            # refresh the stored entry (updating expiry if a new max-age was given)
+            # and return the cached body — no body was sent by the server.
             if resp.status == 304 and entry:
                 resp_headers = {k: v for k, v in resp.headers.items()}
                 cc = parse_cache_control(resp_headers.get("Cache-Control", ""))
                 if cc.get("no-store"):
+                    # server changed its mind — it no longer wants this response stored.
                     await self.delete_cached(url)
                 else:
-                    # only update/save cache if there are explicit caching headers
+                    # only update/save cache if there are explicit caching headers.
+                    # a 304 with no headers at all means the server gave us nothing to
+                    # base a new expiry on, so leave the entry as-is.
                     has_cache_header = bool(
                         resp_headers.get("Cache-Control")
                         or resp_headers.get("ETag")
@@ -206,11 +219,16 @@ class CachedClientSession:
                 yield CachedResponse(200, entry["headers"], entry["body"], from_cache=True)
                 return
 
+            # 2xx response: the server sent a fresh body.
             body = await resp.read()
             resp_headers = {k: v for k, v in resp.headers.items()}
 
             cc = parse_cache_control(resp_headers.get("Cache-Control", ""))
             etag = resp_headers.get("ETag")
+
+            # compute expiry from max-age. without max-age we don't guess a TTL — the
+            # entry will still be stored so we can send conditional requests next time,
+            # but it will never be served from cache without revalidation.
             expiry: Optional[float]
             if cc.get("no-store"):
                 expiry = None
@@ -219,20 +237,23 @@ class CachedClientSession:
             else:
                 expiry = None
 
-            # persist responses that include explicit caching headers
+            # only cache responses that carry explicit caching headers (Cache-Control,
+            # ETag, or Last-Modified). responses without any of these give us no
+            # validator to reuse, so caching them would just waste disk space.
             has_cache_header = bool(
                 resp_headers.get("Cache-Control")
                 or resp_headers.get("ETag")
                 or resp_headers.get("Last-Modified")
             )
-            if (
-                resp.status >= 200
-                and resp.status < 300
-                and not cc.get("no-store")
-                and has_cache_header
-            ):
+            if resp.status >= 200 and resp.status < 300:
                 async with self.lock:
-                    await self.save_cached(url, body, resp_headers, etag, expiry)
+                    if not cc.get("no-store") and has_cache_header:
+                        await self.save_cached(url, body, resp_headers, etag, expiry)
+                    elif entry:
+                        # server previously sent caching headers but no longer does.
+                        # drop the stale entry so we don't keep sending validators
+                        # (e.g. If-None-Match) to a server that will ignore them.
+                        await self.delete_cached(url)
 
             yield CachedResponse(resp.status, resp_headers, body)
         finally:
