@@ -1,7 +1,7 @@
 # webchain
 
 webchain is a decentralized [webring](https://en.wikipedia.org/wiki/Webring),
-where each member website can nominate others, creating a walkable graph
+a distributed webring where members nominate new ones, creating a walkable graph
 of trust.
 
 This repository contains code for a [crawler](crawler) that can discover the webchain
